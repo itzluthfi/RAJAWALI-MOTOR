@@ -1,0 +1,35 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Database\Seeders;
+
+use App\Models\User;
+use Illuminate\Database\Seeder;
+
+class UserSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $akun = [
+            ['name' => 'Budi Santoso', 'username' => 'owner', 'peran' => 'owner'],
+            ['name' => 'Admin Toko', 'username' => 'admin', 'peran' => 'admin'],
+            ['name' => 'Sari Wulandari', 'username' => 'kasir1', 'peran' => 'kasir'],
+            ['name' => 'Joko Prasetyo', 'username' => 'gudang1', 'peran' => 'gudang'],
+            ['name' => 'Wawan Setiawan', 'username' => 'montir1', 'peran' => 'montir'],
+        ];
+
+        foreach ($akun as $data) {
+            User::updateOrCreate(
+                ['username' => $data['username']],
+                [
+                    'name' => $data['name'],
+                    'email' => $data['username'].'@rajawalimotor.test',
+                    'password' => 'password',
+                    'peran' => $data['peran'],
+                    'aktif' => true,
+                ]
+            );
+        }
+    }
+}

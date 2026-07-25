@@ -1,0 +1,241 @@
+@import 'tailwindcss';
+@plugin 'tailwindcss-animate';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+    --color-ink: #1a1c1d;
+    --color-steel: #5f5e5e;
+    --color-line: #e5bdb9;
+    --color-surface: #f9f9fa;
+    --color-background: #f9f9fa;
+    --color-canvas: #f3f3f4;
+    --color-surface-container: #eeeeef;
+    --color-surface-container-high: #e8e8e9;
+    --color-surface-container-low: #f3f3f4;
+    --color-surface-container-lowest: #ffffff;
+    --color-surface-variant: #e2e2e3;
+    --color-on-surface: #1a1c1d;
+    --color-on-surface-variant: #5c403d;
+
+    --color-primary: #970012;
+    --color-primary-container: #c1121f;
+    --color-primary-fixed-dim: #ffb3ad;
+    --color-on-primary: #ffffff;
+    --color-on-primary-container: #ffd2ce;
+
+    --color-secondary: #5f5e5e;
+    --color-on-secondary: #ffffff;
+
+    --color-inverse-surface: #2f3132;
+    --color-inverse-on-surface: #f0f1f2;
+
+    --color-outline: #906f6c;
+    --color-outline-variant: #e5bdb9;
+
+    --color-rajawali: #c1121f;
+    --color-rajawali-dark: #930011;
+    --color-marka: #f2b705;
+    --color-lunas: #167a5b;
+    --color-batal: #9aa1ac;
+}
+
+@layer base {
+    body {
+        @apply bg-canvas text-ink font-sans antialiased;
+    }
+    ::selection {
+        @apply bg-rajawali/20;
+    }
+    [x-cloak] {
+        display: none !important;
+    }
+}
+
+@layer utilities {
+    .font-nominal {
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ---- Halaman company profile (home.js) ---- */
+
+[data-reveal] {
+    opacity: 0;
+}
+[data-reveal].is-visible {
+    opacity: 1;
+}
+[data-reveal-stagger] [data-reveal-item] {
+    opacity: 0;
+}
+noscript ~ [data-reveal],
+.no-js [data-reveal],
+.no-js [data-reveal-item] {
+    opacity: 1 !important;
+}
+
+#nav-utama {
+    transition: background-color 200ms ease, box-shadow 200ms ease, padding 200ms ease;
+}
+#nav-utama.nav-menyusut {
+    background-color: rgba(21, 24, 29, 0.92);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+[data-status-buka].status-buka {
+    color: #167A5B;
+}
+[data-status-buka].status-tutup {
+    color: #B0181C;
+}
+
+#menu-mobile {
+    display: none;
+}
+#menu-mobile.is-open {
+    display: block;
+}
+
+#hero-canvas canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* Easing lebih halus & "menempel" untuk seluruh transisi di company profile */
+#konten *,
+#konten *::before,
+#konten *::after,
+#nav-utama * {
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Kartu dengan sedikit "angkat" saat hover — dipakai di layanan, galeri, kontak */
+.kartu-angkat {
+    transition-property: transform, box-shadow, border-color, background-color;
+    transition-duration: 420ms;
+    will-change: transform;
+}
+.kartu-angkat:hover {
+    transform: translateY(-6px);
+}
+
+/* Efek shimmer: sapuan cahaya diagonal saat hover, dipicu ulang tiap kali di-hover */
+.efek-kilau {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+}
+.efek-kilau::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    pointer-events: none;
+    background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.8) 48%, rgba(255, 255, 255, 0.4) 52%, transparent 70%);
+    background-size: 250% 100%;
+    background-position: 150% 0;
+    opacity: 0;
+    transition: background-position 800ms cubic-bezier(0.22, 1, 0.36, 1), opacity 200ms ease;
+}
+.efek-kilau:hover::after {
+    background-position: -50% 0;
+    opacity: 1;
+}
+.efek-kilau-gelap::after {
+    background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.25) 48%, transparent 70%);
+}
+
+/* Blob dekoratif — memecah bidang kotak jadi lebih organik */
+.blob-dekor {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(64px);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Bingkai foto dengan sedikit kemiringan + koreksi saat hover, kesan lebih hidup */
+.bingkai-foto {
+    transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 500ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.bingkai-foto:hover {
+    transform: rotate(0deg) scale(1.015);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .kartu-angkat:hover {
+        transform: none;
+    }
+    .efek-kilau::after {
+        display: none;
+    }
+    .bingkai-foto:hover {
+        transform: none;
+    }
+}
+
+/* Lucide & Component SVG Sizing Constraints */
+span[aria-hidden="true"] {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    vertical-align: middle;
+}
+span[aria-hidden="true"] svg {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    display: block !important;
+}
+
+/* Custom Sleek Tooltip Component */
+[data-tooltip] {
+    position: relative;
+}
+[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-2px);
+    background-color: #0f172a;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.3;
+    padding: 4px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 150ms ease-in-out, transform 150ms ease-in-out;
+    z-index: 60;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+}
+[data-tooltip]:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-6px);
+}
