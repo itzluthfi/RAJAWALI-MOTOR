@@ -41,7 +41,7 @@
             -webkit-backdrop-filter: blur(20px);
         }
         .hero-gradient {
-            background: linear-gradient(to right, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.15) 100%);
+            background: linear-gradient(to right, rgba(10, 10, 15, 0.88) 0%, rgba(147, 0, 17, 0.45) 50%, rgba(0, 0, 0, 0.2) 100%);
         }
         .kartu-angkat {
             transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
@@ -63,11 +63,19 @@
     <span class="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-500 ease-in-out font-bold text-xs sm:text-sm pl-0 group-hover:pl-2">Chat WhatsApp</span>
 </a>
 
+<!-- Floating Scroll to Top Button -->
+<button id="scroll-to-top" type="button" aria-label="Kembali ke atas" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"
+        class="fixed bottom-24 right-6 z-[98] bg-slate-900/90 text-white w-12 h-12 sm:w-14 sm:h-14 rounded-full shadow-xl hover:bg-[#B0181C] hover:scale-110 transition-all duration-300 flex items-center justify-center border border-white/20 active:scale-95 opacity-0 pointer-events-none scale-75 backdrop-blur-md">
+    <span class="material-symbols-outlined text-2xl sm:text-3xl">arrow_upward</span>
+</button>
+
 <!-- Navbar -->
-<nav class="fixed top-0 w-full z-50 glass-nav shadow-sm border-b border-outline-variant/20">
-    <div class="flex justify-between items-center px-4 sm:px-8 py-3.5 max-w-7xl mx-auto">
+<nav id="main-navbar" class="fixed top-0 w-full z-50 glass-nav shadow-md border-b border-outline-variant/20 smart-nav">
+    <div class="flex justify-between items-center px-4 sm:px-8 py-3 max-w-7xl mx-auto">
         <a href="#beranda" class="flex items-center gap-3 group">
-            <img alt="Rajawali Motor Logo" class="h-10 sm:h-12 w-auto object-contain group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsYEm9KYYbuD248b0jN_sheEfynwQ6j7teJdvKA8edK8NYF0ndmkXVXlqw9SKIhago4iUYt5RmUV5kgkIuq0AjjoDKToRqxiuEM17EOurrulLi0qsUlk36AxIH4JObdUrym7rxUnRAwC9aLkxP4pUlSgGe9qLiTLXOV0I1-pYXxewRVi_zU2DtKVLzY0W20Ve5lzZD-FdFadE3YvJ_ozDGIJmgDt6aLfSKhBNi1YFqbLL-76iue9ykhTo7OsirOQuyfFH_HfkN0Dc"/>
+            <div class="p-1.5 bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-sm shrink-0 overflow-hidden group-hover:scale-105 group-hover:shadow-md transition-all duration-300">
+                <img alt="Rajawali Motor Logo" class="h-7 sm:h-9 w-auto object-contain rounded-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsYEm9KYYbuD248b0jN_sheEfynwQ6j7teJdvKA8edK8NYF0ndmkXVXlqw9SKIhago4iUYt5RmUV5kgkIuq0AjjoDKToRqxiuEM17EOurrulLi0qsUlk36AxIH4JObdUrym7rxUnRAwC9aLkxP4pUlSgGe9qLiTLXOV0I1-pYXxewRVi_zU2DtKVLzY0W20Ve5lzZD-FdFadE3YvJ_ozDGIJmgDt6aLfSKhBNi1YFqbLL-76iue9ykhTo7OsirOQuyfFH_HfkN0Dc"/>
+            </div>
             <span class="font-headline-md text-xl sm:text-2xl font-bold text-primary tracking-tight">Rajawali Motor</span>
         </a>
         <div class="hidden lg:flex items-center gap-7 font-medium text-sm text-secondary">
@@ -158,39 +166,41 @@
             <div class="w-full h-full bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD5JYvswa21ywwHQhN0yYz9yFx5WrXNr5eVDRzYnEAM9QAMAINPQQs4wMniaHMAZWQDmQJBUE8ZgKMneqnaMP279v-IkwmmgKidG7EWKXIARYA8Xe-MW5ILdnfF1aH-XtrXGvX5SJsYLzbb8bqVL0IOChvKvACiZ_Wy34kBBUD3xlZ6A5IlRXU-JvPSh7O_HQD1KZXISrzyzWNMsARSUbRw8_YPT2h2zKr2RXj3AKLemayIHKLcY95sE_CQlBMLw45JgqW5rwPfTJU')"></div>
             <div class="absolute inset-0 hero-gradient"></div>
         </div>
-        <div class="relative z-10 px-4 sm:px-8 max-w-7xl mx-auto w-full py-16 sm:py-24">
-            <div class="max-w-3xl space-y-6" data-reveal>
-                <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
-                    <span class="material-symbols-outlined text-primary-fixed-dim" style="font-variation-settings: 'FILL' 1;">star</span>
-                    <span class="text-white font-label-bold text-xs sm:text-sm">4.9/5 Google Rating Customer Satisfaction</span>
+        <div class="relative z-10 px-4 sm:px-8 max-w-7xl mx-auto w-full py-12 sm:py-16">
+            <div class="max-w-2xl space-y-4 sm:space-y-5 bg-slate-950/50 backdrop-blur-md p-5 sm:p-7 rounded-2xl border border-white/15 shadow-xl" data-reveal>
+                <div class="inline-flex items-center gap-2 bg-rose-500/20 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-rose-500/30">
+                    <span class="material-symbols-outlined text-amber-300 text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+                    <span class="text-white font-label-bold text-xs">4.9/5 Google Rating Customer Satisfaction</span>
                 </div>
-                <h1 class="font-display-lg text-3xl sm:text-5xl lg:text-6xl text-white font-extrabold leading-tight">Solusi Servis Kendaraan Terpercaya di Surabaya</h1>
-                <p class="font-body-lg text-base sm:text-xl text-white/80 max-w-xl leading-relaxed">Perawatan presisi dengan teknologi modern dan mekanik ahli berpengalaman untuk memastikan performa kendaraan Anda tetap prima di setiap putaran roda.</p>
-                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4">
+                <h1 class="font-display-lg text-2xl sm:text-4xl lg:text-5xl text-white font-extrabold leading-tight drop-shadow-md">
+                    Solusi Servis Kendaraan <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-rose-100 to-amber-300">Terpercaya di Surabaya</span>
+                </h1>
+                <p class="font-body-lg text-sm sm:text-base text-slate-200/90 max-w-lg leading-relaxed">Perawatan presisi dengan teknologi modern dan mekanik ahli berpengalaman untuk memastikan performa kendaraan Anda tetap prima di setiap putaran roda.</p>
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
                     <a href="https://wa.me/{{ $toko['whatsapp'] }}?text={{ urlencode('Halo Rajawali Motor, saya ingin booking servis...') }}" target="_blank" rel="noopener"
-                       class="efek-kilau bg-primary-container text-on-secondary px-8 sm:px-10 py-4 sm:py-5 rounded-xl font-label-bold text-base hover:bg-[#930011] transition-all shadow-xl shadow-primary/30 text-center flex items-center justify-center gap-2 active:scale-95">
-                        <span class="material-symbols-outlined">calendar_today</span>
+                       class="efek-kilau bg-primary-container text-on-secondary px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl font-label-bold text-xs sm:text-sm hover:bg-[#930011] transition-all shadow-lg shadow-primary/20 text-center flex items-center justify-center gap-2 active:scale-95">
+                        <span class="material-symbols-outlined text-lg">calendar_today</span>
                         <span>Booking Servis</span>
                     </a>
                     <a href="tel:{{ $toko['telepon'] }}"
-                       class="efek-kilau border-2 border-white text-white px-8 sm:px-10 py-4 sm:py-5 rounded-xl font-label-bold text-base hover:bg-white/10 transition-all text-center flex items-center justify-center gap-2 active:scale-95">
-                        <span class="material-symbols-outlined">call</span>
+                       class="efek-kilau border border-white/80 text-white px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl font-label-bold text-xs sm:text-sm hover:bg-white/10 transition-all text-center flex items-center justify-center gap-2 active:scale-95">
+                        <span class="material-symbols-outlined text-lg">call</span>
                         <span>Hubungi Kami</span>
                     </a>
                 </div>
-                <div class="flex flex-wrap items-center gap-3 sm:gap-4 pt-6">
-                    <div class="inline-flex flex-wrap items-center gap-3.5 sm:gap-5 bg-black/80 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/20 shadow-2xl">
-                        <span data-status-badge class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-rose-500/30 text-rose-200 border border-rose-500/50 shadow-sm">
-                            <span data-status-dot class="w-2.5 h-2.5 rounded-full bg-rose-400 animate-pulse"></span>
+                <div class="flex flex-wrap items-center gap-3 sm:gap-4 pt-4 border-t border-white/10">
+                    <div class="inline-flex flex-wrap items-center gap-3 sm:gap-4 bg-black/60 backdrop-blur-md px-4 py-2.5 rounded-xl border border-white/15 shadow-lg text-xs">
+                        <span data-status-badge class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-bold bg-rose-500/30 text-rose-200 border border-rose-500/50">
+                            <span data-status-dot class="w-2 h-2 rounded-full bg-rose-400 animate-pulse"></span>
                             <span data-status-buka class="font-mono tracking-wide">Tutup</span>
                         </span>
-                        <span class="inline-flex items-center gap-2 text-white font-medium text-xs sm:text-sm">
-                            <span class="material-symbols-outlined text-primary-fixed-dim text-lg">schedule</span>
+                        <span class="inline-flex items-center gap-1.5 text-white font-medium">
+                            <span class="material-symbols-outlined text-primary-fixed-dim text-base">schedule</span>
                             <span>07:30 – 17:00 setiap hari</span>
                         </span>
                         <span class="hidden sm:inline-block text-white/30">•</span>
-                        <span class="inline-flex items-center gap-2 text-white font-medium text-xs sm:text-sm">
-                            <span class="material-symbols-outlined text-primary-fixed-dim text-lg">location_on</span>
+                        <span class="inline-flex items-center gap-1.5 text-white font-medium">
+                            <span class="material-symbols-outlined text-primary-fixed-dim text-base">location_on</span>
                             <span>Siwalankerto Timur, Surabaya</span>
                         </span>
                     </div>
@@ -303,28 +313,37 @@
                 <div class="lg:col-span-7 space-y-6">
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-secondary mb-2.5">1. Pilih Jenis Kendaraan</label>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" id="calc-vehicle-group">
-                            <button type="button" onclick="setCalcVehicle('City Car / Hatchback', 1)" class="calc-v-btn active p-3 rounded-xl border-2 border-primary bg-primary/5 text-primary font-bold text-xs text-center transition-all flex flex-col items-center gap-1">
-                                <span class="material-symbols-outlined text-2xl">directions_car</span> City Car
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5" id="calc-vehicle-group">
+                            <button type="button" onclick="setCalcVehicle('Motor Matic (Beat/Vario/NMax/PCX)', 0.35)" class="calc-v-btn active p-3 rounded-xl border-2 border-primary bg-primary/5 text-primary font-bold text-xs text-center transition-all flex flex-col items-center gap-1">
+                                <span class="material-symbols-outlined text-2xl">two_wheeler</span> Motor Matic
                             </button>
-                            <button type="button" onclick="setCalcVehicle('MPV / SUV Family', 1.2)" class="calc-v-btn p-3 rounded-xl border border-outline-variant/40 hover:border-primary/50 text-on-surface font-medium text-xs text-center transition-all flex flex-col items-center gap-1">
-                                <span class="material-symbols-outlined text-2xl">minor_crash</span> SUV / MPV
+                            <button type="button" onclick="setCalcVehicle('Motor Bebek / Sport (Revo/CB150/Vixion)', 0.45)" class="calc-v-btn p-3 rounded-xl border border-outline-variant/40 hover:border-primary/50 text-on-surface font-medium text-xs text-center transition-all flex flex-col items-center gap-1">
+                                <span class="material-symbols-outlined text-2xl">motorcycle</span> Motor Bebek / Sport
                             </button>
-                            <button type="button" onclick="setCalcVehicle('Sedan Premium', 1.3)" class="calc-v-btn p-3 rounded-xl border border-outline-variant/40 hover:border-primary/50 text-on-surface font-medium text-xs text-center transition-all flex flex-col items-center gap-1">
-                                <span class="material-symbols-outlined text-2xl">car_rental</span> Sedan
+                            <button type="button" onclick="setCalcVehicle('Motor Maxi / Sport 250cc (Ninja/XMax)', 0.7)" class="calc-v-btn p-3 rounded-xl border border-outline-variant/40 hover:border-primary/50 text-on-surface font-medium text-xs text-center transition-all flex flex-col items-center gap-1">
+                                <span class="material-symbols-outlined text-2xl">speed</span> Motor Maxi 250cc
+                            </button>
+                            <button type="button" onclick="setCalcVehicle('Mobil City Car (Brio/Agya/Yaris)', 1)" class="calc-v-btn p-3 rounded-xl border border-outline-variant/40 hover:border-primary/50 text-on-surface font-medium text-xs text-center transition-all flex flex-col items-center gap-1">
+                                <span class="material-symbols-outlined text-2xl">directions_car</span> Mobil City Car
+                            </button>
+                            <button type="button" onclick="setCalcVehicle('Mobil SUV / MPV (Avanza/Pajero/Innova)', 1.25)" class="calc-v-btn p-3 rounded-xl border border-outline-variant/40 hover:border-primary/50 text-on-surface font-medium text-xs text-center transition-all flex flex-col items-center gap-1">
+                                <span class="material-symbols-outlined text-2xl">minor_crash</span> Mobil SUV / MPV
+                            </button>
+                            <button type="button" onclick="setCalcVehicle('Mobil Sedan / Premium (Civic/Camry/Mercy)', 1.4)" class="calc-v-btn p-3 rounded-xl border border-outline-variant/40 hover:border-primary/50 text-on-surface font-medium text-xs text-center transition-all flex flex-col items-center gap-1">
+                                <span class="material-symbols-outlined text-2xl">car_rental</span> Mobil Sedan
                             </button>
                         </div>
                     </div>
 
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-secondary mb-2.5">2. Pilih Layanan Utama</label>
-                        <select id="calc-service-select" onchange="updateCalcEstimator()" class="w-full p-4 rounded-xl border border-outline-variant/40 text-on-surface font-bold text-sm bg-surface focus:ring-2 focus:ring-primary focus:outline-none">
-                            <option value="ganti_oli" data-min="135000" data-max="220000">Ganti Oli Synthetic & Filter (Rp 135rb - Rp 220rb)</option>
-                            <option value="tune_up" data-min="120000" data-max="390000">Tune Up Presisi & Carbon Clean (Rp 120rb - Rp 390rb)</option>
-                            <option value="injeksi" data-min="195000" data-max="595000">Servis Injeksi Ultrasonik & Scan ECU (Rp 195rb - Rp 595rb)</option>
-                            <option value="spooring" data-min="100000" data-max="250000">Spooring 3D Laser & Balancing 4 Roda (Rp 100rb - Rp 250rb)</option>
-                            <option value="ac_mobil" data-min="150000" data-max="550000">Servis AC Mobil & Flushing Freon (Rp 150rb - Rp 550rb)</option>
-                            <option value="body_repair" data-min="500000" data-max="2500000">Body Repair & Cat Oven (Per Panel / Full Body)</option>
+                        <select id="calc-service-select" onchange="updateCalcEstimator()" class="w-full p-3.5 rounded-xl border border-outline-variant/40 text-on-surface font-bold text-sm bg-surface focus:ring-2 focus:ring-primary focus:outline-none">
+                            <option value="ganti_oli" data-min="135000" data-max="220000">Ganti Oli Synthetic &amp; Filter Original</option>
+                            <option value="tune_up" data-min="120000" data-max="350000">Tune Up Presisi &amp; Injeksi Carbon Clean</option>
+                            <option value="cvt_matic" data-min="100000" data-max="250000">Servis CVT &amp; Ganti Kampas Ganda (Khusus Motor Matic)</option>
+                            <option value="rem_kaki" data-min="80000" data-max="220000">Servis Rem, Kampas Rem &amp; Shockbreaker</option>
+                            <option value="ac_mobil" data-min="250000" data-max="550000">Servis AC Mobil &amp; Flushing Freon (Mobil)</option>
+                            <option value="body_repair" data-min="450000" data-max="1800000">Body Repair &amp; Cat Oven Per Panel</option>
                         </select>
                     </div>
                 </div>
@@ -651,8 +670,8 @@
 </footer>
 
 <script>
-    let calcMultiplier = 1;
-    let selectedVehicleName = 'City Car / Hatchback';
+    let calcMultiplier = 0.35;
+    let selectedVehicleName = 'Motor Matic (Beat/Vario/NMax/PCX)';
 
     function setCalcVehicle(name, mult) {
         calcMultiplier = mult;
@@ -714,6 +733,36 @@
             document.body.style.overflow = 'auto';
         }
     }
+
+    let lastScrollY = window.scrollY;
+    const mainNav = document.getElementById('main-navbar');
+    const btnTop = document.getElementById('scroll-to-top');
+
+    window.addEventListener('scroll', () => {
+        const currentScrollY = window.scrollY;
+        
+        if (mainNav) {
+            if (currentScrollY <= 50) {
+                mainNav.classList.remove('smart-nav-hidden');
+            } else if (currentScrollY > lastScrollY && currentScrollY > 80) {
+                mainNav.classList.add('smart-nav-hidden');
+            } else {
+                mainNav.classList.remove('smart-nav-hidden');
+            }
+        }
+
+        if (btnTop) {
+            if (currentScrollY > 300) {
+                btnTop.classList.remove('opacity-0', 'pointer-events-none', 'scale-75');
+                btnTop.classList.add('opacity-100', 'pointer-events-auto', 'scale-100');
+            } else {
+                btnTop.classList.remove('opacity-100', 'pointer-events-auto', 'scale-100');
+                btnTop.classList.add('opacity-0', 'pointer-events-none', 'scale-75');
+            }
+        }
+
+        lastScrollY = currentScrollY;
+    }, { passive: true });
 
     document.addEventListener('DOMContentLoaded', () => {
         updateCalcEstimator();

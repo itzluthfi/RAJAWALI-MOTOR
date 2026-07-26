@@ -43,7 +43,9 @@
         <!-- Sidebar Brand Header -->
         <div class="h-14 flex items-center justify-between px-4 border-b border-line shrink-0">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 min-w-0 group">
-                <img alt="Rajawali Motor Logo" class="h-9 w-auto object-contain shrink-0 group-hover:scale-105 transition-transform" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsYEm9KYYbuD248b0jN_sheEfynwQ6j7teJdvKA8edK8NYF0ndmkXVXlqw9SKIhago4iUYt5RmUV5kgkIuq0AjjoDKToRqxiuEM17EOurrulLi0qsUlk36AxIH4JObdUrym7rxUnRAwC9aLkxP4pUlSgGe9qLiTLXOV0I1-pYXxewRVi_zU2DtKVLzY0W20Ve5lzZD-FdFadE3YvJ_ozDGIJmgDt6aLfSKhBNi1YFqbLL-76iue9ykhTo7OsirOQuyfFH_HfkN0Dc"/>
+                <div class="p-1 bg-white rounded-xl border border-slate-200 shadow-sm shrink-0 overflow-hidden group-hover:scale-105 group-hover:shadow-md transition-all duration-300">
+                    <img alt="Rajawali Motor Logo" class="h-7 w-auto object-contain rounded-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsYEm9KYYbuD248b0jN_sheEfynwQ6j7teJdvKA8edK8NYF0ndmkXVXlqw9SKIhago4iUYt5RmUV5kgkIuq0AjjoDKToRqxiuEM17EOurrulLi0qsUlk36AxIH4JObdUrym7rxUnRAwC9aLkxP4pUlSgGe9qLiTLXOV0I1-pYXxewRVi_zU2DtKVLzY0W20Ve5lzZD-FdFadE3YvJ_ozDGIJmgDt6aLfSKhBNi1YFqbLL-76iue9ykhTo7OsirOQuyfFH_HfkN0Dc"/>
+                </div>
                 <span x-show="sidebarTerbuka" class="font-display font-bold text-sm tracking-tight truncate text-rajawali">RAJAWALI MOTOR</span>
             </a>
             <!-- Close button on mobile drawer -->

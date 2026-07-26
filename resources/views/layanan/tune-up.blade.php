@@ -34,10 +34,28 @@
     <span class="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-500 ease-in-out font-bold text-xs sm:text-sm pl-0 group-hover:pl-2">Chat WhatsApp</span>
 </a>
 
-<nav class="fixed top-0 w-full z-50 glass-nav shadow-sm border-b border-outline-variant/20">
-    <div class="flex justify-between items-center px-4 sm:px-8 py-3.5 max-w-7xl mx-auto">
-        <a href="{{ route('home') }}" class="flex items-center gap-3">
-            <img alt="Rajawali Motor Logo" class="h-10 sm:h-12 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsYEm9KYYbuD248b0jN_sheEfynwQ6j7teJdvKA8edK8NYF0ndmkXVXlqw9SKIhago4iUYt5RmUV5kgkIuq0AjjoDKToRqxiuEM17EOurrulLi0qsUlk36AxIH4JObdUrym7rxUnRAwC9aLkxP4pUlSgGe9qLiTLXOV0I1-pYXxewRVi_zU2DtKVLzY0W20Ve5lzZD-FdFadE3YvJ_ozDGIJmgDt6aLfSKhBNi1YFqbLL-76iue9ykhTo7OsirOQuyfFH_HfkN0Dc"/>
+<!-- Navbar -->
+<nav x-data="{ showNav: true, lastScrollY: 0 }"
+     x-init="
+        window.addEventListener('scroll', () => {
+            const currentScrollY = window.scrollY;
+            if (currentScrollY < 50) {
+                showNav = true;
+            } else if (currentScrollY > lastScrollY && currentScrollY > 80) {
+                showNav = false;
+            } else {
+                showNav = true;
+            }
+            lastScrollY = currentScrollY;
+        });
+     "
+     :class="showNav ? 'translate-y-0' : '-translate-y-full'"
+     class="fixed top-0 w-full z-50 glass-nav shadow-md border-b border-outline-variant/20 transition-transform duration-300 ease-in-out">
+    <div class="flex justify-between items-center px-4 sm:px-8 py-3 max-w-7xl mx-auto">
+        <a href="{{ route('home') }}" class="flex items-center gap-3 group">
+            <div class="p-1.5 bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-sm shrink-0 overflow-hidden group-hover:scale-105 group-hover:shadow-md transition-all duration-300">
+                <img alt="Rajawali Motor Logo" class="h-7 sm:h-9 w-auto object-contain rounded-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsYEm9KYYbuD248b0jN_sheEfynwQ6j7teJdvKA8edK8NYF0ndmkXVXlqw9SKIhago4iUYt5RmUV5kgkIuq0AjjoDKToRqxiuEM17EOurrulLi0qsUlk36AxIH4JObdUrym7rxUnRAwC9aLkxP4pUlSgGe9qLiTLXOV0I1-pYXxewRVi_zU2DtKVLzY0W20Ve5lzZD-FdFadE3YvJ_ozDGIJmgDt6aLfSKhBNi1YFqbLL-76iue9ykhTo7OsirOQuyfFH_HfkN0Dc"/>
+            </div>
             <span class="font-headline-md text-xl sm:text-2xl font-bold text-primary tracking-tight">Rajawali Motor</span>
         </a>
         <div class="hidden lg:flex items-center gap-8 font-medium text-sm text-secondary">

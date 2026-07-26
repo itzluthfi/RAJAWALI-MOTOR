@@ -36,10 +36,12 @@
 </a>
 
 <!-- Navbar -->
-<nav class="fixed top-0 w-full z-50 glass-nav shadow-sm border-b border-outline-variant/20">
-    <div class="flex justify-between items-center px-4 sm:px-8 py-3.5 max-w-7xl mx-auto">
-        <a href="{{ route('home') }}" class="flex items-center gap-3">
-            <img alt="Rajawali Motor Logo" class="h-10 sm:h-12 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsYEm9KYYbuD248b0jN_sheEfynwQ6j7teJdvKA8edK8NYF0ndmkXVXlqw9SKIhago4iUYt5RmUV5kgkIuq0AjjoDKToRqxiuEM17EOurrulLi0qsUlk36AxIH4JObdUrym7rxUnRAwC9aLkxP4pUlSgGe9qLiTLXOV0I1-pYXxewRVi_zU2DtKVLzY0W20Ve5lzZD-FdFadE3YvJ_ozDGIJmgDt6aLfSKhBNi1YFqbLL-76iue9ykhTo7OsirOQuyfFH_HfkN0Dc"/>
+<nav id="main-navbar" class="fixed top-0 w-full z-50 glass-nav shadow-md border-b border-outline-variant/20 smart-nav">
+    <div class="flex justify-between items-center px-4 sm:px-8 py-3 max-w-7xl mx-auto">
+        <a href="{{ route('home') }}" class="flex items-center gap-3 group">
+            <div class="p-1.5 bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-sm shrink-0 overflow-hidden group-hover:scale-105 group-hover:shadow-md transition-all duration-300">
+                <img alt="Rajawali Motor Logo" class="h-7 sm:h-9 w-auto object-contain rounded-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsYEm9KYYbuD248b0jN_sheEfynwQ6j7teJdvKA8edK8NYF0ndmkXVXlqw9SKIhago4iUYt5RmUV5kgkIuq0AjjoDKToRqxiuEM17EOurrulLi0qsUlk36AxIH4JObdUrym7rxUnRAwC9aLkxP4pUlSgGe9qLiTLXOV0I1-pYXxewRVi_zU2DtKVLzY0W20Ve5lzZD-FdFadE3YvJ_ozDGIJmgDt6aLfSKhBNi1YFqbLL-76iue9ykhTo7OsirOQuyfFH_HfkN0Dc"/>
+            </div>
             <span class="font-headline-md text-xl sm:text-2xl font-bold text-primary tracking-tight">Rajawali Motor</span>
         </a>
         <div class="hidden lg:flex items-center gap-8 font-medium text-sm text-secondary">
@@ -121,12 +123,12 @@
             <div class="absolute inset-0 hero-gradient"></div>
         </div>
         <div class="relative z-10 px-4 sm:px-8 max-w-7xl mx-auto w-full py-16 sm:py-24 text-white">
-            <div class="max-w-3xl space-y-6" data-reveal>
+            <div class="max-w-3xl space-y-6 bg-slate-950/60 backdrop-blur-md p-6 sm:p-10 rounded-3xl border border-white/15 shadow-2xl" data-reveal>
                 <span class="inline-flex items-center gap-2 bg-primary-container px-4 py-1.5 rounded-full font-bold text-xs uppercase tracking-widest text-white">
                     <span class="material-symbols-outlined text-sm">oil_barrel</span> Premium Lubricant & Care
                 </span>
-                <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold leading-tight">Layanan Ganti Oli Cepat & Presisi</h1>
-                <p class="text-white/80 text-base sm:text-xl max-w-2xl leading-relaxed">Penggunaan pelumas synthetic original sesuai rekomendasi pabrikan untuk perlindungan maksimal gesekan mesin dan efisiensi bahan bakar.</p>
+                <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold leading-tight drop-shadow-md">Layanan Ganti Oli Cepat &amp; Presisi</h1>
+                <p class="text-slate-200 text-base sm:text-xl max-w-2xl leading-relaxed">Penggunaan pelumas synthetic original sesuai rekomendasi pabrikan untuk perlindungan maksimal gesekan mesin dan efisiensi bahan bakar.</p>
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4">
                     <a href="https://wa.me/{{ $toko['whatsapp'] }}?text={{ urlencode('Halo Rajawali Motor, saya ingin ganti oli...') }}" target="_blank" rel="noopener"
                        class="efek-kilau bg-primary-container text-white px-8 py-4 rounded-xl font-bold text-base hover:bg-rajawali-dark transition-all shadow-xl text-center active:scale-95">
@@ -255,6 +257,23 @@
 </footer>
 
 <script>
+    let lastScrollY = window.scrollY;
+    const mainNav = document.getElementById('main-navbar');
+
+    window.addEventListener('scroll', () => {
+        if (!mainNav) return;
+        const currentScrollY = window.scrollY;
+        
+        if (currentScrollY <= 50) {
+            mainNav.classList.remove('smart-nav-hidden');
+        } else if (currentScrollY > lastScrollY && currentScrollY > 80) {
+            mainNav.classList.add('smart-nav-hidden');
+        } else {
+            mainNav.classList.remove('smart-nav-hidden');
+        }
+        lastScrollY = currentScrollY;
+    }, { passive: true });
+
     function toggleDrawer() {
         const drawer = document.getElementById('drawer');
         const overlay = document.getElementById('drawer-overlay');
