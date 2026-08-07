@@ -24,6 +24,55 @@
     <meta name="twitter:description" content="Bengkel & Service Center Spesialis Injeksi, Tune Up, Ganti Oli, AC Mobil, Kelistrikan, dan Body Repair di Surabaya."/>
     <meta name="twitter:image" content="https://lh3.googleusercontent.com/aida-public/AB6AXuD5JYvswa21ywwHQhN0yYz9yFx5WrXNr5eVDRzYnEAM9QAMAINPQQs4wMniaHMAZWQDmQJBUE8ZgKMneqnaMP279v-IkwmmgKidG7EWKXIARYA8Xe-MW5ILdnfF1aH-XtrXGvX5SJsYLzbb8bqVL0IOChvKvACiZ_Wy34kBBUD3xlZ6A5IlRXU-JvPSh7O_HQD1KZXISrzyzWNMsARSUbRw8_YPT2h2zKr2RXj3AKLemayIHKLcY95sE_CQlBMLw45JgqW5rwPfTJU"/>
 
+    <meta name="keywords" content="bengkel motor surabaya, ganti oli motor surabaya, tune up injeksi surabaya, bengkel siwalankerto, servis motor terdekat, sparepart motor surabaya, rajawali motor">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <link rel="canonical" href="{{ url()->current() }}">
+
+    <!-- Geo Local SEO Tags -->
+    <meta name="geo.region" content="ID-JI">
+    <meta name="geo.placename" content="Surabaya">
+    <meta name="geo.position" content="-7.336;112.738">
+    <meta name="ICBM" content="-7.336, 112.738">
+
+    <!-- Schema.org JSON-LD Structured Data (Google Search Booster) -->
+    @verbatim
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "AutoRepair",
+        "name": "Rajawali Motor Surabaya",
+        "url": "https://rajawalimotor.com",
+        "description": "Bengkel & Service Center Spesialis Injeksi, Tune Up, Ganti Oli, AC Mobil, Kelistrikan, dan Body Repair dengan teknisi profesional di Siwalankerto, Surabaya.",
+        "telephone": "08123456789",
+        "priceRange": "Rp35.000 - Rp750.000",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Jl. Siwalankerto Timur No. 231 A",
+            "addressLocality": "Surabaya",
+            "addressRegion": "Jawa Timur",
+            "postalCode": "60236",
+            "addressCountry": "ID"
+        },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": -7.336,
+            "longitude": 112.738
+        },
+        "openingHoursSpecification": {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+            "opens": "08:00",
+            "closes": "17:00"
+        },
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.9",
+            "reviewCount": "284"
+        }
+    }
+    </script>
+    @endverbatim
+
     {{-- Fonts & Material Symbols Icon Font --}}
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -36,12 +85,11 @@
             vertical-align: middle;
         }
         .glass-nav {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: #ffffff !important;
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08);
         }
         .hero-gradient {
-            background: linear-gradient(to right, rgba(10, 10, 15, 0.88) 0%, rgba(147, 0, 17, 0.45) 50%, rgba(0, 0, 0, 0.2) 100%);
+            background: linear-gradient(to right, rgba(12, 14, 22, 0.90) 0%, rgba(15, 18, 28, 0.72) 55%, rgba(12, 14, 22, 0.40) 100%);
         }
         .kartu-angkat {
             transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
@@ -69,8 +117,8 @@
     <span class="material-symbols-outlined text-2xl sm:text-3xl">arrow_upward</span>
 </button>
 
-<!-- Navbar -->
-<nav id="main-navbar" class="fixed top-0 w-full z-50 glass-nav shadow-md border-b border-outline-variant/20 smart-nav">
+<!-- Navbar (Solid Pure White Background) -->
+<nav id="main-navbar" class="fixed top-0 w-full z-50 bg-white border-b border-slate-200/80 shadow-sm smart-nav">
     <div class="flex justify-between items-center px-4 sm:px-8 py-3 max-w-7xl mx-auto">
         <a href="#beranda" class="flex items-center gap-3 group">
             <div class="p-1.5 bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-sm shrink-0 overflow-hidden group-hover:scale-105 group-hover:shadow-md transition-all duration-300">
@@ -89,9 +137,8 @@
         </div>
         <div class="hidden sm:flex items-center gap-3">
             <a href="https://wa.me/{{ $toko['whatsapp'] }}?text={{ urlencode('Halo Rajawali Motor, saya ingin booking servis...') }}" target="_blank" rel="noopener"
-               class="efek-kilau bg-[#25D366] text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-[#20bd5a] transition-all active:scale-95 shadow-md shadow-emerald-500/20 inline-flex items-center gap-2">
-                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984 0 1.76.459 3.477 1.334 4.993l-1.417 5.176 5.297-1.389c1.463.799 3.111 1.22 4.773 1.221h.004c5.505 0 9.988-4.478 9.989-9.985 0-2.668-1.038-5.176-2.925-7.064-1.887-1.887-4.394-2.935-7.065-2.94zm5.882 14.409c-.244.689-1.227 1.297-1.696 1.378-.47.081-1.077.115-1.742-.097-.403-.129-.924-.298-1.597-.589-2.825-1.226-4.662-4.081-4.803-4.271-.141-.189-1.15-1.533-1.15-2.924 0-1.391.728-2.076.986-2.358.258-.282.564-.353.752-.353.188 0 .376.002.54.01.176.008.411-.067.644.492.245.587.822 2.01.893 2.153.071.143.118.31.024.499-.094.188-.141.305-.282.47-.141.165-.296.353-.423.475-.141.135-.288.282-.124.564.165.282.73 1.206 1.564 1.949 1.074.957 1.979 1.254 2.261 1.395.282.141.447.118.611-.071.165-.188.705-.823.893-1.105.188-.282.376-.235.634-.141.258.094 1.645.775 1.927.916.282.141.47.211.54.329.071.118.071.681-.173 1.37z"/></svg>
-                <span>Booking WhatsApp</span>
+               class="efek-kilau bg-[#B0181C] text-white px-6 py-2.5 rounded-full font-bold text-sm hover:bg-[#8e1215] transition-all active:scale-95 shadow-md shadow-red-900/20 inline-flex items-center gap-2">
+                <span>Booking Sekarang</span>
             </a>
         </div>
         <button class="lg:hidden text-primary p-2 rounded-xl bg-surface-container hover:bg-primary/10" onclick="toggleDrawer()">
@@ -160,74 +207,85 @@
 </nav>
 
 <main>
-    <!-- Hero Section -->
-    <section class="relative min-h-[90vh] lg:min-h-screen flex items-center overflow-hidden pt-16" id="beranda">
-        <div class="absolute inset-0 z-0">
-            <div class="w-full h-full bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD5JYvswa21ywwHQhN0yYz9yFx5WrXNr5eVDRzYnEAM9QAMAINPQQs4wMniaHMAZWQDmQJBUE8ZgKMneqnaMP279v-IkwmmgKidG7EWKXIARYA8Xe-MW5ILdnfF1aH-XtrXGvX5SJsYLzbb8bqVL0IOChvKvACiZ_Wy34kBBUD3xlZ6A5IlRXU-JvPSh7O_HQD1KZXISrzyzWNMsARSUbRw8_YPT2h2zKr2RXj3AKLemayIHKLcY95sE_CQlBMLw45JgqW5rwPfTJU')"></div>
+    <!-- Full-Height Hero Section with Dynamic Rotating Background Images -->
+    <section class="relative min-h-screen flex items-center overflow-hidden pt-16" id="beranda">
+        <div class="absolute inset-0 z-0 overflow-hidden" id="hero-bg-carousel">
+            <div class="hero-bg-slide absolute inset-0 bg-cover bg-center transition-opacity duration-1000 opacity-100" style="background-image: url('{{ asset('images/hero_1.jpg') }}')"></div>
+            <div class="hero-bg-slide absolute inset-0 bg-cover bg-center transition-opacity duration-1000 opacity-0" style="background-image: url('{{ asset('images/hero_2.jpg') }}')"></div>
+            <div class="hero-bg-slide absolute inset-0 bg-cover bg-center transition-opacity duration-1000 opacity-0" style="background-image: url('{{ asset('images/hero_3.jpg') }}')"></div>
+            <div class="hero-bg-slide absolute inset-0 bg-cover bg-center transition-opacity duration-1000 opacity-0" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD5JYvswa21ywwHQhN0yYz9yFx5WrXNr5eVDRzYnEAM9QAMAINPQQs4wMniaHMAZWQDmQJBUE8ZgKMneqnaMP279v-IkwmmgKidG7EWKXIARYA8Xe-MW5ILdnfF1aH-XtrXGvX5SJsYLzbb8bqVL0IOChvKvACiZ_Wy34kBBUD3xlZ6A5IlRXU-JvPSh7O_HQD1KZXISrzyzWNMsARSUbRw8_YPT2h2zKr2RXj3AKLemayIHKLcY95sE_CQlBMLw45JgqW5rwPfTJU')"></div>
             <div class="absolute inset-0 hero-gradient"></div>
         </div>
-        <div class="relative z-10 px-4 sm:px-8 max-w-7xl mx-auto w-full py-12 sm:py-16">
-            <div class="max-w-2xl space-y-4 sm:space-y-5 bg-slate-950/50 backdrop-blur-md p-5 sm:p-7 rounded-2xl border border-white/15 shadow-xl" data-reveal>
-                <div class="inline-flex items-center gap-2 bg-rose-500/20 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-rose-500/30">
-                    <span class="material-symbols-outlined text-amber-300 text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-                    <span class="text-white font-label-bold text-xs">4.9/5 Google Rating Customer Satisfaction</span>
+        <div class="relative z-10 px-4 sm:px-8 lg:px-16 max-w-7xl mx-auto w-full py-12 sm:py-16">
+            
+            <div id="hero-left-card" class="max-w-2xl space-y-6" data-reveal>
+                
+                {{-- Floating Pill Badge --}}
+                <div class="inline-flex items-center gap-2.5 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 shadow-md">
+                    <span class="material-symbols-outlined text-amber-400 text-base" style="font-variation-settings: 'FILL' 1;">star</span>
+                    <span class="text-white font-bold text-xs tracking-wide">4.9/5 Google Rating Customer Satisfaction</span>
                 </div>
-                <h1 class="font-display-lg text-2xl sm:text-4xl lg:text-5xl text-white font-extrabold leading-tight drop-shadow-md">
-                    Solusi Servis Kendaraan <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-rose-100 to-amber-300">Terpercaya di Surabaya</span>
+
+                {{-- Clean Bold Title --}}
+                <h1 class="font-display-lg text-4xl sm:text-5xl lg:text-6xl text-white font-black leading-[1.14] tracking-tight drop-shadow-lg">
+                    Solusi Servis<br>Kendaraan Terpercaya<br>di Surabaya
                 </h1>
-                <p class="font-body-lg text-sm sm:text-base text-slate-200/90 max-w-lg leading-relaxed">Perawatan presisi dengan teknologi modern dan mekanik ahli berpengalaman untuk memastikan performa kendaraan Anda tetap prima di setiap putaran roda.</p>
-                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
-                    <a href="https://wa.me/{{ $toko['whatsapp'] }}?text={{ urlencode('Halo Rajawali Motor, saya ingin booking servis...') }}" target="_blank" rel="noopener"
-                       class="efek-kilau bg-primary-container text-on-secondary px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl font-label-bold text-xs sm:text-sm hover:bg-[#930011] transition-all shadow-lg shadow-primary/20 text-center flex items-center justify-center gap-2 active:scale-95">
-                        <span class="material-symbols-outlined text-lg">calendar_today</span>
-                        <span>Booking Servis</span>
-                    </a>
-                    <a href="tel:{{ $toko['telepon'] }}"
-                       class="efek-kilau border border-white/80 text-white px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl font-label-bold text-xs sm:text-sm hover:bg-white/10 transition-all text-center flex items-center justify-center gap-2 active:scale-95">
-                        <span class="material-symbols-outlined text-lg">call</span>
-                        <span>Hubungi Kami</span>
+
+                {{-- Subtitle --}}
+                <p class="font-body-lg text-sm sm:text-base text-slate-200/90 max-w-xl leading-relaxed">
+                    Perawatan presisi dengan teknologi modern dan mekanik ahli berpengalaman untuk memastikan performa kendaraan Anda tetap prima di setiap putaran roda.
+                </p>
+
+                {{-- Action Button --}}
+                <div class="pt-2">
+                    <a href="https://wa.me/{{ $toko['whatsapp'] }}?text={{ urlencode('Halo Rajawali Motor, saya ingin konsultasi / booking servis...') }}" target="_blank" rel="noopener"
+                       class="efek-kilau bg-[#B0181C] hover:bg-[#8e1215] text-white px-9 py-4 rounded-full font-bold text-sm transition-all shadow-xl shadow-red-950/40 text-center inline-flex items-center gap-2.5 active:scale-95">
+                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984 0 1.76.459 3.477 1.334 4.993l-1.417 5.176 5.297-1.389c1.463.799 3.111 1.22 4.773 1.221h.004c5.505 0 9.988-4.478 9.989-9.985 0-2.668-1.038-5.176-2.925-7.064-1.887-1.887-4.394-2.935-7.065-2.94zm5.882 14.409c-.244.689-1.227 1.297-1.696 1.378-.47.081-1.077.115-1.742-.097-.403-.129-.924-.298-1.597-.589-2.825-1.226-4.662-4.081-4.803-4.271-.141-.189-1.15-1.533-1.15-2.924 0-1.391.728-2.076.986-2.358.258-.282.564-.353.752-.353.188 0 .376.002.54.01.176.008.411-.067.644.492.245.587.822 2.01.893 2.153.071.143.118.31.024.499-.094.188-.141.305-.282.47-.141.165-.296.353-.423.475-.141.135-.288.282-.124.564.165.282.73 1.206 1.564 1.949 1.074.957 1.979 1.254 2.261 1.395.282.141.447.118.611-.071.165-.188.705-.823.893-1.105.188-.282.376-.235.634-.141.258.094 1.645.775 1.927.916.282.141.47.211.54.329.071.118.071.681-.173 1.37z"/></svg>
+                        <span>Konsultasi &amp; Booking Servis</span>
                     </a>
                 </div>
-                <div class="flex flex-wrap items-center gap-3 sm:gap-4 pt-4 border-t border-white/10">
-                    <div class="inline-flex flex-wrap items-center gap-3 sm:gap-4 bg-black/60 backdrop-blur-md px-4 py-2.5 rounded-xl border border-white/15 shadow-lg text-xs">
-                        <span data-status-badge class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-bold bg-rose-500/30 text-rose-200 border border-rose-500/50">
-                            <span data-status-dot class="w-2 h-2 rounded-full bg-rose-400 animate-pulse"></span>
-                            <span data-status-buka class="font-mono tracking-wide">Tutup</span>
-                        </span>
-                        <span class="inline-flex items-center gap-1.5 text-white font-medium">
-                            <span class="material-symbols-outlined text-primary-fixed-dim text-base">schedule</span>
-                            <span>07:30 – 17:00 setiap hari</span>
-                        </span>
-                        <span class="hidden sm:inline-block text-white/30">•</span>
-                        <span class="inline-flex items-center gap-1.5 text-white font-medium">
-                            <span class="material-symbols-outlined text-primary-fixed-dim text-base">location_on</span>
-                            <span>Siwalankerto Timur, Surabaya</span>
-                        </span>
-                    </div>
-                </div>
+
             </div>
+
         </div>
     </section>
 
-    <!-- Stats Section -->
-    <section class="bg-inverse-surface py-12 border-y border-outline-variant/20 shadow-inner">
-        <div class="max-w-7xl mx-auto px-4 sm:px-8 grid grid-cols-2 md:grid-cols-4 gap-6 text-center" data-reveal-stagger>
-            <div data-reveal-item class="space-y-1 p-3">
-                <p class="font-display-lg text-4xl sm:text-5xl lg:text-6xl text-primary-fixed-dim font-black drop-shadow-md tracking-tight" data-counter="15" data-suffix="+">0</p>
-                <p class="font-label-bold text-xs sm:text-sm text-white/90 uppercase tracking-widest pt-1">Tahun Pengalaman</p>
+    <!-- Compact Rajawali Red Stats Section -->
+    <section class="bg-gradient-to-r from-[#930011] via-[#B0181C] to-[#7f000e] py-6 sm:py-7 border-y border-red-900/60 shadow-lg text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-8 grid grid-cols-2 lg:grid-cols-4 gap-4 text-center" data-reveal-stagger>
+            
+            <div data-reveal-item class="space-y-1 p-2 lg:border-r border-white/20 last:border-r-0">
+                <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-amber-400/25 text-amber-300 mb-0.5 shadow-sm">
+                    <span class="material-symbols-outlined text-xl font-bold" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+                </div>
+                <p class="font-display-lg text-3xl sm:text-4xl text-white font-black drop-shadow-md tracking-tight" data-counter="15" data-suffix="+">0</p>
+                <p class="font-label-bold text-[11px] sm:text-xs text-amber-200/90 font-extrabold uppercase tracking-widest">TAHUN PENGALAMAN</p>
             </div>
-            <div data-reveal-item class="space-y-1 p-3">
-                <p class="font-display-lg text-4xl sm:text-5xl lg:text-6xl text-primary-fixed-dim font-black drop-shadow-md tracking-tight" data-counter="5000" data-suffix="+">0</p>
-                <p class="font-label-bold text-xs sm:text-sm text-white/90 uppercase tracking-widest pt-1">Pelanggan Puas</p>
+
+            <div data-reveal-item class="space-y-1 p-2 lg:border-r border-white/20 last:border-r-0">
+                <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-amber-400/25 text-amber-300 mb-0.5 shadow-sm">
+                    <span class="material-symbols-outlined text-xl font-bold" style="font-variation-settings: 'FILL' 1;">group</span>
+                </div>
+                <p class="font-display-lg text-3xl sm:text-4xl text-white font-black drop-shadow-md tracking-tight" data-counter="5000" data-suffix="+">0</p>
+                <p class="font-label-bold text-[11px] sm:text-xs text-amber-200/90 font-extrabold uppercase tracking-widest">PELANGGAN</p>
             </div>
-            <div data-reveal-item class="space-y-1 p-3">
-                <p class="font-display-lg text-4xl sm:text-5xl lg:text-6xl text-primary-fixed-dim font-black drop-shadow-md tracking-tight" data-counter="100" data-suffix="%">0</p>
-                <p class="font-label-bold text-xs sm:text-sm text-white/90 uppercase tracking-widest pt-1">Teknisi Bersertifikat</p>
+
+            <div data-reveal-item class="space-y-1 p-2 sm:border-r border-white/20 last:border-r-0">
+                <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-amber-400/25 text-amber-300 mb-0.5 shadow-sm">
+                    <span class="material-symbols-outlined text-xl font-bold" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+                </div>
+                <p class="font-display-lg text-3xl sm:text-4xl text-white font-black drop-shadow-md tracking-tight" data-counter="100" data-suffix="%">0</p>
+                <p class="font-label-bold text-[11px] sm:text-xs text-amber-200/90 font-extrabold uppercase tracking-widest">TEKNISI BERSERTIFIKAT</p>
             </div>
-            <div data-reveal-item class="space-y-1 p-3">
-                <p class="font-display-lg text-4xl sm:text-5xl lg:text-6xl text-primary-fixed-dim font-black drop-shadow-md tracking-tight" data-counter="100" data-suffix="%">0</p>
-                <p class="font-label-bold text-xs sm:text-sm text-white/90 uppercase tracking-widest pt-1">Garansi Servis Terjamin</p>
+
+            <div data-reveal-item class="space-y-1 p-2">
+                <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-amber-400/25 text-amber-300 mb-0.5 shadow-sm">
+                    <span class="material-symbols-outlined text-xl font-bold" style="font-variation-settings: 'FILL' 1;">shield</span>
+                </div>
+                <p class="font-display-lg text-3xl sm:text-4xl text-white font-black drop-shadow-md tracking-tight">Servis</p>
+                <p class="font-label-bold text-[11px] sm:text-xs text-amber-200/90 font-extrabold uppercase tracking-widest">GARANSI TERJAMIN</p>
             </div>
+
         </div>
     </section>
 
@@ -424,15 +482,62 @@
         </div>
     </section>
 
+    <!-- Map & Location Section (Moved up right after Gallery) -->
+    <section class="py-20 sm:py-28 px-4 sm:px-8 bg-surface-container-low scroll-mt-16" id="kontak">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="space-y-6" data-reveal>
+                    <p class="text-primary font-label-bold text-xs uppercase tracking-widest mb-2">Lokasi Strategis</p>
+                    <h2 class="font-headline-lg text-2xl sm:text-4xl font-bold text-on-surface">Kunjungi Workshop Kami di Surabaya</h2>
+                    <p class="text-secondary text-sm sm:text-base">Berada di pusat kota, kami siap melayani Anda setiap hari untuk segala kebutuhan perawatan kendaraan Anda.</p>
+                    <div class="space-y-5 pt-4">
+                        <div class="flex items-start gap-4">
+                            <span class="material-symbols-outlined text-primary text-2xl shrink-0 mt-0.5">location_on</span>
+                            <div>
+                                <p class="font-bold text-on-surface">Alamat Utama</p>
+                                <p class="text-secondary text-sm">{{ $toko['alamat'] }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <span class="material-symbols-outlined text-primary text-2xl shrink-0 mt-0.5">schedule</span>
+                            <div>
+                                <p class="font-bold text-on-surface">Jam Operasional</p>
+                                <p class="text-secondary text-sm">Senin - Minggu: 07:30 - 17:00 WIB</p>
+                                <div class="mt-2 inline-flex items-center gap-2 bg-surface-container px-3 py-1 rounded-lg">
+                                    <span class="w-2 h-2 rounded-full bg-lunas animate-pulse"></span>
+                                    <span data-status-buka class="font-mono text-xs font-bold"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <span class="material-symbols-outlined text-primary text-2xl shrink-0 mt-0.5">call</span>
+                            <div>
+                                <p class="font-bold text-on-surface">Kontak Kami</p>
+                                <p class="text-secondary text-sm">{{ $toko['teleponTampil'] }}<br/>+{{ $toko['whatsapp'] }} (WhatsApp)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="h-80 sm:h-[450px] rounded-3xl overflow-hidden shadow-xl border border-outline-variant relative" data-reveal>
+                    <iframe src="{{ $toko['mapsEmbed'] }}" class="w-full h-full border-0" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Peta lokasi Rajawali Motor"></iframe>
+                    <div class="absolute bottom-6 left-6 bg-white p-4 rounded-xl shadow-lg border border-outline-variant">
+                        <p class="font-bold text-sm text-on-surface">Rajawali Motor Surabaya - Siwalankerto</p>
+                        <a href="{{ $toko['mapsUrl'] }}" target="_blank" rel="noopener" class="text-primary text-xs font-bold mt-2 flex items-center gap-1">Dapatkan Petunjuk <span class="material-symbols-outlined text-xs">open_in_new</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Testimonials Section -->
-    <section class="py-20 sm:py-28 px-4 sm:px-8 bg-surface-container-low scroll-mt-16" id="testimoni">
+    <section class="py-20 sm:py-28 px-4 sm:px-8 bg-white scroll-mt-16" id="testimoni">
         <div class="max-w-7xl mx-auto">
             <div class="text-center mb-16" data-reveal>
                 <p class="text-primary font-label-bold text-xs uppercase tracking-widest mb-2">Testimoni</p>
                 <h2 class="font-headline-lg text-2xl sm:text-4xl font-bold text-on-surface">Apa Kata Pelanggan Kami?</h2>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6" data-reveal-stagger>
-                <div data-reveal-item class="kartu-angkat bg-white p-8 rounded-2xl shadow-sm border border-outline-variant space-y-6 flex flex-col justify-between">
+                <div data-reveal-item class="kartu-angkat bg-surface-container-low p-8 rounded-2xl shadow-sm border border-outline-variant space-y-6 flex flex-col justify-between">
                     <div class="space-y-4">
                         <div class="flex items-center gap-1 text-primary">
                             <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
@@ -441,7 +546,7 @@
                             <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
                             <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
                         </div>
-                        <p class="text-on-surface italic text-sm leading-relaxed">"Servis di sini sangat memuaskan. Mekaniknya komunikatif dan hasil kerjanya sangat presisi. Mobil saya terasa seperti baru kembali setelah ganti oli dan tune up."</p>
+                        <p class="text-on-surface italic text-sm leading-relaxed">"Servis di sini sangat memuaskan. Mekaniknya komunikatif dan hasil kerjanya sangat presisi. Motor saya terasa seperti baru kembali setelah ganti oli dan tune up."</p>
                     </div>
                     <div class="flex items-center gap-4 pt-4 border-t border-outline-variant/20">
                         <div class="w-12 h-12 rounded-full bg-surface-container-high overflow-hidden shrink-0">
@@ -449,12 +554,12 @@
                         </div>
                         <div>
                             <p class="font-bold text-on-surface text-sm">Budi Santoso</p>
-                            <p class="text-secondary text-xs">Pemilik Toyota Camry</p>
+                            <p class="text-secondary text-xs">Pelanggan Setia Rajawali</p>
                         </div>
                     </div>
                 </div>
 
-                <div data-reveal-item class="kartu-angkat bg-white p-8 rounded-2xl shadow-sm border border-outline-variant space-y-6 flex flex-col justify-between">
+                <div data-reveal-item class="kartu-angkat bg-surface-container-low p-8 rounded-2xl shadow-sm border border-outline-variant space-y-6 flex flex-col justify-between">
                     <div class="space-y-4">
                         <div class="flex items-center gap-1 text-primary">
                             <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
@@ -471,12 +576,12 @@
                         </div>
                         <div>
                             <p class="font-bold text-on-surface text-sm">Maya Putri</p>
-                            <p class="text-secondary text-xs">Pemilik Honda CR-V</p>
+                            <p class="text-secondary text-xs">Pelanggan Motor Injeksi</p>
                         </div>
                     </div>
                 </div>
 
-                <div data-reveal-item class="kartu-angkat bg-white p-8 rounded-2xl shadow-sm border border-outline-variant space-y-6 flex flex-col justify-between">
+                <div data-reveal-item class="kartu-angkat bg-surface-container-low p-8 rounded-2xl shadow-sm border border-outline-variant space-y-6 flex flex-col justify-between">
                     <div class="space-y-4">
                         <div class="flex items-center gap-1 text-primary">
                             <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
@@ -485,7 +590,7 @@
                             <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
                             <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
                         </div>
-                        <p class="text-on-surface italic text-sm leading-relaxed">"Fasilitas ruang tunggunya nyaman sekali. Ada kopi dan Wi-Fi kencang, jadi bisa sambil kerja sementara mobil dikerjakan dengan alat-alat modern."</p>
+                        <p class="text-on-surface italic text-sm leading-relaxed">"Fasilitas ruang tunggunya nyaman sekali. Ada kopi dan Wi-Fi kencang, jadi bisa sambil kerja sementara motor dikerjakan dengan alat-alat scanner modern."</p>
                     </div>
                     <div class="flex items-center gap-4 pt-4 border-t border-outline-variant/20">
                         <div class="w-12 h-12 rounded-full bg-surface-container-high overflow-hidden shrink-0">
@@ -493,7 +598,7 @@
                         </div>
                         <div>
                             <p class="font-bold text-on-surface text-sm">Andra Wijaya</p>
-                            <p class="text-secondary text-xs">Pemilik BMW 3 Series</p>
+                            <p class="text-secondary text-xs">Pelanggan Servis Berkala</p>
                         </div>
                     </div>
                 </div>
@@ -501,8 +606,8 @@
         </div>
     </section>
 
-    <!-- NEW SECTION 2: FAQ Accordion Section -->
-    <section class="py-20 sm:py-28 px-4 sm:px-8 bg-surface scroll-mt-16" id="faq">
+    <!-- FAQ Accordion Section -->
+    <section class="py-20 sm:py-28 px-4 sm:px-8 bg-surface-container-low scroll-mt-16" id="faq">
         <div class="max-w-4xl mx-auto">
             <div class="text-center mb-14" data-reveal>
                 <p class="text-primary font-bold text-xs uppercase tracking-widest mb-2">TANYA JAWAB UMUM</p>
@@ -552,53 +657,6 @@
         </div>
     </section>
 
-    <!-- Map & Location Section -->
-    <section class="py-20 sm:py-28 px-4 sm:px-8 bg-white scroll-mt-16" id="kontak">
-        <div class="max-w-7xl mx-auto">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <div class="space-y-6" data-reveal>
-                    <p class="text-primary font-label-bold text-xs uppercase tracking-widest mb-2">Lokasi Strategis</p>
-                    <h2 class="font-headline-lg text-2xl sm:text-4xl font-bold text-on-surface">Kunjungi Workshop Kami di Surabaya</h2>
-                    <p class="text-secondary text-sm sm:text-base">Berada di pusat kota, kami siap melayani Anda setiap hari untuk segala kebutuhan perawatan kendaraan Anda.</p>
-                    <div class="space-y-5 pt-4">
-                        <div class="flex items-start gap-4">
-                            <span class="material-symbols-outlined text-primary text-2xl shrink-0 mt-0.5">location_on</span>
-                            <div>
-                                <p class="font-bold text-on-surface">Alamat Utama</p>
-                                <p class="text-secondary text-sm">{{ $toko['alamat'] }}</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-4">
-                            <span class="material-symbols-outlined text-primary text-2xl shrink-0 mt-0.5">schedule</span>
-                            <div>
-                                <p class="font-bold text-on-surface">Jam Operasional</p>
-                                <p class="text-secondary text-sm">Senin - Minggu: 07:30 - 17:00 WIB</p>
-                                <div class="mt-2 inline-flex items-center gap-2 bg-surface-container px-3 py-1 rounded-lg">
-                                    <span class="w-2 h-2 rounded-full bg-lunas animate-pulse"></span>
-                                    <span data-status-buka class="font-mono text-xs font-bold"></span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex items-start gap-4">
-                            <span class="material-symbols-outlined text-primary text-2xl shrink-0 mt-0.5">call</span>
-                            <div>
-                                <p class="font-bold text-on-surface">Kontak Kami</p>
-                                <p class="text-secondary text-sm">{{ $toko['teleponTampil'] }}<br/>+{{ $toko['whatsapp'] }} (WhatsApp)</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="h-80 sm:h-[450px] rounded-3xl overflow-hidden shadow-xl border border-outline-variant relative" data-reveal>
-                    <iframe src="{{ $toko['mapsEmbed'] }}" class="w-full h-full border-0" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Peta lokasi Rajawali Motor"></iframe>
-                    <div class="absolute bottom-6 left-6 bg-white p-4 rounded-xl shadow-lg border border-outline-variant">
-                        <p class="font-bold text-sm text-on-surface">Rajawali Motor Surabaya - Siwalankerto</p>
-                        <a href="{{ $toko['mapsUrl'] }}" target="_blank" rel="noopener" class="text-primary text-xs font-bold mt-2 flex items-center gap-1">Dapatkan Petunjuk <span class="material-symbols-outlined text-xs">open_in_new</span></a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- Final CTA Section -->
     <section class="mx-4 sm:mx-8 my-16 sm:my-24 max-w-7xl mx-auto" data-reveal>
         <div class="bg-primary-container rounded-3xl p-8 sm:p-16 relative overflow-hidden text-center text-on-secondary shadow-2xl">
@@ -607,16 +665,11 @@
             <div class="relative z-10 max-w-2xl mx-auto space-y-6">
                 <h2 class="font-display-lg text-3xl sm:text-5xl font-extrabold text-white">Siap Rawat Kendaraan Anda?</h2>
                 <p class="text-white/80 text-base sm:text-lg">Jangan tunggu sampai terjadi kerusakan. Lakukan perawatan rutin sekarang untuk performa yang lebih aman dan nyaman.</p>
-                <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+                <div class="flex justify-center pt-4">
                     <a href="https://wa.me/{{ $toko['whatsapp'] }}?text={{ urlencode('Halo Rajawali Motor, saya berminat booking servis...') }}" target="_blank" rel="noopener"
-                       class="efek-kilau w-full sm:w-auto bg-[#25D366] text-white px-10 py-4.5 rounded-xl font-label-bold font-bold text-base hover:bg-[#20bd5a] transition-all flex items-center justify-center gap-2 shadow-xl active:scale-95">
+                       class="efek-kilau w-full sm:w-auto bg-[#25D366] text-white px-10 py-4 rounded-full font-label-bold font-bold text-base hover:bg-[#20bd5a] transition-all flex items-center justify-center gap-2.5 shadow-xl active:scale-95">
                         <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984 0 1.76.459 3.477 1.334 4.993l-1.417 5.176 5.297-1.389c1.463.799 3.111 1.22 4.773 1.221h.004c5.505 0 9.988-4.478 9.989-9.985 0-2.668-1.038-5.176-2.925-7.064-1.887-1.887-4.394-2.935-7.065-2.94zm5.882 14.409c-.244.689-1.227 1.297-1.696 1.378-.47.081-1.077.115-1.742-.097-.403-.129-.924-.298-1.597-.589-2.825-1.226-4.662-4.081-4.803-4.271-.141-.189-1.15-1.533-1.15-2.924 0-1.391.728-2.076.986-2.358.258-.282.564-.353.752-.353.188 0 .376.002.54.01.176.008.411-.067.644.492.245.587.822 2.01.893 2.153.071.143.118.31.024.499-.094.188-.141.305-.282.47-.141.165-.296.353-.423.475-.141.135-.288.282-.124.564.165.282.73 1.206 1.564 1.949 1.074.957 1.979 1.254 2.261 1.395.282.141.447.118.611-.071.165-.188.705-.823.893-1.105.188-.282.376-.235.634-.141.258.094 1.645.775 1.927.916.282.141.47.211.54.329.071.118.071.681-.173 1.37z"/></svg>
-                        <span>Booking via WhatsApp</span>
-                    </a>
-                    <a href="tel:{{ $toko['telepon'] }}"
-                       class="efek-kilau w-full sm:w-auto text-white font-label-bold font-bold flex items-center justify-center gap-2 border-2 border-white/80 px-8 py-4 rounded-xl hover:bg-white/10 transition-all">
-                        <span class="material-symbols-outlined">call</span>
-                        <span>Hubungi Kami</span>
+                        <span>Konsultasi &amp; Booking via WhatsApp</span>
                     </a>
                 </div>
             </div>

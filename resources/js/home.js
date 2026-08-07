@@ -155,8 +155,20 @@ function jalankanSceneHero(THREE, container) {
 }
 
 /* ---------------------------------------------------------
-   2. GSAP — reveal saat scroll
+   2. GSAP — entrance & scroll reveal
 --------------------------------------------------------- */
+function inisialisasiHeroEntrance() {
+    if (kurangGerak) return;
+
+    const heroCard = document.getElementById('hero-left-card');
+    if (!heroCard) return;
+
+    gsap.fromTo(heroCard, 
+        { opacity: 0, y: 35 }, 
+        { opacity: 1, y: 0, duration: 1.0, ease: 'power4.out', delay: 0.1, force3D: true }
+    );
+}
+
 function inisialisasiAnimasiScroll() {
     if (kurangGerak) {
         document.querySelectorAll('[data-reveal]').forEach((el) => el.classList.add('is-visible'));
@@ -164,6 +176,7 @@ function inisialisasiAnimasiScroll() {
     }
 
     gsap.utils.toArray('[data-reveal]').forEach((el) => {
+        if (el.closest('#beranda')) return; // Skip hero section as it is handled by inisialisasiHeroEntrance
         gsap.fromTo(
             el,
             { opacity: 0, y: 28 },
@@ -324,8 +337,24 @@ function inisialisasiHitungAngka() {
     elemenHitung.forEach((el) => observer.observe(el));
 }
 
+function inisialisasiHeroCarousel() {
+    const slides = document.querySelectorAll('.hero-bg-slide');
+    if (slides.length < 2) return;
+
+    let currentIndex = 0;
+    setInterval(() => {
+        slides[currentIndex].classList.remove('opacity-100');
+        slides[currentIndex].classList.add('opacity-0');
+        currentIndex = (currentIndex + 1) % slides.length;
+        slides[currentIndex].classList.remove('opacity-0');
+        slides[currentIndex].classList.add('opacity-100');
+    }, 5500);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // inisialisasiSceneHero(); // Disabled to preserve exact Stitch hero image background
+    inisialisasiHeroCarousel();
+    inisialisasiHeroEntrance();
     inisialisasiAnimasiScroll();
     inisialisasiStatusBuka();
     inisialisasiMenuMobile();

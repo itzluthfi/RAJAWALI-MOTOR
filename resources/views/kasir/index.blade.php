@@ -105,7 +105,7 @@
     <x-card class="shrink-0">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="flex flex-wrap gap-2 content-start">
-                <x-button variant="secondary" x-on:click="$refs.barcode.focus()"><kbd class="text-[10px] bg-canvas px-1 rounded">F2</kbd> Cari Barang</x-button>
+                <x-button variant="secondary" x-on:click="$dispatch('buka-modal', { name: 'cari-barang' })"><kbd class="text-[10px] bg-canvas px-1 rounded">F2</kbd> Cari Barang</x-button>
                 <x-button variant="secondary" x-on:click="$dispatch('buka-modal', { name: 'diskon-nota' })"><kbd class="text-[10px] bg-canvas px-1 rounded">F6</kbd> Diskon Nota</x-button>
                 <x-button variant="secondary" x-on:click="kosongkanKeranjang()"><kbd class="text-[10px] bg-canvas px-1 rounded">F8</kbd> Kosongkan</x-button>
                 <p class="w-full text-xs text-steel mt-1">Total Qty: <span class="font-mono font-medium text-ink" x-text="totalQty"></span> barang</p>
@@ -150,6 +150,46 @@
     </x-card>
 </div>
 
+<!-- Modal Cari Barang (F2) -->
+<x-modal name="cari-barang" title="Cari Barang & Sparepart (F2)">
+    <div class="space-y-3" x-data x-init="$nextTick(() => $refs.modalCariInput?.focus())">
+        <div class="relative">
+            <x-icon name="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-steel" />
+            <input
+                x-ref="modalCariInput"
+                x-model="cariQuery"
+                type="text"
+                placeholder="Ketik nama barang, kode, atau barcode..."
+                class="w-full rounded-md border border-line bg-white pl-9 pr-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-rajawali"
+            >
+        </div>
+
+        <div class="max-h-72 overflow-y-auto border border-line rounded-lg divide-y divide-line">
+            <template x-for="b in daftarBarangFiltered" :key="b.id">
+                <div
+                    x-on:click="pilihBarangDariModal(b)"
+                    class="p-3 hover:bg-canvas cursor-pointer flex justify-between items-center transition duration-150 group"
+                >
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-mono text-xs font-bold text-rajawali" x-text="b.kode"></span>
+                            <span class="font-bold text-sm text-ink group-hover:text-rajawali" x-text="b.nama"></span>
+                        </div>
+                        <p class="text-xs text-steel mt-0.5">Barcode: <span class="font-mono" x-text="b.barcode"></span></p>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-mono font-bold text-sm text-ink block" x-text="formatRp(b.harga)"></span>
+                        <span class="text-xs font-mono text-steel">Stok: <strong :class="b.stok <= 0 ? 'text-rajawali' : 'text-lunas'" x-text="b.stok"></strong></span>
+                    </div>
+                </div>
+            </template>
+            <template x-if="daftarBarangFiltered.length === 0">
+                <div class="p-6 text-center text-steel text-sm">Barang tidak ditemukan.</div>
+            </template>
+        </div>
+    </div>
+</x-modal>
+
 <x-modal name="diskon-nota" title="Diskon Nota">
     <div x-data x-init="$nextTick(() => $el.querySelector('input')?.focus())">
         <x-input label="Jumlah diskon (Rp)" type="number" x-model.number="diskonNota" />
@@ -173,6 +213,7 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
         bolehJualDibawahHpp: bolehJualDibawahHpp,
         jenisBayar: 'tunai',
         barcode: '',
+        cariQuery: '',
         keranjang: [],
         barisAktif: null,
         diskonNota: 0,
@@ -181,28 +222,63 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
         modalTerbuka: 0,
         sedangMenyimpan: false,
 
-        tambahDariBarcode() {
-            const kode = this.barcode.trim().toUpperCase();
-            if (!kode) return;
+        get daftarBarangFiltered() {
+            const q = (this.cariQuery || '').trim().toLowerCase();
+            if (!q) return this.daftarBarang;
+            return this.daftarBarang.filter(b => 
+                b.nama.toLowerCase().includes(q) || 
+                b.kode.toLowerCase().includes(q) || 
+                (b.barcode && b.barcode.toLowerCase().includes(q))
+            );
+        },
 
-            const barang = this.daftarBarang.find(b => b.kode === kode || b.barcode === kode);
+        tambahDariBarcode() {
+            const query = this.barcode.trim().toUpperCase();
+            if (!query) return;
+
+            // 1. Match persis kode atau barcode
+            let barang = this.daftarBarang.find(b => b.kode.toUpperCase() === query || (b.barcode && b.barcode.toUpperCase() === query));
+
+            // 2. Jika tidak ada kode/barcode persis, cari pencocokan berdasarkan NAMA BARANG atau partial kode
             if (!barang) {
-                window.toastGagal(`Barcode "${kode}" tidak ditemukan pada master barang.`);
+                const matches = this.daftarBarang.filter(b => 
+                    b.nama.toUpperCase().includes(query) || 
+                    b.kode.toUpperCase().includes(query) ||
+                    (b.barcode && b.barcode.toUpperCase().includes(query))
+                );
+
+                if (matches.length === 1) {
+                    barang = matches[0];
+                } else if (matches.length > 1) {
+                    this.cariQuery = this.barcode;
+                    this.$dispatch('buka-modal', { name: 'cari-barang' });
+                    this.barcode = '';
+                    return;
+                }
+            }
+
+            if (!barang) {
+                window.toastGagal(`Barang dengan nama/kode "${this.barcode}" tidak ditemukan.`);
                 this.barcode = '';
                 return;
             }
 
+            this.tambahBarangKeKeranjang(barang);
+            this.barcode = '';
+            this.$nextTick(() => this.$refs.barcode?.focus());
+        },
+
+        tambahBarangKeKeranjang(barang) {
             const ada = this.keranjang.find(i => i.kode === barang.kode);
             const qtyDiminta = ada ? ada.qty + 1 : 1;
 
             if (qtyDiminta > barang.stok && !this.izinkanStokMinus) {
                 window.toastGagal(`Stok ${barang.nama} tersedia ${barang.stok}, diminta ${qtyDiminta}.`);
-                this.barcode = '';
                 return;
             }
 
             if (qtyDiminta > barang.stok && this.izinkanStokMinus) {
-                window.toastGagal(`Stok ${barang.nama} akan minus (tersedia ${barang.stok}, diminta ${qtyDiminta}). Tetap ditambahkan sesuai pengaturan toko.`);
+                window.toastGagal(`Stok ${barang.nama} akan minus (tersedia ${barang.stok}, diminta ${qtyDiminta}). Tetap ditambahkan.`);
             }
 
             if (ada) {
@@ -219,9 +295,13 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
                     diskon: 0,
                 });
             }
+        },
 
-            this.barcode = '';
-            this.$nextTick(() => this.$refs.barcode.focus());
+        pilihBarangDariModal(barang) {
+            this.tambahBarangKeKeranjang(barang);
+            this.cariQuery = '';
+            this.$dispatch('tutup-modal', { name: 'cari-barang' });
+            this.$nextTick(() => this.$refs.barcode?.focus());
         },
 
         validasiDiskonBaris(idx) {
@@ -276,7 +356,7 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
             });
         },
 
-        simpanNota() {
+        async simpanNota() {
             if (this.sedangMenyimpan) return;
 
             if (this.keranjang.length === 0) {
@@ -294,15 +374,56 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
 
             this.sedangMenyimpan = true;
 
-            const noNota = 'PJ2026' + String(Math.floor(Math.random() * 900000) + 100000);
-            window.toastSukses(`Nota ${noNota} berhasil disimpan.`);
-            this.keranjang = [];
-            this.diskonNota = 0;
-            this.bayar = 0;
-            this.$nextTick(() => {
-                this.$refs.barcode.focus();
+            try {
+                const respon = await fetch('{{ route('kasir.store') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        customer_id: this.customerId,
+                        items: this.keranjang.map(i => ({ kode: i.kode, qty: i.qty, harga: i.harga })),
+                        diskon: this.diskonNota,
+                        bayar: this.bayar,
+                        metode_pembayaran: this.jenisBayar,
+                    })
+                });
+
+                const hasil = await respon.json();
+
+                if (hasil.sukses) {
+                    window.toastSukses(hasil.pesan);
+
+                    window.Swal.fire({
+                        icon: 'success',
+                        title: 'Transaksi Berhasil!',
+                        html: `<p class="text-sm text-slate-600 mb-2">Nomor Nota: <strong>${hasil.nomor_nota}</strong></p><p class="text-xs text-slate-500">Apakah Anda ingin mencetak struk thermal kasir?</p>`,
+                        showCancelButton: true,
+                        confirmButtonText: '🖨️ Cetak Struk (58/80mm)',
+                        cancelButtonText: 'Transaksi Baru',
+                        confirmButtonColor: '#B0181C',
+                        cancelButtonColor: '#64748b',
+                        reverseButtons: true,
+                    }).then((pilihan) => {
+                        if (pilihan.isConfirmed && hasil.cetak_url) {
+                            window.open(hasil.cetak_url, '_blank');
+                        }
+                    });
+
+                    this.keranjang = [];
+                    this.diskonNota = 0;
+                    this.bayar = 0;
+                    this.$nextTick(() => this.$refs.barcode?.focus());
+                } else {
+                    window.toastGagal(hasil.pesan || 'Gagal menyimpan transaksi.');
+                }
+            } catch (err) {
+                window.toastGagal('Terjadi kesalahan jaringan atau server saat menyimpan nota.');
+            } finally {
                 this.sedangMenyimpan = false;
-            });
+            }
         },
 
         tanganiShortcut(e) {
@@ -310,7 +431,7 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
             // "tembus" ke keranjang di belakangnya), kecuali Escape.
             if (this.modalTerbuka > 0 && e.key !== 'Escape') return;
 
-            if (e.key === 'F2') { e.preventDefault(); this.$refs.barcode.focus(); }
+            if (e.key === 'F2') { e.preventDefault(); this.$dispatch('buka-modal', { name: 'cari-barang' }); }
             if (e.key === 'F6') { e.preventDefault(); this.$dispatch('buka-modal', { name: 'diskon-nota' }); }
             if (e.key === 'F8') { e.preventDefault(); this.kosongkanKeranjang(); }
             if (e.key === 'F9') { e.preventDefault(); this.jenisBayar === 'tunai' && this.$refs.bayar?.focus(); }

@@ -11,7 +11,7 @@ class SatuanSeeder extends Seeder
 {
     public function run(): void
     {
-        foreach (['PCS', 'SET', 'BOTOL', 'LITER'] as $nama) {
+        foreach (['PCS', 'SET', 'BOTOL', 'LITER', 'JASA'] as $nama) {
             Satuan::updateOrCreate(['nama' => $nama]);
         }
     }

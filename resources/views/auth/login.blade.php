@@ -34,8 +34,8 @@
 
         <!-- Top Header Logo -->
         <div class="relative z-10 flex items-center gap-3">
-            <div class="p-1.5 bg-white rounded-xl sm:rounded-2xl border border-white/80 shadow-md shrink-0 overflow-hidden">
-                <img alt="Rajawali Motor Logo" class="h-9 w-auto object-contain rounded-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsYEm9KYYbuD248b0jN_sheEfynwQ6j7teJdvKA8edK8NYF0ndmkXVXlqw9SKIhago4iUYt5RmUV5kgkIuq0AjjoDKToRqxiuEM17EOurrulLi0qsUlk36AxIH4JObdUrym7rxUnRAwC9aLkxP4pUlSgGe9qLiTLXOV0I1-pYXxewRVi_zU2DtKVLzY0W20Ve5lzZD-FdFadE3YvJ_ozDGIJmgDt6aLfSKhBNi1YFqbLL-76iue9ykhTo7OsirOQuyfFH_HfkN0Dc"/>
+            <div class="w-11 h-11 rounded-2xl bg-white p-1.5 shadow-lg border border-white/40 shrink-0 flex items-center justify-center overflow-hidden">
+                <img alt="Rajawali Motor Logo" class="w-full h-full object-contain rounded-xl" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsYEm9KYYbuD248b0jN_sheEfynwQ6j7teJdvKA8edK8NYF0ndmkXVXlqw9SKIhago4iUYt5RmUV5kgkIuq0AjjoDKToRqxiuEM17EOurrulLi0qsUlk36AxIH4JObdUrym7rxUnRAwC9aLkxP4pUlSgGe9qLiTLXOV0I1-pYXxewRVi_zU2DtKVLzY0W20Ve5lzZD-FdFadE3YvJ_ozDGIJmgDt6aLfSKhBNi1YFqbLL-76iue9ykhTo7OsirOQuyfFH_HfkN0Dc"/>
             </div>
             <div>
                 <h2 class="font-black text-xl text-white tracking-wide">RAJAWALI MOTOR</h2>
@@ -118,8 +118,8 @@
             <!-- Logo Header (Mobile & Desktop) -->
             <div class="text-center space-y-3">
                 <a href="{{ route('home') }}" class="inline-block group">
-                    <div class="p-2 bg-white rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-md group-hover:scale-105 group-hover:shadow-lg transition-all duration-300 overflow-hidden inline-block">
-                        <img alt="Rajawali Motor Logo" class="h-14 sm:h-16 w-auto mx-auto object-contain rounded-xl" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsYEm9KYYbuD248b0jN_sheEfynwQ6j7teJdvKA8edK8NYF0ndmkXVXlqw9SKIhago4iUYt5RmUV5kgkIuq0AjjoDKToRqxiuEM17EOurrulLi0qsUlk36AxIH4JObdUrym7rxUnRAwC9aLkxP4pUlSgGe9qLiTLXOV0I1-pYXxewRVi_zU2DtKVLzY0W20Ve5lzZD-FdFadE3YvJ_ozDGIJmgDt6aLfSKhBNi1YFqbLL-76iue9ykhTo7OsirOQuyfFH_HfkN0Dc"/>
+                    <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-white p-2.5 shadow-xl shadow-red-900/10 border border-slate-100 flex items-center justify-center mx-auto overflow-hidden group-hover:scale-105 group-hover:shadow-2xl transition-all duration-300">
+                        <img alt="Rajawali Motor Logo" class="w-full h-full object-contain rounded-2xl" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsYEm9KYYbuD248b0jN_sheEfynwQ6j7teJdvKA8edK8NYF0ndmkXVXlqw9SKIhago4iUYt5RmUV5kgkIuq0AjjoDKToRqxiuEM17EOurrulLi0qsUlk36AxIH4JObdUrym7rxUnRAwC9aLkxP4pUlSgGe9qLiTLXOV0I1-pYXxewRVi_zU2DtKVLzY0W20Ve5lzZD-FdFadE3YvJ_ozDGIJmgDt6aLfSKhBNi1YFqbLL-76iue9ykhTo7OsirOQuyfFH_HfkN0Dc"/>
                     </div>
                 </a>
                 <h2 class="font-black text-2xl text-[#B0181C] tracking-wide">RAJAWALI MOTOR</h2>

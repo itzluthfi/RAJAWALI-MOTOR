@@ -26,6 +26,44 @@ Route::prefix('layanan')->name('layanan.')->group(function () {
     Route::get('/body-repair', [LayananDetailController::class, 'bodyRepair'])->name('body-repair');
 });
 
+Route::get('/sitemap.xml', function () {
+    $baseUrl = url('/');
+    $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+    
+    $pages = [
+        ['path' => '', 'priority' => '1.0', 'changefreq' => 'daily'],
+        ['path' => '/layanan/ganti-oli', 'priority' => '0.8', 'changefreq' => 'weekly'],
+        ['path' => '/layanan/tune-up', 'priority' => '0.8', 'changefreq' => 'weekly'],
+        ['path' => '/layanan/ban-spooring', 'priority' => '0.8', 'changefreq' => 'weekly'],
+        ['path' => '/layanan/kelistrikan', 'priority' => '0.8', 'changefreq' => 'weekly'],
+        ['path' => '/layanan/injeksi', 'priority' => '0.8', 'changefreq' => 'weekly'],
+        ['path' => '/layanan/ac-mobil', 'priority' => '0.8', 'changefreq' => 'weekly'],
+        ['path' => '/layanan/body-repair', 'priority' => '0.8', 'changefreq' => 'weekly'],
+    ];
+
+    foreach ($pages as $p) {
+        $xml .= '  <url>' . "\n";
+        $xml .= '    <loc>' . $baseUrl . $p['path'] . '</loc>' . "\n";
+        $xml .= '    <lastmod>' . date('Y-m-d') . '</lastmod>' . "\n";
+        $xml .= '    <changefreq>' . $p['changefreq'] . '</changefreq>' . "\n";
+        $xml .= '    <priority>' . $p['priority'] . '</priority>' . "\n";
+        $xml .= '  </url>' . "\n";
+    }
+
+    $xml .= '</urlset>';
+
+    return response($xml, 200, ['Content-Type' => 'application/xml']);
+});
+
+Route::get('/robots.txt', function () {
+    $sitemapUrl = url('/sitemap.xml');
+    $content = "User-agent: *\nDisallow: /admin/\nAllow: /\nSitemap: {$sitemapUrl}\n";
+    return response($content, 200, ['Content-Type' => 'text/plain']);
+});
+
+Route::get('/login', fn () => redirect()->route(auth()->check() ? 'dashboard' : 'login'));
+
 Route::prefix('admin')->group(function () {
     Route::get('/', fn () => redirect()->route(auth()->check() ? 'dashboard' : 'login'));
 
@@ -40,12 +78,38 @@ Route::prefix('admin')->group(function () {
         $semuaPeran = 'owner,admin,kasir,gudang,montir';
 
         Route::get('/dashboard', fn () => view('dashboard.index'))->middleware("peran:{$semuaPeran}")->name('dashboard');
+        Route::get('/notifikasi', fn () => view('notifikasi.index'))->middleware("peran:{$semuaPeran}")->name('notifikasi.index');
 
-        Route::get('/kasir', KasirController::class)->middleware('peran:owner,admin,kasir')->name('kasir');
+        Route::get('/kasir', [KasirController::class, 'index'])->middleware('peran:owner,admin,kasir')->name('kasir');
+        Route::post('/kasir', [KasirController::class, 'store'])->middleware('peran:owner,admin,kasir')->name('kasir.store');
 
         Route::prefix('penjualan')->name('penjualan.')->middleware('peran:owner,admin,kasir')->group(function () {
-            Route::get('/', fn () => view('penjualan.index'))->name('index');
-            Route::get('/{id}', fn ($id) => view('penjualan.show', ['id' => $id]))->name('show');
+            Route::get('/', function (\Illuminate\Http\Request $request) {
+                $query = \App\Models\Penjualan::query()->with(['customer', 'user'])->latest();
+
+                if ($request->filled('search')) {
+                    $search = $request->search;
+                    $query->where(function ($q) use ($search) {
+                        $q->where('nomor_nota', 'LIKE', "%{$search}%")
+                          ->orWhereHas('customer', fn ($c) => $c->where('nama', 'LIKE', "%{$search}%"));
+                    });
+                }
+
+                if ($request->filled('status') && $request->status !== 'semua') {
+                    $query->where('status_bayar', $request->status);
+                }
+
+                $penjualans = $query->paginate(15)->withQueryString();
+
+                return view('penjualan.index', compact('penjualans'));
+            })->name('index');
+
+            Route::get('/{id}', function ($id) {
+                $penjualan = \App\Models\Penjualan::with(['customer', 'user', 'details.barang'])->find($id) 
+                    ?? \App\Models\Penjualan::with(['customer', 'user', 'details.barang'])->where('nomor_nota', $id)->firstOrFail();
+
+                return view('penjualan.show', compact('penjualan'));
+            })->name('show');
         });
 
         Route::prefix('pembelian')->name('pembelian.')->middleware('peran:owner,admin,gudang')->group(function () {
@@ -117,7 +181,10 @@ Route::prefix('admin')->group(function () {
         Route::prefix('pengaturan')->name('pengaturan.')->middleware('peran:owner')->group(function () {
             Route::get('/toko', [PengaturanTokoController::class, 'edit'])->name('toko');
             Route::post('/toko', [PengaturanTokoController::class, 'update'])->name('toko.update');
-            Route::get('/user', fn () => view('pengaturan.user'))->name('user');
+            Route::get('/user', [\App\Http\Controllers\UserController::class, 'index'])->name('user');
+            Route::post('/user', [\App\Http\Controllers\UserController::class, 'store'])->name('user.store');
+            Route::put('/user/{user}', [\App\Http\Controllers\UserController::class, 'update'])->name('user.update');
+            Route::patch('/user/{user}/toggle-aktif', [\App\Http\Controllers\UserController::class, 'toggleAktif'])->name('user.toggle-aktif');
             Route::get('/audit', fn () => view('pengaturan.audit'))->name('audit');
         });
 

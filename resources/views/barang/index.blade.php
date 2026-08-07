@@ -35,7 +35,13 @@
                 <input type="checkbox" name="stok_menipis" value="1" @checked($filter['stok_menipis'] ?? false) class="rounded border-line text-rajawali focus:ring-rajawali"> Stok menipis saja
             </label>
             <x-button type="submit" variant="secondary"><x-icon name="search" class="w-4 h-4" /> Cari</x-button>
-            <div class="ml-auto">
+            <div class="ml-auto flex gap-2">
+                <x-button type="button" variant="secondary" onclick="exportTableToExcel('tabel-master-barang', 'Master_Barang_Sparepart', 'Katalog Master Barang & Sparepart')">
+                    <x-icon name="file-spreadsheet" class="w-4 h-4 text-emerald-600" /> Export Excel
+                </x-button>
+                <x-button type="button" variant="secondary" onclick="cetakLaporanPdf()">
+                    <x-icon name="printer" class="w-4 h-4 text-rajawali" /> Cetak PDF
+                </x-button>
                 <x-button type="button" variant="primary" x-on:click="tambah()">
                     <x-icon name="plus" class="w-4 h-4" /> Tambah Barang
                 </x-button>
@@ -58,7 +64,7 @@
                 <div class="grid grid-cols-2 gap-2 text-xs border-t border-line/60 pt-2">
                     <div>
                         <span class="text-steel block">Group / Satuan:</span>
-                        <span class="font-medium text-ink">{{ $b->group->nama }} ({{ $b->satuan->nama }})</span>
+                        <span class="font-medium text-ink">{{ $b->group->nama ?? '-' }} / {{ $b->satuan->nama ?? '-' }}</span>
                     </div>
                     <div class="text-right">
                         <span class="text-steel block">Stok Tersedia:</span>

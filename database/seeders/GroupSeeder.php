@@ -11,7 +11,7 @@ class GroupSeeder extends Seeder
 {
     public function run(): void
     {
-        foreach (['Sparepart', 'Oli', 'Aksesoris'] as $nama) {
+        foreach (['Sparepart', 'Oli', 'Aksesoris', 'Jasa & Service'] as $nama) {
             Group::updateOrCreate(['nama' => $nama]);
         }
     }

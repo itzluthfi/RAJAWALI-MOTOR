@@ -7,13 +7,20 @@ namespace App\Http\Controllers;
 use App\Models\Barang;
 use App\Models\Customer;
 use App\Models\PengaturanToko;
+use App\Models\Penjualan;
+use App\Models\PenjualanDetail;
+use App\Models\StokMutasi;
 use App\Services\StokService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
+use Throwable;
 
 class KasirController extends Controller
 {
-    public function __invoke(Request $request, StokService $stokService): View
+    public function index(Request $request, StokService $stokService): View
     {
         $barang = Barang::query()
             ->where('aktif', true)
@@ -24,6 +31,7 @@ class KasirController extends Controller
         $stok = $stokService->stokBanyakBarang($barang->pluck('id'));
 
         $daftarBarang = $barang->map(fn (Barang $b) => [
+            'id' => $b->id,
             'kode' => $b->kode,
             'barcode' => $b->barcodes->firstWhere('utama', true)?->barcode ?? $b->barcodes->first()?->barcode ?? $b->kode,
             'nama' => $b->nama,
@@ -53,5 +61,105 @@ class KasirController extends Controller
             'izinkanStokMinus' => (bool) $pengaturan->izinkan_stok_minus,
             'bolehJualDibawahHpp' => in_array($peran, ['owner', 'admin'], true),
         ]);
+    }
+
+    public function store(Request $request, StokService $stokService): JsonResponse
+    {
+        $validated = $request->validate([
+            'customer_id' => ['nullable', 'exists:customers,id'],
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.kode' => ['required', 'string'],
+            'items.*.qty' => ['required', 'numeric', 'min:0.001'],
+            'items.*.harga' => ['required', 'numeric', 'min:0'],
+            'diskon' => ['nullable', 'numeric', 'min:0'],
+            'pajak' => ['nullable', 'numeric', 'min:0'],
+            'bayar' => ['required', 'numeric', 'min:0'],
+            'metode_pembayaran' => ['required', 'string'],
+            'catatan' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        try {
+            $penjualan = DB::transaction(function () use ($validated, $request) {
+                $nomorNota = Penjualan::buatNomorNota();
+                $subtotal = 0;
+
+                $dataItems = [];
+                foreach ($validated['items'] as $item) {
+                    $barang = Barang::query()->where('kode', $item['kode'])->firstOrFail();
+                    $qty = (float) $item['qty'];
+                    $harga = (float) $item['harga'];
+                    $itemSubtotal = $qty * $harga;
+                    $subtotal += $itemSubtotal;
+
+                    $dataItems[] = [
+                        'barang' => $barang,
+                        'qty' => $qty,
+                        'harga' => $harga,
+                        'hpp' => (float) $barang->hpp,
+                        'subtotal' => $itemSubtotal,
+                    ];
+                }
+
+                $diskon = (float) ($validated['diskon'] ?? 0);
+                $pajak = (float) ($validated['pajak'] ?? 0);
+                $totalAkhir = max(0, $subtotal - $diskon + $pajak);
+                $bayar = (float) $validated['bayar'];
+                $kembali = max(0, $bayar - $totalAkhir);
+
+                $penjualan = Penjualan::create([
+                    'nomor_nota' => $nomorNota,
+                    'customer_id' => $validated['customer_id'] ?? null,
+                    'user_id' => $request->user()->id,
+                    'subtotal' => $subtotal,
+                    'diskon' => $diskon,
+                    'pajak' => $pajak,
+                    'total_akhir' => $totalAkhir,
+                    'bayar' => $bayar,
+                    'kembali' => $kembali,
+                    'metode_pembayaran' => $validated['metode_pembayaran'],
+                    'status_bayar' => $bayar >= $totalAkhir ? 'lunas' : 'piutang',
+                    'catatan' => $validated['catatan'] ?? null,
+                ]);
+
+                foreach ($dataItems as $di) {
+                    PenjualanDetail::create([
+                        'penjualan_id' => $penjualan->id,
+                        'barang_id' => $di['barang']->id,
+                        'qty' => $di['qty'],
+                        'harga_satuan' => $di['harga'],
+                        'hpp' => $di['hpp'],
+                        'subtotal' => $di['subtotal'],
+                    ]);
+
+                    StokMutasi::create([
+                        'barang_id' => $di['barang']->id,
+                        'tanggal' => now()->toDateString(),
+                        'jenis_mutasi' => 'penjualan',
+                        'no_dokumen' => $nomorNota,
+                        'masuk' => 0,
+                        'keluar' => $di['qty'],
+                        'hpp' => $di['hpp'],
+                        'keterangan' => "Penjualan POS Nota {$nomorNota}",
+                    ]);
+                }
+
+                return $penjualan;
+            });
+
+            return response()->json([
+                'sukses' => true,
+                'pesan' => "Transaksi {$penjualan->nomor_nota} berhasil disimpan.",
+                'nomor_nota' => $penjualan->nomor_nota,
+                'penjualan_id' => $penjualan->id,
+                'cetak_url' => route('cetak.nota', $penjualan->id),
+            ]);
+        } catch (Throwable $e) {
+            Log::error('Gagal memproses transaksi kasir POS', ['pesan' => $e->getMessage()]);
+
+            return response()->json([
+                'sukses' => false,
+                'pesan' => 'Gagal memproses transaksi kasir. ' . $e->getMessage(),
+            ], 422);
+        }
     }
 }

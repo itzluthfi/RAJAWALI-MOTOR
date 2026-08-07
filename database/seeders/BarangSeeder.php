@@ -16,9 +16,12 @@ class BarangSeeder extends Seeder
     {
         $sparepart = Group::where('nama', 'Sparepart')->firstOrFail();
         $oli = Group::where('nama', 'Oli')->firstOrFail();
+        $jasaGroup = Group::where('nama', 'Jasa & Service')->firstOrFail();
+        
         $pcs = Satuan::where('nama', 'PCS')->firstOrFail();
         $set = Satuan::where('nama', 'SET')->firstOrFail();
         $botol = Satuan::where('nama', 'BOTOL')->firstOrFail();
+        $satuanJasa = Satuan::where('nama', 'JASA')->firstOrFail();
 
         $daftar = [
             [
@@ -45,6 +48,47 @@ class BarangSeeder extends Seeder
                 'kode' => 'AKIGSYU5', 'nama' => 'AKI GS ASTRA GTZ5S', 'group_id' => $sparepart->id, 'satuan_id' => $pcs->id,
                 'harga_beli_terakhir' => 155000, 'hpp' => 155000, 'harga_eceran' => 185000, 'harga_grosir' => 170000,
                 'stok_minimum' => 5, 'lokasi_rak' => 'C-01', 'aktif' => true, 'barcode' => '8991020005', 'stok_awal' => 6,
+            ],
+            // DATA SEEDER JASA & LAYANAN BENGKEL
+            [
+                'kode' => 'JSA-TB-BAN', 'nama' => 'JASA TAMBAL BAN TUBELESS', 'group_id' => $jasaGroup->id, 'satuan_id' => $satuanJasa->id,
+                'harga_beli_terakhir' => 0, 'hpp' => 0, 'harga_eceran' => 15000, 'harga_grosir' => 15000,
+                'stok_minimum' => 0, 'lokasi_rak' => 'BENK-01', 'aktif' => true, 'barcode' => 'JSA001', 'stok_awal' => 999,
+            ],
+            [
+                'kode' => 'JSA-TB-PRM', 'nama' => 'JASA TAMBAL BAN DALAM / PRESS', 'group_id' => $jasaGroup->id, 'satuan_id' => $satuanJasa->id,
+                'harga_beli_terakhir' => 0, 'hpp' => 0, 'harga_eceran' => 12000, 'harga_grosir' => 12000,
+                'stok_minimum' => 0, 'lokasi_rak' => 'BENK-01', 'aktif' => true, 'barcode' => 'JSA002', 'stok_awal' => 999,
+            ],
+            [
+                'kode' => 'JSA-STL-RNT', 'nama' => 'JASA SETEL & PELUMAS RANTAI', 'group_id' => $jasaGroup->id, 'satuan_id' => $satuanJasa->id,
+                'harga_beli_terakhir' => 0, 'hpp' => 0, 'harga_eceran' => 10000, 'harga_grosir' => 10000,
+                'stok_minimum' => 0, 'lokasi_rak' => 'BENK-01', 'aktif' => true, 'barcode' => 'JSA003', 'stok_awal' => 999,
+            ],
+            [
+                'kode' => 'JSA-ISI-NGN', 'nama' => 'JASA ISI / TAMBAH ANGIN NITROGEN', 'group_id' => $jasaGroup->id, 'satuan_id' => $satuanJasa->id,
+                'harga_beli_terakhir' => 0, 'hpp' => 0, 'harga_eceran' => 5000, 'harga_grosir' => 5000,
+                'stok_minimum' => 0, 'lokasi_rak' => 'BENK-01', 'aktif' => true, 'barcode' => 'JSA004', 'stok_awal' => 999,
+            ],
+            [
+                'kode' => 'JSA-GNT-OLI', 'nama' => 'JASA GANTI OLI MESIN / GARDAN', 'group_id' => $jasaGroup->id, 'satuan_id' => $satuanJasa->id,
+                'harga_beli_terakhir' => 0, 'hpp' => 0, 'harga_eceran' => 5000, 'harga_grosir' => 5000,
+                'stok_minimum' => 0, 'lokasi_rak' => 'BENK-01', 'aktif' => true, 'barcode' => 'JSA005', 'stok_awal' => 999,
+            ],
+            [
+                'kode' => 'JSA-SRV-CVT', 'nama' => 'JASA SERVIS CVT MATIC', 'group_id' => $jasaGroup->id, 'satuan_id' => $satuanJasa->id,
+                'harga_beli_terakhir' => 0, 'hpp' => 0, 'harga_eceran' => 35000, 'harga_grosir' => 35000,
+                'stok_minimum' => 0, 'lokasi_rak' => 'BENK-01', 'aktif' => true, 'barcode' => 'JSA006', 'stok_awal' => 999,
+            ],
+            [
+                'kode' => 'JSA-SRV-RNG', 'nama' => 'JASA SERVIS RINGAN / TUNE UP', 'group_id' => $jasaGroup->id, 'satuan_id' => $satuanJasa->id,
+                'harga_beli_terakhir' => 0, 'hpp' => 0, 'harga_eceran' => 45000, 'harga_grosir' => 45000,
+                'stok_minimum' => 0, 'lokasi_rak' => 'BENK-01', 'aktif' => true, 'barcode' => 'JSA007', 'stok_awal' => 999,
+            ],
+            [
+                'kode' => 'JSA-PRB-REM', 'nama' => 'JASA PERBAIKAN / GANTI KAMPAS REM', 'group_id' => $jasaGroup->id, 'satuan_id' => $satuanJasa->id,
+                'harga_beli_terakhir' => 0, 'hpp' => 0, 'harga_eceran' => 10000, 'harga_grosir' => 10000,
+                'stok_minimum' => 0, 'lokasi_rak' => 'BENK-01', 'aktif' => true, 'barcode' => 'JSA008', 'stok_awal' => 999,
             ],
         ];
 
