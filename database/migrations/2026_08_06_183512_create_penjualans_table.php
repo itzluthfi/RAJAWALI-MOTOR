@@ -22,6 +22,7 @@ return new class extends Migration
             $table->decimal('total_akhir', 14, 2)->default(0);
             $table->decimal('bayar', 14, 2)->default(0);
             $table->decimal('kembali', 14, 2)->default(0);
+            $table->decimal('uang_muka', 14, 2)->default(0);
             $table->string('metode_pembayaran', 30)->default('tunai');
             $table->string('status_bayar', 20)->default('lunas');
             $table->text('catatan')->nullable();
@@ -34,6 +35,7 @@ return new class extends Migration
             $table->foreignId('barang_id')->constrained('barangs')->cascadeOnDelete();
             $table->decimal('qty', 10, 3)->default(1);
             $table->decimal('harga_satuan', 14, 2)->default(0);
+            $table->decimal('diskon', 14, 2)->default(0);
             $table->decimal('hpp', 14, 2)->default(0);
             $table->decimal('subtotal', 14, 2)->default(0);
             $table->timestamps();

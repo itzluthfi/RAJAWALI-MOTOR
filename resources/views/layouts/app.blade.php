@@ -120,6 +120,12 @@
                 </x-nav-group>
             @endif
 
+            @if(in_array($peranSaya, ['owner', 'admin']))
+                <x-nav-group label="Utility Sistem">
+                    <x-nav-item href="{{ route('utility.index') }}" icon="history" :active="request()->routeIs('utility.*')">Utility Sistem</x-nav-item>
+                </x-nav-group>
+            @endif
+
             @if($peranSaya === 'owner')
                 <x-nav-group label="Pengaturan">
                     <x-nav-item href="{{ route('pengaturan.toko') }}" icon="settings" :active="request()->routeIs('pengaturan.toko')">Profil Toko</x-nav-item>

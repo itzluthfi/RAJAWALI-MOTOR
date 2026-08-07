@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Barang;
 use App\Models\Customer;
+use App\Models\KasFlow;
 use App\Models\PengaturanToko;
 use App\Models\Penjualan;
 use App\Models\PenjualanDetail;
@@ -71,9 +72,11 @@ class KasirController extends Controller
             'items.*.kode' => ['required', 'string'],
             'items.*.qty' => ['required', 'numeric', 'min:0.001'],
             'items.*.harga' => ['required', 'numeric', 'min:0'],
+            'items.*.diskon' => ['nullable', 'numeric', 'min:0'],
             'diskon' => ['nullable', 'numeric', 'min:0'],
             'pajak' => ['nullable', 'numeric', 'min:0'],
             'bayar' => ['required', 'numeric', 'min:0'],
+            'uang_muka' => ['nullable', 'numeric', 'min:0'],
             'metode_pembayaran' => ['required', 'string'],
             'catatan' => ['nullable', 'string', 'max:255'],
         ]);
@@ -88,13 +91,15 @@ class KasirController extends Controller
                     $barang = Barang::query()->where('kode', $item['kode'])->firstOrFail();
                     $qty = (float) $item['qty'];
                     $harga = (float) $item['harga'];
-                    $itemSubtotal = $qty * $harga;
+                    $diskonBaris = (float) ($item['diskon'] ?? 0);
+                    $itemSubtotal = ($qty * $harga) - $diskonBaris;
                     $subtotal += $itemSubtotal;
 
                     $dataItems[] = [
                         'barang' => $barang,
                         'qty' => $qty,
                         'harga' => $harga,
+                        'diskon' => $diskonBaris,
                         'hpp' => (float) $barang->hpp,
                         'subtotal' => $itemSubtotal,
                     ];
@@ -102,6 +107,7 @@ class KasirController extends Controller
 
                 $diskon = (float) ($validated['diskon'] ?? 0);
                 $pajak = (float) ($validated['pajak'] ?? 0);
+                $uangMuka = (float) ($validated['uang_muka'] ?? 0);
                 $totalAkhir = max(0, $subtotal - $diskon + $pajak);
                 $bayar = (float) $validated['bayar'];
                 $kembali = max(0, $bayar - $totalAkhir);
@@ -116,8 +122,9 @@ class KasirController extends Controller
                     'total_akhir' => $totalAkhir,
                     'bayar' => $bayar,
                     'kembali' => $kembali,
+                    'uang_muka' => $uangMuka,
                     'metode_pembayaran' => $validated['metode_pembayaran'],
-                    'status_bayar' => $bayar >= $totalAkhir ? 'lunas' : 'piutang',
+                    'status_bayar' => ($validated['metode_pembayaran'] === 'tunai' || $bayar >= $totalAkhir) ? 'lunas' : 'piutang',
                     'catatan' => $validated['catatan'] ?? null,
                 ]);
 
@@ -127,6 +134,7 @@ class KasirController extends Controller
                         'barang_id' => $di['barang']->id,
                         'qty' => $di['qty'],
                         'harga_satuan' => $di['harga'],
+                        'diskon' => $di['diskon'],
                         'hpp' => $di['hpp'],
                         'subtotal' => $di['subtotal'],
                     ]);
@@ -140,6 +148,29 @@ class KasirController extends Controller
                         'keluar' => $di['qty'],
                         'hpp' => $di['hpp'],
                         'keterangan' => "Penjualan POS Nota {$nomorNota}",
+                    ]);
+                }
+
+                // Catat Arus Kas Masuk (KasFlow)
+                if ($penjualan->metode_pembayaran === 'tunai' && $totalAkhir > 0) {
+                    KasFlow::create([
+                        'tanggal' => now()->toDateString(),
+                        'tipe' => 'masuk',
+                        'sumber' => 'kas',
+                        'kategori' => 'penjualan',
+                        'no_referensi' => $nomorNota,
+                        'nominal' => $totalAkhir,
+                        'keterangan' => "Penjualan POS Nota {$nomorNota} (Tunai)",
+                    ]);
+                } elseif ($penjualan->metode_pembayaran === 'tempo' && $uangMuka > 0) {
+                    KasFlow::create([
+                        'tanggal' => now()->toDateString(),
+                        'tipe' => 'masuk',
+                        'sumber' => 'kas',
+                        'kategori' => 'piutang',
+                        'no_referensi' => $nomorNota,
+                        'nominal' => $uangMuka,
+                        'keterangan' => "Uang Muka Penjualan Nota {$nomorNota}",
                     ]);
                 }
 
@@ -161,5 +192,29 @@ class KasirController extends Controller
                 'pesan' => 'Gagal memproses transaksi kasir. ' . $e->getMessage(),
             ], 422);
         }
+    }
+
+    public function hargaTerakhir(Request $request): JsonResponse
+    {
+        $customerId = $request->input('customer_id');
+        $barangId = $request->input('barang_id');
+
+        if (!$customerId || !$barangId) {
+            return response()->json(['harga' => null]);
+        }
+
+        $lastDetail = \App\Models\PenjualanDetail::query()
+            ->whereHas('penjualan', function ($q) use ($customerId) {
+                $q->where('customer_id', $customerId);
+            })
+            ->where('barang_id', $barangId)
+            ->latest('id')
+            ->first();
+
+        return response()->json([
+            'harga' => $lastDetail ? (float) $lastDetail->harga_satuan : null,
+            'tanggal' => $lastDetail ? $lastDetail->created_at->format('d M Y') : null,
+            'nota' => $lastDetail ? $lastDetail->penjualan->nomor_nota : null,
+        ]);
     }
 }

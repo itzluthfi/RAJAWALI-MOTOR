@@ -22,6 +22,7 @@ class SalesController extends Controller
         if ($cari = $request->string('cari')->trim()->value()) {
             $query->where(function ($q) use ($cari) {
                 $q->where('nama', 'like', "%{$cari}%")
+                    ->orWhere('kode_sales', 'like', "%{$cari}%")
                     ->orWhere('telepon', 'like', "%{$cari}%");
             });
         }
@@ -46,7 +47,10 @@ class SalesController extends Controller
     {
         try {
             $data = $request->validate([
+                'kode_sales' => ['required', 'string', 'max:10', $sales ? 'unique:sales,kode_sales,' . $sales->id : 'unique:sales,kode_sales'],
                 'nama' => ['required', 'string', 'max:150'],
+                'alamat' => ['nullable', 'string', 'max:255'],
+                'kota' => ['nullable', 'string', 'max:100'],
                 'telepon' => ['nullable', 'string', 'max:30'],
                 'persentase_komisi' => ['required', 'numeric', 'min:0', 'max:100'],
             ]);

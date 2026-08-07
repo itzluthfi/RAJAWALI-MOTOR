@@ -1,73 +1,65 @@
-@php
-    $piutang = [
-        ['customer' => 'Toko Jaya Motor', 'total' => 1200000, 'jatuhTempo' => '25 Jul 2026', 'umur' => 3, 'lewat' => false],
-        ['customer' => 'Bengkel Sumber Rejeki', 'total' => 1140000, 'jatuhTempo' => '15 Jul 2026', 'umur' => 8, 'lewat' => true],
-    ];
-    $faktur = [
-        ['no' => 'PJ2026000098', 'tanggal' => '11 Jul 2026', 'jatuhTempo' => '25 Jul 2026', 'jumlah' => 1200000, 'terbayar' => 0, 'sisa' => 1200000],
-    ];
-@endphp
-<x-app-layout title="Piutang">
-<div x-data="{ pilih: null }">
-    <x-card :padded="false" class="mb-4">
+<x-app-layout title="Piutang Dagang">
+<div class="-m-3 p-3">
+    @if(session('sukses'))
+        <div class="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-md text-sm font-bold">
+            {{ session('sukses') }}
+        </div>
+    @endif
+    @if($errors->any())
+        <div class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm font-bold">
+            {{ $errors->first() }}
+        </div>
+    @endif
+
+    <x-card class="mb-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-xs font-bold text-steel uppercase tracking-wide">Total Outstanding Piutang</p>
+                <p class="font-mono font-black text-2xl mt-1 text-rajawali">Rp {{ number_format($totalPiutang, 0, ',', '.') }}</p>
+            </div>
+            <form method="GET" action="{{ route('keuangan.piutang') }}" class="flex items-center gap-2">
+                <x-input name="cari" value="{{ $filter['cari'] }}" placeholder="No Nota / Customer" class="w-64" />
+                <x-button type="submit" variant="secondary"><x-icon name="search" class="w-4 h-4" /> Cari</x-button>
+            </form>
+        </div>
+    </x-card>
+
+    <x-card :padded="false">
         <table class="w-full text-sm">
             <thead class="bg-canvas text-steel text-xs uppercase tracking-wide border-b border-line">
                 <tr>
-                    <th class="text-left font-semibold px-4 py-2.5">Customer</th>
-                    <th class="text-right font-semibold px-4 py-2.5">Total Piutang</th>
-                    <th class="text-left font-semibold px-4 py-2.5">Jatuh Tempo Terdekat</th>
-                    <th class="text-right font-semibold px-4 py-2.5">Umur (hari)</th>
-                    <th class="text-right font-semibold px-4 py-2.5">Aksi</th>
+                    <th class="text-left font-bold px-4 py-2.5">No Nota</th>
+                    <th class="text-left font-bold px-4 py-2.5">Customer</th>
+                    <th class="text-left font-bold px-4 py-2.5">Tanggal</th>
+                    <th class="text-right font-bold px-4 py-2.5">Grand Total</th>
+                    <th class="text-right font-bold px-4 py-2.5">Uang Muka (DP)</th>
+                    <th class="text-right font-bold px-4 py-2.5">Sisa Piutang</th>
+                    <th class="text-right font-bold px-4 py-2.5">Aksi</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($piutang as $p)
-                    <tr class="border-b border-line last:border-0 hover:bg-canvas transition duration-150 {{ $p['lewat'] ? 'bg-rajawali/5' : '' }}">
-                        <td class="px-4 py-2.5 font-medium">{{ $p['customer'] }}</td>
-                        <td class="px-4 py-2.5 text-right font-mono">{{ number_format($p['total'], 0, ',', '.') }}</td>
-                        <td class="px-4 py-2.5 {{ $p['lewat'] ? 'text-rajawali font-medium' : '' }}">{{ $p['jatuhTempo'] }}</td>
-                        <td class="px-4 py-2.5 text-right font-mono">{{ $p['umur'] }}</td>
+                @forelse($piutangs as $p)
+                    <tr class="border-b border-line last:border-0 hover:bg-canvas transition duration-150 font-bold">
+                        <td class="px-4 py-2.5 font-mono text-xs text-rajawali">{{ $p->nomor_nota }}</td>
+                        <td class="px-4 py-2.5 text-ink font-bold">{{ $p->customer->nama }}</td>
+                        <td class="px-4 py-2.5 text-steel font-medium">{{ $p->created_at->format('d M Y') }}</td>
+                        <td class="px-4 py-2.5 text-right font-mono text-ink">Rp {{ number_format($p->total_akhir, 0, ',', '.') }}</td>
+                        <td class="px-4 py-2.5 text-right font-mono text-lunas">Rp {{ number_format($p->uang_muka, 0, ',', '.') }}</td>
+                        <td class="px-4 py-2.5 text-right font-mono text-rajawali">Rp {{ number_format($p->total_akhir - $p->uang_muka, 0, ',', '.') }}</td>
                         <td class="px-4 py-2.5 text-right">
-                            <x-button variant="primary" class="text-xs" onclick="window.dispatchEvent(new CustomEvent('buka-modal', {detail:{name:'bayar-piutang'}}))">Bayar</x-button>
+                            <form method="POST" action="{{ route('keuangan.piutang.bayar', $p) }}" onsubmit="return confirm('Apakah Anda yakin ingin melunasi piutang nota {{ $p->nomor_nota }}?')">
+                                @csrf
+                                <x-button type="submit" variant="primary" class="text-xs">Bayar Lunas</x-button>
+                            </form>
                         </td>
                     </tr>
-                @endforeach
+                @empty
+                    <tr>
+                        <td colspan="7" class="text-center py-8 text-steel font-medium">Tidak ada outstanding piutang saat ini.</td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
     </x-card>
-
-    <x-modal name="bayar-piutang" title="Bayar Piutang — Toko Jaya Motor" wide>
-        <table class="w-full text-sm mb-4">
-            <thead class="bg-canvas text-steel text-xs uppercase tracking-wide border-y border-line">
-                <tr>
-                    <th class="w-8 px-3 py-2"></th>
-                    <th class="text-left font-semibold px-3 py-2">No Faktur</th>
-                    <th class="text-left font-semibold px-3 py-2">Jatuh Tempo</th>
-                    <th class="text-right font-semibold px-3 py-2">Sisa</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($faktur as $f)
-                    <tr class="border-b border-line last:border-0">
-                        <td class="px-3 py-2"><input type="checkbox" checked class="rounded border-line text-rajawali focus:ring-rajawali"></td>
-                        <td class="px-3 py-2 font-mono text-xs">{{ $f['no'] }}</td>
-                        <td class="px-3 py-2">{{ $f['jatuhTempo'] }}</td>
-                        <td class="px-3 py-2 text-right font-mono">{{ number_format($f['sisa'], 0, ',', '.') }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-        <div class="grid grid-cols-2 gap-4">
-            <x-input label="Jumlah Dibayar" type="number" mono value="1200000" />
-            <x-select label="Cara Bayar">
-                <option>Tunai</option>
-                <option>Transfer Bank BCA</option>
-            </x-select>
-        </div>
-        <div class="flex justify-end gap-2 mt-4">
-            <x-button variant="secondary" onclick="window.dispatchEvent(new CustomEvent('tutup-modal', {detail:{name:'bayar-piutang'}}))">Batal</x-button>
-            <x-button variant="primary" onclick="window.toastSukses('Pembayaran piutang berhasil disimpan.'); window.dispatchEvent(new CustomEvent('tutup-modal', {detail:{name:'bayar-piutang'}}))">Simpan Pembayaran</x-button>
-        </div>
-    </x-modal>
 </div>
 </x-app-layout>

@@ -12,7 +12,10 @@ return new class extends Migration
     {
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
+            $table->string('kode_sales')->unique();
             $table->string('nama');
+            $table->string('alamat')->nullable();
+            $table->string('kota')->nullable();
             $table->string('telepon')->nullable();
             $table->decimal('persentase_komisi', 5, 2)->default(0);
             $table->boolean('aktif')->default(true);

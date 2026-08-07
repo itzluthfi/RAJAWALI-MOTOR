@@ -1,0 +1,215 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers;
+
+use App\Models\KasFlow;
+use App\Models\Penjualan;
+use App\Models\Service;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
+use Throwable;
+
+class KeuanganController extends Controller
+{
+    public function kas(Request $request): View
+    {
+        $query = KasFlow::query()->where('sumber', 'kas');
+
+        if ($dari = $request->input('dari_tanggal')) {
+            $query->where('tanggal', '>=', $dari);
+        }
+        if ($sampai = $request->input('sampai_tanggal')) {
+            $query->where('tanggal', '<=', $sampai);
+        }
+
+        $mutasi = $query->orderBy('tanggal')->orderBy('id')->get();
+
+        // Calculate running saldo
+        $saldoKas = (float) KasFlow::where('sumber', 'kas')
+            ->selectRaw('COALESCE(SUM(CASE WHEN tipe = "masuk" THEN nominal ELSE -nominal END), 0) as saldo')
+            ->value('saldo');
+
+        return view('keuangan.kas', [
+            'mutasi' => $mutasi,
+            'saldoKas' => $saldoKas,
+            'filter' => [
+                'dari_tanggal' => $request->input('dari_tanggal', ''),
+                'sampai_tanggal' => $request->input('sampai_tanggal', ''),
+            ]
+        ]);
+    }
+
+    public function bank(Request $request): View
+    {
+        $query = KasFlow::query()->where('sumber', 'bank');
+
+        if ($dari = $request->input('dari_tanggal')) {
+            $query->where('tanggal', '>=', $dari);
+        }
+        if ($sampai = $request->input('sampai_tanggal')) {
+            $query->where('tanggal', '<=', $sampai);
+        }
+
+        $mutasi = $query->orderBy('tanggal')->orderBy('id')->get();
+
+        // Calculate running saldo bank
+        $saldoBank = (float) KasFlow::where('sumber', 'bank')
+            ->selectRaw('COALESCE(SUM(CASE WHEN tipe = "masuk" THEN nominal ELSE -nominal END), 0) as saldo')
+            ->value('saldo');
+
+        return view('keuangan.bank', [
+            'mutasi' => $mutasi,
+            'saldoBank' => $saldoBank,
+            'filter' => [
+                'dari_tanggal' => $request->input('dari_tanggal', ''),
+                'sampai_tanggal' => $request->input('sampai_tanggal', ''),
+            ]
+        ]);
+    }
+
+    public function piutang(Request $request): View
+    {
+        // Query penjualan tempo yang belum lunas
+        $query = Penjualan::with('customer')
+            ->where('metode_pembayaran', 'tempo')
+            ->where('status_bayar', 'piutang');
+
+        if ($cari = $request->string('cari')->trim()->value()) {
+            $query->where(function ($q) use ($cari) {
+                $q->where('nomor_nota', 'LIKE', "%{$cari}%")
+                  ->orWhereHas('customer', fn ($c) => $c->where('nama', 'LIKE', "%{$cari}%"));
+            });
+        }
+
+        $piutangs = $query->latest()->get();
+
+        // Total Outstanding Piutang
+        $totalPiutang = $piutangs->sum(fn ($p) => max(0, $p->total_akhir - $p->uang_muka));
+
+        return view('keuangan.piutang', [
+            'piutangs' => $piutangs,
+            'totalPiutang' => $totalPiutang,
+            'filter' => [
+                'cari' => $request->input('cari', ''),
+            ]
+        ]);
+    }
+
+    public function hutang(Request $request): View
+    {
+        // Query service outsourcing (extern) yang belum lunas
+        $query = Service::with('supplier')
+            ->where('repaired_by', 'extern')
+            ->where('status_lunas', false);
+
+        if ($cari = $request->string('cari')->trim()->value()) {
+            $query->where(function ($q) use ($cari) {
+                $q->where('nomor_dokumen', 'LIKE', "%{$cari}%")
+                  ->orWhereHas('supplier', fn ($s) => $s->where('nama', 'LIKE', "%{$cari}%"));
+            });
+        }
+
+        $hutangs = $query->latest()->get();
+
+        // Total Outstanding Hutang ke Supplier
+        $totalHutang = $hutangs->sum('grand_total_supplier');
+
+        return view('keuangan.hutang', [
+            'hutangs' => $hutangs,
+            'totalHutang' => $totalHutang,
+            'filter' => [
+                'cari' => $request->input('cari', ''),
+            ]
+        ]);
+    }
+
+    public function storeKasFlow(Request $request): RedirectResponse
+    {
+        try {
+            $validated = $request->validate([
+                'tanggal' => ['required', 'date'],
+                'tipe' => ['required', 'in:masuk,keluar'],
+                'sumber' => ['required', 'in:kas,bank'],
+                'kategori' => ['required', 'string', 'max:50'],
+                'nominal' => ['required', 'numeric', 'min:0.01'],
+                'keterangan' => ['nullable', 'string', 'max:255'],
+            ]);
+
+            DB::transaction(function () use ($validated) {
+                KasFlow::create($validated);
+            }, attempts: 3);
+
+            return back()->with('sukses', 'Transaksi keuangan berhasil disimpan.');
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (Throwable $e) {
+            Log::error('Gagal menyimpan transaksi keuangan', ['pesan' => $e->getMessage()]);
+            return back()->withInput()->withErrors(['error' => 'Gagal menyimpan transaksi: ' . $e->getMessage()]);
+        }
+    }
+
+    public function bayarPiutang(Penjualan $penjualan): RedirectResponse
+    {
+        try {
+            DB::transaction(function () use ($penjualan) {
+                $nominalPiutang = max(0, $penjualan->total_akhir - $penjualan->uang_muka);
+                
+                $penjualan->update([
+                    'status_bayar' => 'lunas',
+                    'bayar' => $penjualan->total_akhir,
+                    'kembali' => 0,
+                ]);
+
+                // Catat KasFlow
+                KasFlow::create([
+                    'tanggal' => now()->toDateString(),
+                    'tipe' => 'masuk',
+                    'sumber' => 'kas',
+                    'kategori' => 'piutang',
+                    'no_referensi' => $penjualan->nomor_nota,
+                    'nominal' => $nominalPiutang,
+                    'keterangan' => "Pelunasan Piutang Nota {$penjualan->nomor_nota}",
+                ]);
+            });
+
+            return back()->with('sukses', 'Piutang berhasil dilunasi.');
+        } catch (Throwable $e) {
+            Log::error('Gagal melunasi piutang', ['pesan' => $e->getMessage()]);
+            return back()->withErrors(['error' => 'Gagal melunasi piutang: ' . $e->getMessage()]);
+        }
+    }
+
+    public function bayarHutang(Service $service): RedirectResponse
+    {
+        try {
+            DB::transaction(function () use ($service) {
+                $service->update([
+                    'status_lunas' => true,
+                    'status' => 'lunas',
+                ]);
+
+                // Catat KasFlow keluar
+                KasFlow::create([
+                    'tanggal' => now()->toDateString(),
+                    'tipe' => 'keluar',
+                    'sumber' => 'kas',
+                    'kategori' => 'hutang',
+                    'no_referensi' => $service->nomor_dokumen,
+                    'nominal' => $service->grand_total_supplier,
+                    'keterangan' => "Pelunasan Hutang Service Outsourcing {$service->nomor_dokumen}",
+                ]);
+            });
+
+            return back()->with('sukses', 'Hutang berhasil dilunasi.');
+        } catch (Throwable $e) {
+            Log::error('Gagal melunasi hutang', ['pesan' => $e->getMessage()]);
+            return back()->withErrors(['error' => 'Gagal melunasi hutang: ' . $e->getMessage()]);
+        }
+    }
+}

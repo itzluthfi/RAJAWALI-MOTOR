@@ -2,7 +2,7 @@
 
 <div
     x-data="kasirApp(@js($daftarBarangJson), @js($daftarCustomerJson), @js($batasDiskonPersen), @js($izinkanStokMinus), @js($bolehJualDibawahHpp))"
-    x-init="$nextTick(() => $refs.barcode.focus())"
+    x-init="initApp(); $nextTick(() => $refs.barcode.focus())"
     x-on:keydown.window="tanganiShortcut($event)"
     x-on:buka-modal.window="modalTerbuka++"
     x-on:tutup-modal.window="modalTerbuka = Math.max(0, modalTerbuka - 1)"
@@ -23,7 +23,7 @@
             >
         </div>
 
-        <select x-model="customerId" class="rounded-md border border-line bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rajawali">
+        <select x-model="customerId" class="rounded-md border border-line bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rajawali font-bold">
             <template x-for="c in customerList" :key="c.id">
                 <option :value="c.id" x-text="c.nama"></option>
             </template>
@@ -39,7 +39,7 @@
         </div>
     </div>
 
-    <p x-show="jenisBayar === 'tempo' && customerId == customerList[0].id" x-cloak class="text-xs text-marka bg-marka/10 border border-marka/30 rounded-md px-3 py-2">
+    <p x-show="jenisBayar === 'tempo' && customerId == customerList[0].id" x-cloak class="text-xs text-marka bg-marka/10 border border-marka/30 rounded-md px-3 py-2 font-bold">
         Transaksi tempo wajib memilih customer terdaftar, bukan Umum.
     </p>
 
@@ -52,15 +52,16 @@
                         <th class="text-left font-semibold px-3 py-2 w-10">No</th>
                         <th class="text-left font-semibold px-3 py-2">Kode</th>
                         <th class="text-left font-semibold px-3 py-2">Nama Barang</th>
-                        <th class="text-right font-semibold px-3 py-2 w-24">Qty</th>
-                        <th class="text-right font-semibold px-3 py-2 w-32">Harga</th>
-                        <th class="text-right font-semibold px-3 py-2 w-24">Disc</th>
-                        <th class="text-right font-semibold px-3 py-2 w-36">Total</th>
+                        <th class="text-right font-semibold px-3 py-2 w-20">Qty</th>
+                        <th class="text-right font-semibold px-3 py-2 w-28">Harga</th>
+                        <th class="text-right font-semibold px-3 py-2 w-20">Disc (%)</th>
+                        <th class="text-right font-semibold px-3 py-2 w-24">Disc (Rp)</th>
+                        <th class="text-right font-semibold px-3 py-2 w-32">Total</th>
                     </tr>
                 </thead>
                 <tbody>
                     <template x-if="keranjang.length === 0">
-                        <tr><td colspan="7" class="text-center text-steel py-12">Belum ada barang. Scan barcode untuk mulai.</td></tr>
+                        <tr><td colspan="8" class="text-center text-steel py-12">Belum ada barang. Scan barcode untuk mulai.</td></tr>
                     </template>
                     <template x-for="(item, idx) in keranjang" :key="item.uid">
                         <tr
@@ -72,28 +73,44 @@
                             x-transition:enter-end="opacity-100 translate-x-0"
                         >
                             <td class="px-3 py-2 text-steel" x-text="idx + 1"></td>
-                            <td class="px-3 py-2 font-mono text-xs text-steel" x-text="item.kode"></td>
-                            <td class="px-3 py-2 font-medium" x-text="item.nama"></td>
+                            <td class="px-3 py-2 font-mono text-xs text-steel font-bold" x-text="item.kode"></td>
+                            <td class="px-3 py-2 font-bold text-ink" x-text="item.nama"></td>
                             <td class="px-3 py-2 text-right font-mono">
                                 <input
                                     type="number" min="1" step="1"
                                     x-model.number="item.qty"
                                     x-on:click.stop
+                                    x-on:input="recalculateDiskonRow(idx)"
                                     x-on:focus="barisAktif = idx"
-                                    class="w-16 text-right font-mono bg-transparent focus:outline-none focus:bg-white rounded px-1"
+                                    class="w-14 text-right font-mono bg-transparent focus:outline-none focus:bg-white rounded px-1"
                                 >
                             </td>
-                            <td class="px-3 py-2 text-right font-mono" x-text="formatRp(item.harga)"></td>
+                            <td class="px-3 py-2 text-right font-mono font-bold" x-text="formatRp(item.harga)"></td>
+                            
+                            {{-- DISC % --}}
+                            <td class="px-3 py-2 text-right font-mono">
+                                <input
+                                    type="number" min="0" max="100" step="0.1"
+                                    x-model.number="item.diskonPersen"
+                                    x-on:click.stop
+                                    x-on:focus="barisAktif = idx"
+                                    x-on:input="hitungDiskonDariPersen(idx)"
+                                    class="w-12 text-right font-mono bg-transparent focus:outline-none focus:bg-white rounded px-1"
+                                >%
+                            </td>
+                            
+                            {{-- DISC RP --}}
                             <td class="px-3 py-2 text-right font-mono">
                                 <input
                                     type="number" min="0" step="1"
                                     x-model.number="item.diskon"
                                     x-on:click.stop
-                                    x-on:change="validasiDiskonBaris(idx)"
-                                    class="w-16 text-right font-mono bg-transparent focus:outline-none focus:bg-white rounded px-1"
+                                    x-on:focus="barisAktif = idx"
+                                    x-on:input="hitungPersenDariDiskon(idx)"
+                                    class="w-18 text-right font-mono bg-transparent focus:outline-none focus:bg-white rounded px-1"
                                 >
                             </td>
-                            <td class="px-3 py-2 text-right font-mono font-medium" x-text="formatRp((item.harga * item.qty) - item.diskon)"></td>
+                            <td class="px-3 py-2 text-right font-mono font-bold text-ink" x-text="formatRp((item.harga * item.qty) - item.diskon)"></td>
                         </tr>
                     </template>
                 </tbody>
@@ -103,15 +120,35 @@
 
     {{-- BAWAH --}}
     <x-card class="shrink-0">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            
+            {{-- TOMBOL & AKSI --}}
             <div class="flex flex-wrap gap-2 content-start">
                 <x-button variant="secondary" x-on:click="$dispatch('buka-modal', { name: 'cari-barang' })"><kbd class="text-[10px] bg-canvas px-1 rounded">F2</kbd> Cari Barang</x-button>
                 <x-button variant="secondary" x-on:click="$dispatch('buka-modal', { name: 'diskon-nota' })"><kbd class="text-[10px] bg-canvas px-1 rounded">F6</kbd> Diskon Nota</x-button>
                 <x-button variant="secondary" x-on:click="kosongkanKeranjang()"><kbd class="text-[10px] bg-canvas px-1 rounded">F8</kbd> Kosongkan</x-button>
-                <p class="w-full text-xs text-steel mt-1">Total Qty: <span class="font-mono font-medium text-ink" x-text="totalQty"></span> barang</p>
+                <p class="w-full text-xs text-steel mt-1">Total Qty: <span class="font-mono font-bold text-ink" x-text="totalQty"></span> barang</p>
             </div>
 
-            <div class="space-y-1.5 text-sm">
+            {{-- PANEL HISTORI HARGA TERAKHIR CUSTOMER --}}
+            <div class="bg-canvas border border-line rounded-lg p-3 text-xs flex flex-col justify-center font-bold">
+                <h4 class="font-bold text-steel uppercase tracking-wider mb-2 flex items-center gap-1">
+                    <x-icon name="history" class="w-3.5 h-3.5" /> Harga Terakhir Customer
+                </h4>
+                <template x-if="hargaTerakhirInfo">
+                    <div class="space-y-1">
+                        <p class="text-sm font-black text-rajawali" x-text="formatRp(hargaTerakhirInfo.harga)"></p>
+                        <p class="text-[10px] text-steel">Nomor Nota: <span class="font-mono font-bold text-ink" x-text="hargaTerakhirInfo.nota"></span></p>
+                        <p class="text-[10px] text-steel">Tanggal: <span class="text-ink" x-text="hargaTerakhirInfo.tanggal"></span></p>
+                    </div>
+                </template>
+                <template x-if="!hargaTerakhirInfo">
+                    <p class="text-steel italic font-medium">Pilih baris barang untuk melihat riwayat harga customer ini.</p>
+                </template>
+            </div>
+
+            {{-- PEMBAYARAN & TOTAL --}}
+            <div class="space-y-1.5 text-sm font-bold">
                 <div class="flex justify-between"><span class="text-steel">Subtotal</span><span class="font-mono" x-text="formatRp(subtotal)"></span></div>
                 <div class="flex justify-between items-center">
                     <span class="text-steel">
@@ -123,10 +160,11 @@
                     <input type="number" min="0" x-model.number="diskonNota" x-on:change="validasiDiskonNota()" class="w-28 text-right font-mono border border-line rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-rajawali">
                 </div>
                 <div class="flex justify-between items-baseline pt-2 border-t border-line">
-                    <span class="font-display font-semibold text-ink">GRAND TOTAL</span>
-                    <span class="font-mono font-bold text-2xl text-rajawali" x-text="formatRp(grandTotal)"></span>
+                    <span class="font-display font-bold text-ink">GRAND TOTAL</span>
+                    <span class="font-mono font-black text-2xl text-rajawali" x-text="formatRp(grandTotal)"></span>
                 </div>
 
+                {{-- TUNAI --}}
                 <template x-if="jenisBayar === 'tunai'">
                     <div>
                         <div class="flex justify-between items-center mt-2">
@@ -136,6 +174,20 @@
                         <div class="flex justify-between items-baseline">
                             <span class="font-display font-semibold text-ink">Kembali</span>
                             <span class="font-mono font-bold text-xl" :class="kembalian < 0 ? 'text-rajawali' : 'text-lunas'" x-text="formatRp(kembalian)"></span>
+                        </div>
+                    </div>
+                </template>
+
+                {{-- TEMPO / KREDIT --}}
+                <template x-if="jenisBayar === 'tempo'">
+                    <div>
+                        <div class="flex justify-between items-center mt-2">
+                            <span class="text-steel">Uang Muka (DP)</span>
+                            <input type="number" min="0" x-model.number="uangMuka" class="w-32 text-right font-mono border border-line rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-rajawali">
+                        </div>
+                        <div class="flex justify-between items-baseline">
+                            <span class="font-display font-semibold text-ink">Sisa Piutang</span>
+                            <span class="font-mono font-bold text-xl text-rajawali" x-text="formatRp(grandTotal - (uangMuka || 0))"></span>
                         </div>
                     </div>
                 </template>
@@ -177,7 +229,7 @@
                         </div>
                         <p class="text-xs text-steel mt-0.5">Barcode: <span class="font-mono" x-text="b.barcode"></span></p>
                     </div>
-                    <div class="text-right">
+                    <div class="text-right font-bold">
                         <span class="font-mono font-bold text-sm text-ink block" x-text="formatRp(b.harga)"></span>
                         <span class="text-xs font-mono text-steel">Stok: <strong :class="b.stok <= 0 ? 'text-rajawali' : 'text-lunas'" x-text="b.stok"></strong></span>
                     </div>
@@ -218,9 +270,16 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
         barisAktif: null,
         diskonNota: 0,
         bayar: 0,
+        uangMuka: 0,
         uidCounter: 1,
         modalTerbuka: 0,
         sedangMenyimpan: false,
+        hargaTerakhirInfo: null,
+
+        initApp() {
+            this.$watch('customerId', () => this.dapatkanHargaTerakhir());
+            this.$watch('barisAktif', () => this.dapatkanHargaTerakhir());
+        },
 
         get daftarBarangFiltered() {
             const q = (this.cariQuery || '').trim().toLowerCase();
@@ -232,14 +291,43 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
             );
         },
 
+        async dapatkanHargaTerakhir() {
+            if (this.barisAktif === null || !this.customerId) {
+                this.hargaTerakhirInfo = null;
+                return;
+            }
+            const item = this.keranjang[this.barisAktif];
+            if (!item) {
+                this.hargaTerakhirInfo = null;
+                return;
+            }
+
+            const barang = this.daftarBarang.find(b => b.kode === item.kode);
+            if (!barang) {
+                this.hargaTerakhirInfo = null;
+                return;
+            }
+
+            try {
+                const url = `/admin/kasir/harga-terakhir?customer_id=${this.customerId}&barang_id=${barang.id}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                if (data.harga) {
+                    this.hargaTerakhirInfo = data;
+                } else {
+                    this.hargaTerakhirInfo = null;
+                }
+            } catch (err) {
+                this.hargaTerakhirInfo = null;
+            }
+        },
+
         tambahDariBarcode() {
             const query = this.barcode.trim().toUpperCase();
             if (!query) return;
 
-            // 1. Match persis kode atau barcode
             let barang = this.daftarBarang.find(b => b.kode.toUpperCase() === query || (b.barcode && b.barcode.toUpperCase() === query));
 
-            // 2. Jika tidak ada kode/barcode persis, cari pencocokan berdasarkan NAMA BARANG atau partial kode
             if (!barang) {
                 const matches = this.daftarBarang.filter(b => 
                     b.nama.toUpperCase().includes(query) || 
@@ -283,6 +371,7 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
 
             if (ada) {
                 ada.qty++;
+                this.recalculateDiskonRow(this.keranjang.indexOf(ada));
             } else {
                 this.keranjang.push({
                     uid: this.uidCounter++,
@@ -292,8 +381,10 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
                     hpp: barang.hpp,
                     stok: barang.stok,
                     qty: 1,
+                    diskonPersen: 0,
                     diskon: 0,
                 });
+                this.barisAktif = this.keranjang.length - 1;
             }
         },
 
@@ -302,6 +393,31 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
             this.cariQuery = '';
             this.$dispatch('tutup-modal', { name: 'cari-barang' });
             this.$nextTick(() => this.$refs.barcode?.focus());
+        },
+
+        hitungDiskonDariPersen(idx) {
+            const item = this.keranjang[idx];
+            if (!item) return;
+            item.diskon = Math.round((item.harga * item.qty) * ((item.diskonPersen || 0) / 100));
+            this.validasiDiskonBaris(idx);
+        },
+
+        hitungPersenDariDiskon(idx) {
+            const item = this.keranjang[idx];
+            if (!item) return;
+            const totalHarga = item.harga * item.qty;
+            item.diskonPersen = totalHarga > 0 ? Math.round((item.diskon / totalHarga) * 1000) / 10 : 0;
+            this.validasiDiskonBaris(idx);
+        },
+
+        recalculateDiskonRow(idx) {
+            const item = this.keranjang[idx];
+            if (!item) return;
+            if (item.diskonPersen > 0) {
+                this.hitungDiskonDariPersen(idx);
+            } else if (item.diskon > 0) {
+                this.hitungPersenDariDiskon(idx);
+            }
         },
 
         validasiDiskonBaris(idx) {
@@ -321,6 +437,7 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
                 } else {
                     window.toastGagal(`Diskon membuat harga ${item.nama} di bawah HPP. Hanya owner/admin yang bisa menjual di bawah HPP.`);
                     item.diskon = 0;
+                    item.diskonPersen = 0;
                 }
             }
         },
@@ -351,6 +468,9 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
                     this.keranjang = [];
                     this.diskonNota = 0;
                     this.bayar = 0;
+                    this.uangMuka = 0;
+                    this.barisAktif = null;
+                    this.hargaTerakhirInfo = null;
                     this.$refs.barcode.focus();
                 }
             });
@@ -375,7 +495,7 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
             this.sedangMenyimpan = true;
 
             try {
-                const respon = await fetch('{{ route('kasir.store') }}', {
+                const respon = await fetch('/admin/kasir', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -384,9 +504,15 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
                     },
                     body: JSON.stringify({
                         customer_id: this.customerId,
-                        items: this.keranjang.map(i => ({ kode: i.kode, qty: i.qty, harga: i.harga })),
+                        items: this.keranjang.map(i => ({ 
+                            kode: i.kode, 
+                            qty: i.qty, 
+                            harga: i.harga,
+                            diskon: i.diskon
+                        })),
                         diskon: this.diskonNota,
                         bayar: this.bayar,
+                        uang_muka: this.uangMuka,
                         metode_pembayaran: this.jenisBayar,
                     })
                 });
@@ -399,22 +525,27 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
                     window.Swal.fire({
                         icon: 'success',
                         title: 'Transaksi Berhasil!',
-                        html: `<p class="text-sm text-slate-600 mb-2">Nomor Nota: <strong>${hasil.nomor_nota}</strong></p><p class="text-xs text-slate-500">Apakah Anda ingin mencetak struk thermal kasir?</p>`,
+                        html: `
+                            <p class="text-sm text-slate-600 mb-4">Nomor Nota: <strong>${hasil.nomor_nota}</strong></p>
+                            <p class="text-xs text-slate-500 mb-4">Pilih Format Cetakan Dokumen:</p>
+                            <div class="flex flex-col gap-2 w-full max-w-xs mx-auto">
+                                <a href="/admin/cetak/nota/${hasil.penjualan_id}" target="_blank" class="px-4 py-2 bg-[#B0181C] text-white rounded text-sm font-bold text-center hover:opacity-90 transition">🖨️ Struk Kasir (Thermal)</a>
+                                <a href="/admin/cetak/faktur/${hasil.penjualan_id}" target="_blank" class="px-4 py-2 bg-slate-700 text-white rounded text-sm font-bold text-center hover:opacity-90 transition">📄 Faktur Penjualan (A4)</a>
+                                <a href="/admin/cetak/surat-jalan/${hasil.penjualan_id}" target="_blank" class="px-4 py-2 bg-slate-500 text-white rounded text-sm font-bold text-center hover:opacity-90 transition">🚚 Surat Jalan Kiriman</a>
+                            </div>
+                        `,
                         showCancelButton: true,
-                        confirmButtonText: '🖨️ Cetak Struk (58/80mm)',
+                        showConfirmButton: false,
                         cancelButtonText: 'Transaksi Baru',
-                        confirmButtonColor: '#B0181C',
                         cancelButtonColor: '#64748b',
-                        reverseButtons: true,
-                    }).then((pilihan) => {
-                        if (pilihan.isConfirmed && hasil.cetak_url) {
-                            window.open(hasil.cetak_url, '_blank');
-                        }
                     });
 
                     this.keranjang = [];
                     this.diskonNota = 0;
                     this.bayar = 0;
+                    this.uangMuka = 0;
+                    this.barisAktif = null;
+                    this.hargaTerakhirInfo = null;
                     this.$nextTick(() => this.$refs.barcode?.focus());
                 } else {
                     window.toastGagal(hasil.pesan || 'Gagal menyimpan transaksi.');
@@ -427,20 +558,17 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
         },
 
         tanganiShortcut(e) {
-            // Jangan proses shortcut kasir kalau ada modal terbuka (biar tidak
-            // "tembus" ke keranjang di belakangnya), kecuali Escape.
             if (this.modalTerbuka > 0 && e.key !== 'Escape') return;
 
             if (e.key === 'F2') { e.preventDefault(); this.$dispatch('buka-modal', { name: 'cari-barang' }); }
             if (e.key === 'F6') { e.preventDefault(); this.$dispatch('buka-modal', { name: 'diskon-nota' }); }
             if (e.key === 'F8') { e.preventDefault(); this.kosongkanKeranjang(); }
             if (e.key === 'F9') { e.preventDefault(); this.jenisBayar === 'tunai' && this.$refs.bayar?.focus(); }
-            // F12 sering direbut browser (buka DevTools) sehingga tidak selalu
-            // bisa dicegat lewat JS -- Ctrl+Enter disediakan sebagai cara pasti.
             if (e.key === 'F12' || (e.ctrlKey && e.key === 'Enter')) { e.preventDefault(); this.simpanNota(); }
             if (e.key === 'Delete' && this.barisAktif !== null) {
                 this.keranjang.splice(this.barisAktif, 1);
                 this.barisAktif = null;
+                this.hargaTerakhirInfo = null;
             }
             if (e.key === 'ArrowDown' && document.activeElement === this.$refs.barcode) {
                 this.barisAktif = this.barisAktif === null ? 0 : Math.min(this.barisAktif + 1, this.keranjang.length - 1);

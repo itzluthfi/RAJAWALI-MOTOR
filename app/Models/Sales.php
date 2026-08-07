@@ -10,7 +10,7 @@ class Sales extends Model
 {
     protected $table = 'sales';
 
-    protected $fillable = ['nama', 'telepon', 'persentase_komisi', 'aktif'];
+    protected $fillable = ['kode_sales', 'nama', 'alamat', 'kota', 'telepon', 'persentase_komisi', 'aktif'];
 
     protected function casts(): array
     {

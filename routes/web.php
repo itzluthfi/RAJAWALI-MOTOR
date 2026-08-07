@@ -82,6 +82,7 @@ Route::prefix('admin')->group(function () {
 
         Route::get('/kasir', [KasirController::class, 'index'])->middleware('peran:owner,admin,kasir')->name('kasir');
         Route::post('/kasir', [KasirController::class, 'store'])->middleware('peran:owner,admin,kasir')->name('kasir.store');
+        Route::get('/kasir/harga-terakhir', [KasirController::class, 'hargaTerakhir'])->middleware('peran:owner,admin,kasir')->name('kasir.harga-terakhir');
 
         Route::prefix('penjualan')->name('penjualan.')->middleware('peran:owner,admin,kasir')->group(function () {
             Route::get('/', function (\Illuminate\Http\Request $request) {
@@ -124,9 +125,11 @@ Route::prefix('admin')->group(function () {
         });
 
         Route::prefix('service')->name('service.')->middleware('peran:owner,admin,kasir,montir')->group(function () {
-            Route::get('/', fn () => view('service.index'))->name('index');
-            Route::get('/tambah', fn () => view('service.form'))->name('create');
-            Route::get('/{id}', fn ($id) => view('service.show', ['id' => $id]))->name('show');
+            Route::get('/', [\App\Http\Controllers\ServiceController::class, 'index'])->name('index');
+            Route::get('/tambah', [\App\Http\Controllers\ServiceController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\ServiceController::class, 'store'])->name('store');
+            Route::get('/{id}', [\App\Http\Controllers\ServiceController::class, 'show'])->name('show');
+            Route::patch('/{service}/status', [\App\Http\Controllers\ServiceController::class, 'updateStatus'])->name('status');
         });
 
         Route::prefix('barang')->name('barang.')->middleware('peran:owner,admin,gudang')->group(function () {
@@ -167,15 +170,26 @@ Route::prefix('admin')->group(function () {
         });
 
         Route::prefix('keuangan')->name('keuangan.')->middleware('peran:owner,admin')->group(function () {
-            Route::get('/piutang', fn () => view('keuangan.piutang'))->name('piutang');
-            Route::get('/hutang', fn () => view('keuangan.hutang'))->name('hutang');
-            Route::get('/kas', fn () => view('keuangan.kas'))->name('kas');
-            Route::get('/bank', fn () => view('keuangan.bank'))->name('bank');
+            Route::get('/piutang', [\App\Http\Controllers\KeuanganController::class, 'piutang'])->name('piutang');
+            Route::post('/piutang/{penjualan}/pelunasan', [\App\Http\Controllers\KeuanganController::class, 'bayarPiutang'])->name('piutang.bayar');
+            Route::get('/hutang', [\App\Http\Controllers\KeuanganController::class, 'hutang'])->name('hutang');
+            Route::post('/hutang/{service}/pelunasan', [\App\Http\Controllers\KeuanganController::class, 'bayarHutang'])->name('hutang.bayar');
+            Route::get('/kas', [\App\Http\Controllers\KeuanganController::class, 'kas'])->name('kas');
+            Route::get('/bank', [\App\Http\Controllers\KeuanganController::class, 'bank'])->name('bank');
+            Route::post('/transaksi', [\App\Http\Controllers\KeuanganController::class, 'storeKasFlow'])->name('transaksi.store');
         });
 
         Route::prefix('laporan')->name('laporan.')->middleware('peran:owner,admin')->group(function () {
             Route::get('/', fn () => view('laporan.index'))->name('index');
             Route::get('/{jenis}', fn ($jenis) => view('laporan.tampil', ['jenis' => $jenis]))->name('tampil');
+        });
+
+        Route::prefix('utility')->name('utility.')->middleware('peran:owner,admin')->group(function () {
+            Route::get('/', [\App\Http\Controllers\UtilityController::class, 'index'])->name('index');
+            Route::post('/hitung-ulang-stok', [\App\Http\Controllers\UtilityController::class, 'recalculateStok'])->name('recalculate-stok');
+            Route::post('/maintenance-hpp', [\App\Http\Controllers\UtilityController::class, 'maintenanceHpp'])->name('maintenance-hpp');
+            Route::post('/import-barang', [\App\Http\Controllers\UtilityController::class, 'importBarang'])->name('import-barang');
+            Route::post('/import-customer', [\App\Http\Controllers\UtilityController::class, 'importCustomer'])->name('import-customer');
         });
 
         Route::prefix('pengaturan')->name('pengaturan.')->middleware('peran:owner')->group(function () {
@@ -192,6 +206,7 @@ Route::prefix('admin')->group(function () {
             Route::get('/nota/{id}', fn ($id) => view('print.nota', ['id' => $id]))->name('nota');
             Route::get('/faktur/{id}', fn ($id) => view('print.faktur', ['id' => $id]))->name('faktur');
             Route::get('/tanda-terima-service/{id}', fn ($id) => view('print.tanda-terima-service', ['id' => $id]))->name('tanda-terima-service');
+            Route::get('/surat-jalan/{id}', fn ($id) => view('print.surat-jalan', ['id' => $id]))->name('surat-jalan');
         });
     });
 });

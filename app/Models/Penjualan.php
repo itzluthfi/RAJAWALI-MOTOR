@@ -12,7 +12,7 @@ class Penjualan extends Model
 {
     protected $fillable = [
         'nomor_nota', 'customer_id', 'user_id', 'subtotal',
-        'diskon', 'pajak', 'total_akhir', 'bayar', 'kembali',
+        'diskon', 'pajak', 'total_akhir', 'bayar', 'kembali', 'uang_muka',
         'metode_pembayaran', 'status_bayar', 'catatan',
     ];
 
@@ -25,6 +25,7 @@ class Penjualan extends Model
             'total_akhir' => 'decimal:2',
             'bayar' => 'decimal:2',
             'kembali' => 'decimal:2',
+            'uang_muka' => 'decimal:2',
         ];
     }
 

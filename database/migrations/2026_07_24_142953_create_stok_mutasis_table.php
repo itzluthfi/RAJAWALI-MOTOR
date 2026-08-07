@@ -15,7 +15,7 @@ return new class extends Migration
             $table->foreignId('barang_id')->constrained();
             $table->date('tanggal');
             $table->enum('jenis_mutasi', [
-                'pembelian', 'penjualan', 'retur_penjualan', 'retur_pembelian', 'penyesuaian',
+                'pembelian', 'penjualan', 'retur_penjualan', 'retur_pembelian', 'penyesuaian', 'service',
             ]);
             $table->string('no_dokumen');
             $table->decimal('masuk', 15, 3)->default(0);

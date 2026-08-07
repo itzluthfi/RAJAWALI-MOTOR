@@ -1,27 +1,23 @@
-@php
-    $service = [
-        ['no' => 'SV2026000045', 'tanggal' => '22 Jul 2026', 'customer' => 'Andi', 'motor' => 'Honda Beat', 'status' => 'proses', 'label' => 'Selesai'],
-        ['no' => 'SV2026000044', 'tanggal' => '21 Jul 2026', 'customer' => 'Sinta', 'motor' => 'Yamaha NMax', 'status' => 'proses', 'label' => 'Dikerjakan'],
-        ['no' => 'SV2026000043', 'tanggal' => '20 Jul 2026', 'customer' => 'Rudi', 'motor' => 'Honda Vario', 'status' => 'lunas', 'label' => 'Lunas'],
-    ];
-@endphp
 <x-app-layout title="Service / Bengkel">
-    <x-filter-bar>
-        <x-input type="date" label="Dari Tanggal" value="2026-07-01" />
-        <x-input type="date" label="Sampai Tanggal" value="2026-07-22" />
-        <x-select label="Status">
-            <option>Semua Status</option>
-            <option>Masuk</option>
-            <option>Dikerjakan</option>
-            <option>Dikirim</option>
-            <option>Selesai</option>
-            <option>Diambil</option>
-            <option>Lunas</option>
-        </x-select>
-        <div class="ml-auto">
-            <x-button as="a" href="{{ route('service.create') }}" variant="primary"><x-icon name="plus" class="w-4 h-4" /> Terima Service Baru</x-button>
-        </div>
-    </x-filter-bar>
+    <form method="GET" action="{{ route('service.index') }}">
+        <x-filter-bar class="no-print">
+            <x-input type="date" name="dari_tanggal" label="Dari Tanggal" value="{{ $filter['dari_tanggal'] }}" />
+            <x-input type="date" name="sampai_tanggal" label="Sampai Tanggal" value="{{ $filter['sampai_tanggal'] }}" />
+            <x-select name="status" label="Status">
+                <option value="semua" {{ $filter['status'] === 'semua' ? 'selected' : '' }}>Semua Status</option>
+                <option value="masuk" {{ $filter['status'] === 'masuk' ? 'selected' : '' }}>Masuk</option>
+                <option value="dikerjakan" {{ $filter['status'] === 'dikerjakan' ? 'selected' : '' }}>Dikerjakan</option>
+                <option value="selesai" {{ $filter['status'] === 'selesai' ? 'selected' : '' }}>Selesai</option>
+                <option value="diambil" {{ $filter['status'] === 'diambil' ? 'selected' : '' }}>Diambil</option>
+                <option value="lunas" {{ $filter['status'] === 'lunas' ? 'selected' : '' }}>Lunas</option>
+            </x-select>
+            <x-input name="cari" value="{{ $filter['cari'] }}" label="Cari" placeholder="No. Dokumen / Customer" class="min-w-64" />
+            <x-button type="submit" variant="secondary"><x-icon name="search" class="w-4 h-4" /> Filter</x-button>
+            <div class="ml-auto">
+                <x-button as="a" href="{{ route('service.create') }}" variant="primary"><x-icon name="plus" class="w-4 h-4" /> Terima Service Baru</x-button>
+            </div>
+        </x-filter-bar>
+    </form>
 
     <x-card :padded="false">
         <table class="w-full text-sm">
@@ -36,19 +32,33 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($service as $s)
+                @forelse($services as $s)
                     <tr class="border-b border-line last:border-0 hover:bg-canvas transition duration-150">
-                        <td class="px-4 py-2.5 font-mono text-xs">{{ $s['no'] }}</td>
-                        <td class="px-4 py-2.5">{{ $s['tanggal'] }}</td>
-                        <td class="px-4 py-2.5">{{ $s['customer'] }}</td>
-                        <td class="px-4 py-2.5">{{ $s['motor'] }}</td>
-                        <td class="px-4 py-2.5"><x-badge :status="$s['status']">{{ $s['label'] }}</x-badge></td>
+                        <td class="px-4 py-2.5 font-mono text-xs font-bold text-rajawali">{{ $s->nomor_dokumen }}</td>
+                        <td class="px-4 py-2.5">{{ $s->tanggal_masuk->format('d M Y') }}</td>
+                        <td class="px-4 py-2.5 font-medium text-ink">{{ $s->customer->nama }}</td>
+                        <td class="px-4 py-2.5">{{ $s->merk_type ?? '-' }}</td>
+                        <td class="px-4 py-2.5">
+                            @php
+                                $badgeStatus = match($s->status) {
+                                    'lunas' => 'lunas',
+                                    'masuk' => 'batal',
+                                    default => 'proses',
+                                };
+                            @endphp
+                            <x-badge :status="$badgeStatus">{{ ucfirst($s->status) }}</x-badge>
+                        </td>
                         <td class="px-4 py-2.5 text-right">
-                            <a href="{{ route('service.show', $s['no']) }}" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-canvas inline-block" title="Lihat Detail Service" data-tooltip="Lihat Detail Service"><x-icon name="eye" class="w-4 h-4" /></a>
+                            <a href="{{ route('service.show', $s->nomor_dokumen) }}" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-canvas inline-block" title="Lihat Detail Service" data-tooltip="Lihat Detail Service">
+                                <x-icon name="eye" class="w-4 h-4" />
+                            </a>
                         </td>
                     </tr>
-                @endforeach
+                @empty
+                    <tr><td colspan="6"><x-empty-state icon="wrench" judul="Tidak ada data service" /></td></tr>
+                @endforelse
             </tbody>
         </table>
+        <x-pagination :paginator="$services" />
     </x-card>
 </x-app-layout>
