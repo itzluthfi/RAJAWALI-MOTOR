@@ -114,14 +114,18 @@ Route::prefix('admin')->group(function () {
         });
 
         Route::prefix('pembelian')->name('pembelian.')->middleware('peran:owner,admin,gudang')->group(function () {
-            Route::get('/', fn () => view('pembelian.index'))->name('index');
-            Route::get('/tambah', fn () => view('pembelian.form'))->name('create');
+            Route::get('/', [\App\Http\Controllers\PembelianController::class, 'index'])->name('index');
+            Route::get('/tambah', [\App\Http\Controllers\PembelianController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\PembelianController::class, 'store'])->name('store');
+            Route::get('/{id}', [\App\Http\Controllers\PembelianController::class, 'show'])->name('show');
         });
 
         Route::prefix('retur')->name('retur.')->group(function () {
-            Route::get('/', fn () => view('retur.index'))->middleware('peran:owner,admin,kasir,gudang')->name('index');
-            Route::get('/penjualan/tambah', fn () => view('retur.form-penjualan'))->middleware('peran:owner,admin,kasir')->name('penjualan.create');
-            Route::get('/pembelian/tambah', fn () => view('retur.form-pembelian'))->middleware('peran:owner,admin,gudang')->name('pembelian.create');
+            Route::get('/', [\App\Http\Controllers\ReturController::class, 'index'])->middleware('peran:owner,admin,kasir,gudang')->name('index');
+            Route::get('/penjualan/tambah', [\App\Http\Controllers\ReturController::class, 'createPenjualan'])->middleware('peran:owner,admin,kasir')->name('penjualan.create');
+            Route::post('/penjualan', [\App\Http\Controllers\ReturController::class, 'storePenjualan'])->middleware('peran:owner,admin,kasir')->name('penjualan.store');
+            Route::get('/pembelian/tambah', [\App\Http\Controllers\ReturController::class, 'createPembelian'])->middleware('peran:owner,admin,gudang')->name('pembelian.create');
+            Route::post('/pembelian', [\App\Http\Controllers\ReturController::class, 'storePembelian'])->middleware('peran:owner,admin,gudang')->name('pembelian.store');
         });
 
         Route::prefix('service')->name('service.')->middleware('peran:owner,admin,kasir,montir')->group(function () {
@@ -199,7 +203,7 @@ Route::prefix('admin')->group(function () {
             Route::post('/user', [\App\Http\Controllers\UserController::class, 'store'])->name('user.store');
             Route::put('/user/{user}', [\App\Http\Controllers\UserController::class, 'update'])->name('user.update');
             Route::patch('/user/{user}/toggle-aktif', [\App\Http\Controllers\UserController::class, 'toggleAktif'])->name('user.toggle-aktif');
-            Route::get('/audit', fn () => view('pengaturan.audit'))->name('audit');
+            Route::get('/audit', [\App\Http\Controllers\AuditLogController::class, '__invoke'])->name('audit');
         });
 
         Route::prefix('cetak')->name('cetak.')->middleware("peran:{$semuaPeran}")->group(function () {

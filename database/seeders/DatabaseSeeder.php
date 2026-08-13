@@ -23,6 +23,9 @@ class DatabaseSeeder extends Seeder
             SupplierSeeder::class,
             SalesSeeder::class,
             BarangSeeder::class,
+            PembelianSeeder::class,
+            ReturSeeder::class,
+            AuditLogSeeder::class,
         ]);
     }
 }

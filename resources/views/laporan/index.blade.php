@@ -1,6 +1,7 @@
 @php
     $laporan = [
         'Penjualan' => ['penjualan-harian', 'penjualan-per-barang', 'penjualan-per-customer'],
+        'Pembelian' => ['pembelian-harian', 'pembelian-per-supplier'],
         'Stok' => ['rekap-stok', 'kartu-stok', 'stok-menipis'],
         'Keuangan' => ['laba-rugi-kotor', 'piutang', 'hutang', 'kas-bank'],
         'Service' => ['service-bengkel'],
