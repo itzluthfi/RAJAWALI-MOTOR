@@ -61,7 +61,13 @@
                 </thead>
                 <tbody>
                     <template x-if="keranjang.length === 0">
-                        <tr><td colspan="8" class="text-center text-steel py-12">Belum ada barang. Scan barcode untuk mulai.</td></tr>
+                        <tr>
+                            <td colspan="8" class="text-center text-steel py-12">
+                                <x-icon name="shopping-bag" class="w-8 h-8 mx-auto text-steel/40 mb-2" />
+                                <p class="font-bold text-ink text-sm">Keranjang Transaksi Masih Kosong</p>
+                                <p class="text-xs text-steel mt-0.5">Ketik nama barang / scan barcode di atas, atau tekan <kbd class="bg-canvas border border-line px-1.5 py-0.5 rounded text-[10px] font-mono text-ink font-bold">F2</kbd> (Cari Barang).</p>
+                            </td>
+                        </tr>
                     </template>
                     <template x-for="(item, idx) in keranjang" :key="item.uid">
                         <tr

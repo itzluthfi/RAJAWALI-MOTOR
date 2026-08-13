@@ -40,13 +40,13 @@
                         <td class="px-4 py-2.5"><x-badge :status="$s->aktif ? 'lunas' : 'batal'">{{ $s->aktif ? 'Aktif' : 'Nonaktif' }}</x-badge></td>
                         <td class="px-4 py-2.5 text-right">
                             <div class="flex justify-end gap-1">
-                                <button type="button" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-canvas" title="Ubah Supplier" data-tooltip="Ubah Supplier"
+                                <button type="button" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-canvas" data-tooltip="Ubah Supplier"
                                     x-on:click="ubah({{ $s->id }}, @js($s->nama), @js($s->telepon), @js($s->alamat))">
                                     <x-icon name="pencil" class="w-4 h-4" />
                                 </button>
                                 <form method="POST" action="{{ route('supplier.toggle-aktif', $s) }}" x-on:submit.prevent="konfirmasiToggle($event, {{ $s->aktif ? 'true' : 'false' }}, @js($s->nama))">
                                     @csrf @method('PATCH')
-                                    <button type="submit" class="p-1.5 rounded-md text-steel hover:text-rajawali hover:bg-rajawali/5" title="{{ $s->aktif ? 'Nonaktifkan' : 'Aktifkan' }}" data-tooltip="{{ $s->aktif ? 'Nonaktifkan' : 'Aktifkan' }}">
+                                    <button type="submit" class="p-1.5 rounded-md text-steel hover:text-rajawali hover:bg-rajawali/5" data-tooltip="{{ $s->aktif ? 'Nonaktifkan' : 'Aktifkan' }}">
                                         <x-icon :name="$s->aktif ? 'ban' : 'check'" class="w-4 h-4" />
                                     </button>
                                 </form>

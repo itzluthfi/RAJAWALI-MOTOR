@@ -49,7 +49,7 @@
                             <x-badge :status="$badgeStatus">{{ ucfirst($s->status) }}</x-badge>
                         </td>
                         <td class="px-4 py-2.5 text-right">
-                            <a href="{{ route('service.show', $s->nomor_dokumen) }}" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-canvas inline-block" title="Lihat Detail Service" data-tooltip="Lihat Detail Service">
+                            <a href="{{ route('service.show', $s->nomor_dokumen) }}" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-canvas inline-block" data-tooltip="Lihat Detail Service">
                                 <x-icon name="eye" class="w-4 h-4" />
                             </a>
                         </td>

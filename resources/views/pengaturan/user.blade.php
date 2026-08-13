@@ -43,14 +43,14 @@
                                 </td>
                                 <td class="px-4 py-2.5 text-right">
                                     <div class="flex justify-end gap-1">
-                                        <button type="button" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-canvas" title="Ubah User" data-tooltip="Ubah User"
+                                        <button type="button" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-canvas" data-tooltip="Ubah User"
                                             x-on:click="ubah({{ $u->id }}, @js($u->name), @js($u->username), @js($u->email), @js($u->peran))">
                                             <x-icon name="pencil" class="w-4 h-4" />
                                         </button>
                                         @if(auth()->id() !== $u->id)
                                             <form method="POST" action="{{ route('pengaturan.user.toggle-aktif', $u) }}" x-on:submit.prevent="konfirmasiToggle($event, {{ $u->aktif ? 'true' : 'false' }}, @js($u->name))">
                                                 @csrf @method('PATCH')
-                                                <button type="submit" class="p-1.5 rounded-md text-steel hover:text-rajawali hover:bg-rajawali/5" title="{{ $u->aktif ? 'Nonaktifkan' : 'Aktifkan' }}" data-tooltip="{{ $u->aktif ? 'Nonaktifkan' : 'Aktifkan' }}">
+                                                <button type="submit" class="p-1.5 rounded-md text-steel hover:text-rajawali hover:bg-rajawali/5" data-tooltip="{{ $u->aktif ? 'Nonaktifkan' : 'Aktifkan' }}">
                                                     <x-icon :name="$u->aktif ? 'ban' : 'check'" class="w-4 h-4" />
                                                 </button>
                                             </form>

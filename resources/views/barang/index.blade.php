@@ -134,17 +134,17 @@
                             </td>
                             <td class="px-4 py-2.5 text-right">
                                 <div class="flex justify-end gap-1">
-                                    <button type="button" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-canvas" title="Ubah Barang" data-tooltip="Ubah Barang"
+                                    <button type="button" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-canvas" data-tooltip="Ubah Barang"
                                         x-on:click="ubah(@js(collect($b->toArray())->only(['id','kode','nama','group_id','sub_group_id','satuan_id','hpp','harga_eceran','harga_grosir','stok_minimum','lokasi_rak'])))">
                                         <x-icon name="pencil" class="w-4 h-4" />
                                     </button>
-                                    <button type="button" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-canvas" title="Kelola Barcode" data-tooltip="Kelola Barcode"
+                                    <button type="button" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-canvas" data-tooltip="Kelola Barcode"
                                         x-on:click="kelolaBarcode({{ $b->id }}, @js($b->nama), @js($b->barcodes->map(fn($x) => ['id' => $x->id, 'barcode' => $x->barcode, 'utama' => $x->utama])))">
                                         <x-icon name="barcode" class="w-4 h-4" />
                                     </button>
                                     <form method="POST" action="{{ route('barang.toggle-aktif', $b) }}" x-on:submit.prevent="konfirmasiToggle($event, {{ $b->aktif ? 'true' : 'false' }}, @js($b->nama))">
                                         @csrf @method('PATCH')
-                                        <button type="submit" class="p-1.5 rounded-md text-steel hover:text-rajawali hover:bg-rajawali/5" title="{{ $b->aktif ? 'Nonaktifkan' : 'Aktifkan' }}" data-tooltip="{{ $b->aktif ? 'Nonaktifkan' : 'Aktifkan' }}">
+                                        <button type="submit" class="p-1.5 rounded-md text-steel hover:text-rajawali hover:bg-rajawali/5" data-tooltip="{{ $b->aktif ? 'Nonaktifkan' : 'Aktifkan' }}">
                                             <x-icon :name="$b->aktif ? 'ban' : 'check'" class="w-4 h-4" />
                                         </button>
                                     </form>
