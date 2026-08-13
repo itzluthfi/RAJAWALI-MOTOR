@@ -10,7 +10,7 @@
     <div class="text-center space-y-1 mb-3">
         <img alt="Rajawali Motor Logo" class="h-10 w-auto mx-auto object-contain mb-1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsYEm9KYYbuD248b0jN_sheEfynwQ6j7teJdvKA8edK8NYF0ndmkXVXlqw9SKIhago4iUYt5RmUV5kgkIuq0AjjoDKToRqxiuEM17EOurrulLi0qsUlk36AxIH4JObdUrym7rxUnRAwC9aLkxP4pUlSgGe9qLiTLXOV0I1-pYXxewRVi_zU2DtKVLzY0W20Ve5lzZD-FdFadE3YvJ_ozDGIJmgDt6aLfSKhBNi1YFqbLL-76iue9ykhTo7OsirOQuyfFH_HfkN0Dc"/>
         <p class="font-bold text-sm tracking-wide">RAJAWALI MOTOR</p>
-        <p class="text-[11px]">Siwalankerto Timur, Surabaya</p>
+        <p class="text-[11px]">Jl. Samanhudi No.102, Jasem, Sidoarjo</p>
         <p class="text-[11px]">WA: +62 856-4888-8441 | Telp: (031) 8431234</p>
     </div>
     <div class="border-t border-dashed border-black/40 my-2"></div>

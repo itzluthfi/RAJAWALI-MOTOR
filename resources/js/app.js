@@ -124,7 +124,7 @@ window.exportTableToExcel = (tableId, namaFile, judulLaporan) => {
     <body>
         <div class="toko-header">${namaToko}</div>
         <div class="laporan-title">${subJudul}</div>
-        <div class="laporan-meta">Dicetak pada: ${tglSekarang} WIB | Jl. Siwalankerto Timur No. 231A, Surabaya</div>
+        <div class="laporan-meta">Dicetak pada: ${tglSekarang} WIB | Jl. Samanhudi No.102, Jasem, Sidoarjo</div>
         <br/>
         ${cloneTable.outerHTML}
     </body>

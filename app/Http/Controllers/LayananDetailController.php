@@ -10,15 +10,15 @@ class LayananDetailController extends Controller
 {
     private array $toko = [
         'nama' => 'Rajawali Motor',
-        'tagline' => 'Bengkel & Sparepart Terpercaya di Surabaya',
-        'kota' => 'Surabaya',
-        'alamat' => 'Jl. Siwalankerto Timur No. 231 A, Surabaya, Jawa Timur, Indonesia',
+        'tagline' => 'Bengkel & Sparepart Terpercaya di Sidoarjo',
+        'kota' => 'Sidoarjo',
+        'alamat' => 'Jl. Samanhudi No.102, Jasem, Bulusidokare, Kec. Sidoarjo, Kabupaten Sidoarjo, Jawa Timur 61212',
         'telepon' => '0318477400',
         'teleponTampil' => '031 847 7400',
         'whatsapp' => '628184774000',
         'email' => 'halo@rajawalimotor.id',
-        'mapsUrl' => 'https://maps.google.com/?q=Jl.+Siwalankerto+Timur+No.+231+A,+Surabaya',
-        'mapsEmbed' => 'https://www.google.com/maps?q=Jl.+Siwalankerto+Timur+No.+231+A,+Surabaya&output=embed',
+        'mapsUrl' => 'https://maps.google.com/?q=Jl.+Samanhudi+No.102,+Jasem,+Bulusidokare,+Sidoarjo',
+        'mapsEmbed' => 'https://www.google.com/maps?q=Jl.+Samanhudi+No.102,+Jasem,+Bulusidokare,+Sidoarjo&output=embed',
         'jamBuka' => [
             ['hari' => 'Minggu', 'jam' => '07:30 - 17:00'],
             ['hari' => 'Senin', 'jam' => '07:30 - 17:00'],

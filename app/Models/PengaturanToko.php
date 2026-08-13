@@ -29,7 +29,7 @@ class PengaturanToko extends Model
     {
         return static::query()->firstOrCreate([], [
             'nama_toko' => 'Rajawali Motor',
-            'alamat' => 'Jl. Siwalankerto Timur No. 231 A, Surabaya, Jawa Timur',
+            'alamat' => 'Jl. Samanhudi No.102, Jasem, Bulusidokare, Kec. Sidoarjo, Kabupaten Sidoarjo, Jawa Timur 61212',
             'telepon' => null,
             'format_nota' => 'PJ{tahun}{urutan}',
             'batas_diskon_kasir_persen' => 5,

@@ -40,8 +40,8 @@ class PengaturanTokoTest extends TestCase
         $owner = $this->buatUserOwner();
 
         $response = $this->actingAs($owner)->post('/admin/pengaturan/toko', [
-            'nama_toko' => 'Rajawali Motor Surabaya Cabang 1',
-            'alamat' => 'Jl. Siwalankerto Timur No. 231 A, Surabaya',
+            'nama_toko' => 'Rajawali Motor Sidoarjo',
+            'alamat' => 'Jl. Samanhudi No.102, Jasem, Bulusidokare, Kec. Sidoarjo, Kabupaten Sidoarjo, Jawa Timur 61212',
             'telepon' => '081234567890',
             'format_nota' => 'RM{tahun}{urutan}',
             'batas_diskon_kasir_persen' => 10,
