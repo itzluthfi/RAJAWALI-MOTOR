@@ -50,7 +50,7 @@ class PengaturanTokoTest extends TestCase
 
         $response->assertRedirect(route('pengaturan.toko'));
         $this->assertDatabaseHas('pengaturan_tokos', [
-            'nama_toko' => 'Rajawali Motor Surabaya Cabang 1',
+            'nama_toko' => 'Rajawali Motor Sidoarjo',
             'batas_diskon_kasir_persen' => 10,
             'izinkan_stok_minus' => true,
         ]);
