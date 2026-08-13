@@ -69,12 +69,6 @@
                         <x-nav-item href="{{ route('kasir') }}" icon="scan-barcode" :active="request()->routeIs('kasir')">Kasir POS</x-nav-item>
                         <x-nav-item href="{{ route('penjualan.index') }}" icon="receipt" :active="request()->routeIs('penjualan.*')" :badge="$sidebarNotaHariIniCount ?? 0" badgeColor="bg-emerald-600 text-white">Nota Penjualan</x-nav-item>
                     @endif
-                    @if(in_array($peranSaya, ['owner', 'admin', 'gudang']))
-                        <x-nav-item href="{{ route('pembelian.index') }}" icon="truck" :active="request()->routeIs('pembelian.*')">Pembelian</x-nav-item>
-                    @endif
-                    @if(in_array($peranSaya, ['owner', 'admin', 'kasir', 'gudang']))
-                        <x-nav-item href="{{ route('retur.index') }}" icon="undo-2" :active="request()->routeIs('retur.*')">Retur Barang</x-nav-item>
-                    @endif
                     @if(in_array($peranSaya, ['owner', 'admin', 'kasir', 'montir']))
                         <x-nav-item href="{{ route('service.index') }}" icon="wrench" :active="request()->routeIs('service.*')">Service Bengkel</x-nav-item>
                     @endif
@@ -130,7 +124,6 @@
                 <x-nav-group label="Pengaturan">
                     <x-nav-item href="{{ route('pengaturan.toko') }}" icon="settings" :active="request()->routeIs('pengaturan.toko')">Profil Toko</x-nav-item>
                     <x-nav-item href="{{ route('pengaturan.user') }}" icon="user-cog" :active="request()->routeIs('pengaturan.user')">Pengguna System</x-nav-item>
-                    <x-nav-item href="{{ route('pengaturan.audit') }}" icon="history" :active="request()->routeIs('pengaturan.audit')">Audit Log</x-nav-item>
                 </x-nav-group>
             @endif
         </nav>
@@ -168,12 +161,6 @@
                         { judul: 'Kasir POS (Penjualan Langsung)', ket: 'Transaksi Kasir & Cetak Struk', path: '{{ route('kasir') }}', url: '/admin/kasir', icon: 'scan-barcode' },
                         { judul: 'Nota Penjualan', ket: 'Daftar Riwayat Nota & Invoice Penjualan', path: '{{ route('penjualan.index') }}', url: '/admin/penjualan', icon: 'receipt' },
                     @endif
-                    @if(in_array($peranSaya, ['owner', 'admin', 'gudang']))
-                        { judul: 'Pembelian Stok Barang', ket: 'Faktur Pembelian Barang dari Supplier', path: '{{ route('pembelian.index') }}', url: '/admin/pembelian', icon: 'truck' },
-                    @endif
-                    @if(in_array($peranSaya, ['owner', 'admin', 'kasir', 'gudang']))
-                        { judul: 'Retur Barang', ket: 'Pengembalian Barang Retur Sales & Supplier', path: '{{ route('retur.index') }}', url: '/admin/retur', icon: 'undo-2' },
-                    @endif
                     @if(in_array($peranSaya, ['owner', 'admin', 'kasir', 'montir']))
                         { judul: 'Service & Work Order Bengkel', ket: 'Pengerjaan Servis & Work Order Montir', path: '{{ route('service.index') }}', url: '/admin/service', icon: 'wrench' },
                     @endif
@@ -202,14 +189,11 @@
                         { judul: 'Bank', ket: 'Rekening Bank & Transaksi Non-Tunai', path: '{{ route('keuangan.bank') }}', url: '/admin/keuangan/bank', icon: 'building-2' },
                         { judul: 'Semua Laporan System', ket: 'Pusat Laporan Penjualan, Pembelian, & Keuangan', path: '{{ route('laporan.index') }}', url: '/admin/laporan', icon: 'chart-column' },
                         { judul: 'Laporan Penjualan Harian', ket: 'Rincian Transaksi Penjualan Per Hari', path: '{{ route('laporan.index') }}?kategori=penjualan_harian', url: '/admin/laporan/penjualan-harian', icon: 'receipt' },
-                        { judul: 'Laporan Pembelian Harian', ket: 'Rincian Pembelian Stok Per Hari', path: '{{ route('laporan.index') }}?kategori=pembelian_harian', url: '/admin/laporan/pembelian-harian', icon: 'truck' },
-                        { judul: 'Laporan Pembelian Per Supplier', ket: 'Analisis Faktur Pembelian Per Supplier', path: '{{ route('laporan.index') }}?kategori=pembelian_supplier', url: '/admin/laporan/pembelian-supplier', icon: 'factory' },
                         { judul: 'Laporan Laba Rugi Kotor', ket: 'Laporan Perhitungan Laba Rugi Toko', path: '{{ route('laporan.index') }}?kategori=laba_rugi', url: '/admin/laporan/laba-rugi', icon: 'landmark' },
                     @endif
                     @if($peranSaya === 'owner')
                         { judul: 'Profil Toko & Legality', ket: 'Pengaturan Identitas Toko, Logo, & Alamat', path: '{{ route('pengaturan.toko') }}', url: '/admin/pengaturan/toko', icon: 'settings' },
                         { judul: 'Pengguna System & Peran', ket: 'Manajemen Akun User, Password, & Role', path: '{{ route('pengaturan.user') }}', url: '/admin/pengaturan/user', icon: 'user-cog' },
-                        { judul: 'Audit Log System', ket: 'Catatan Jurnal Aktivitas Perubahan Data', path: '{{ route('pengaturan.audit') }}', url: '/admin/pengaturan/audit', icon: 'history' },
                     @endif
                 ],
                 get modulHasil() {

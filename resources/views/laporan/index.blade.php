@@ -1,10 +1,9 @@
 @php
     $laporan = [
-        'Penjualan' => ['penjualan-harian', 'penjualan-per-barang', 'penjualan-per-customer', 'penjualan-per-sales'],
-        'Pembelian' => ['pembelian-harian', 'pembelian-per-supplier'],
+        'Penjualan' => ['penjualan-harian', 'penjualan-per-barang', 'penjualan-per-customer'],
         'Stok' => ['rekap-stok', 'kartu-stok', 'stok-menipis'],
         'Keuangan' => ['laba-rugi-kotor', 'piutang', 'hutang', 'kas-bank'],
-        'Service' => ['service-belum-selesai', 'komisi-montir'],
+        'Service' => ['service-bengkel'],
     ];
 @endphp
 <x-app-layout title="Laporan">
