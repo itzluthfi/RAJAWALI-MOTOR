@@ -69,12 +69,14 @@
                         <x-nav-item href="{{ route('kasir') }}" icon="scan-barcode" :active="request()->routeIs('kasir')">Kasir POS</x-nav-item>
                         <x-nav-item href="{{ route('penjualan.index') }}" icon="receipt" :active="request()->routeIs('penjualan.*')" :badge="$sidebarNotaHariIniCount ?? 0" badgeColor="bg-emerald-600 text-white">Nota Penjualan</x-nav-item>
                     @endif
+                    {{-- Opsional sementara
                     @if(in_array($peranSaya, ['owner', 'admin', 'gudang']))
                         <x-nav-item href="{{ route('pembelian.index') }}" icon="truck" :active="request()->routeIs('pembelian.*')">Pembelian</x-nav-item>
                     @endif
                     @if(in_array($peranSaya, ['owner', 'admin', 'kasir', 'gudang']))
                         <x-nav-item href="{{ route('retur.index') }}" icon="undo-2" :active="request()->routeIs('retur.*')">Retur Barang</x-nav-item>
                     @endif
+                    --}}
                     @if(in_array($peranSaya, ['owner', 'admin', 'kasir', 'montir']))
                         <x-nav-item href="{{ route('service.index') }}" icon="wrench" :active="request()->routeIs('service.*')">Service Bengkel</x-nav-item>
                     @endif
@@ -89,15 +91,18 @@
                     @if(in_array($peranSaya, ['owner', 'admin', 'kasir']))
                         <x-nav-item href="{{ route('customer.index') }}" icon="users" :active="request()->routeIs('customer.*')">Master Customer</x-nav-item>
                     @endif
+                    {{-- Opsional sementara
                     @if(in_array($peranSaya, ['owner', 'admin', 'gudang']))
                         <x-nav-item href="{{ route('supplier.index') }}" icon="factory" :active="request()->routeIs('supplier.*')">Master Supplier</x-nav-item>
                     @endif
                     @if(in_array($peranSaya, ['owner', 'admin']))
                         <x-nav-item href="{{ route('sales.index') }}" icon="user-check" :active="request()->routeIs('sales.*')">Master Sales</x-nav-item>
                     @endif
+                    --}}
                 </x-nav-group>
             @endif
 
+            {{-- Opsional sementara: Group Stok, Keuangan, Laporan, Utility
             @if(in_array($peranSaya, ['owner', 'admin', 'gudang']))
                 <x-nav-group label="Stok">
                     <x-nav-item href="{{ route('stok.kartu') }}" icon="notebook-text" :active="request()->routeIs('stok.kartu')">Kartu Stok</x-nav-item>
@@ -125,12 +130,15 @@
                     <x-nav-item href="{{ route('utility.index') }}" icon="history" :active="request()->routeIs('utility.*')">Utility Sistem</x-nav-item>
                 </x-nav-group>
             @endif
+            --}}
 
             @if($peranSaya === 'owner')
                 <x-nav-group label="Pengaturan">
                     <x-nav-item href="{{ route('pengaturan.toko') }}" icon="settings" :active="request()->routeIs('pengaturan.toko')">Profil Toko</x-nav-item>
+                    {{-- Opsional sementara
                     <x-nav-item href="{{ route('pengaturan.user') }}" icon="user-cog" :active="request()->routeIs('pengaturan.user')">Pengguna System</x-nav-item>
                     <x-nav-item href="{{ route('pengaturan.audit') }}" icon="history" :active="request()->routeIs('pengaturan.audit')">Audit Log</x-nav-item>
+                    --}}
                 </x-nav-group>
             @endif
         </nav>
