@@ -1,9 +1,9 @@
 @props(['href' => '#', 'icon', 'active' => false, 'badge' => null, 'badgeColor' => 'bg-rajawali text-white'])
 
 <a href="{{ $href }}"
-   :data-tooltip="!sidebarTerbuka ? @js((string)$slot) : ''"
+   :data-tooltip="!sidebarTerbuka ? @js(trim((string)$slot)) : null"
    @if($badge !== null && $badge !== '' && (int)$badge > 0)
-       :data-tooltip-badge="!sidebarTerbuka ? @js((string)$badge) : ''"
+       :data-tooltip-badge="!sidebarTerbuka ? @js((string)$badge) : null"
        data-tooltip-badge-color="{{ $badgeColor }}"
    @endif
    {{ $attributes->merge([

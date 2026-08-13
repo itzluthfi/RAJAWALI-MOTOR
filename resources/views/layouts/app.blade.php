@@ -141,7 +141,7 @@
                 @csrf
                 <button
                     type="submit"
-                    :data-tooltip="!sidebarTerbuka ? 'Keluar Sistem' : ''"
+                    :data-tooltip="!sidebarTerbuka ? 'Keluar Sistem' : null"
                     class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-xs text-rajawali hover:bg-rajawali/10 active:scale-95 transition-all group relative overflow-hidden"
                     :class="!sidebarTerbuka && 'justify-center px-0'"
                 >

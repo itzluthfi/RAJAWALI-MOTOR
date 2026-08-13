@@ -159,17 +159,30 @@ function createOrGetTooltip() {
     return activeTooltipEl;
 }
 
+function sembunyikanTooltip() {
+    if (activeTooltipEl) {
+        activeTooltipEl.classList.remove('opacity-100', 'scale-100');
+        activeTooltipEl.classList.add('opacity-0', 'scale-95');
+    }
+}
+
 document.addEventListener('mouseover', (e) => {
     const trigger = e.target.closest('[data-tooltip]');
-    if (!trigger) return;
+    if (!trigger) {
+        sembunyikanTooltip();
+        return;
+    }
 
     const text = trigger.getAttribute('data-tooltip');
-    if (!text || text.trim() === '') return;
+    if (!text || text.trim() === '' || text === 'null') {
+        sembunyikanTooltip();
+        return;
+    }
 
     const tip = createOrGetTooltip();
     const badgeText = trigger.getAttribute('data-tooltip-badge');
     const badgeColor = trigger.getAttribute('data-tooltip-badge-color') || 'bg-amber-500 text-white';
-    const badgeHtml = badgeText ? `<span class="px-1.5 py-0.5 text-[10px] font-extrabold rounded-full ${badgeColor}">${badgeText}</span>` : '';
+    const badgeHtml = (badgeText && badgeText !== 'null') ? `<span class="px-1.5 py-0.5 text-[10px] font-extrabold rounded-full ${badgeColor}">${badgeText}</span>` : '';
 
     tip.innerHTML = `<span class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-[#0f172a]"></span><span>${text}</span>${badgeHtml}`;
 
@@ -186,9 +199,7 @@ document.addEventListener('mouseover', (e) => {
 
 document.addEventListener('mouseout', (e) => {
     const trigger = e.target.closest('[data-tooltip]');
-    if (!trigger) return;
-    if (activeTooltipEl) {
-        activeTooltipEl.classList.remove('opacity-100', 'scale-100');
-        activeTooltipEl.classList.add('opacity-0', 'scale-95');
+    if (trigger) {
+        sembunyikanTooltip();
     }
 });
