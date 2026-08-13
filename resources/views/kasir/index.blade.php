@@ -1,3 +1,5 @@
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
 <x-app-layout title="Kasir">
 
 <div
@@ -10,17 +12,23 @@
 >
     {{-- ATAS --}}
     <div class="flex items-center gap-3 flex-wrap">
-        <div class="relative flex-1 min-w-64">
-            <x-icon name="scan-barcode" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-steel" />
-            <input
-                x-ref="barcode"
-                x-model="barcode"
-                x-on:keydown.enter.prevent="tambahDariBarcode()"
-                type="text"
-                autocomplete="off"
-                placeholder="Scan atau ketik kode barang lalu Enter..."
-                class="w-full rounded-md border border-line bg-white pl-9 pr-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-rajawali focus:border-rajawali"
-            >
+        <div class="relative flex-1 min-w-64 flex items-center gap-2">
+            <div class="relative flex-1">
+                <x-icon name="scan-barcode" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-steel" />
+                <input
+                    x-ref="barcode"
+                    x-model="barcode"
+                    x-on:keydown.enter.prevent="tambahDariBarcode()"
+                    type="text"
+                    autocomplete="off"
+                    placeholder="Scan atau ketik kode barang lalu Enter..."
+                    class="w-full rounded-md border border-line bg-white pl-9 pr-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-rajawali focus:border-rajawali"
+                >
+            </div>
+            <button type="button" x-on:click="bukaScannerKamera()" class="px-3 py-2.5 bg-rajawali/10 text-rajawali rounded-md hover:bg-rajawali/20 font-bold text-xs flex items-center gap-1.5 shrink-0 transition" data-tooltip="Scan Barcode via Kamera HP / Laptop">
+                <x-icon name="camera" class="w-4 h-4" />
+                <span class="hidden sm:inline">Kamera</span>
+            </button>
         </div>
 
         <select x-model="customerId" class="rounded-md border border-line bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rajawali font-bold">
@@ -258,6 +266,17 @@
     </div>
 </x-modal>
 
+<!-- Modal Scan Barcode via Kamera Device -->
+<x-modal name="scan-kamera" title="Scan Barcode via Kamera HP / Laptop">
+    <div class="space-y-4">
+        <div id="html5-qr-code-reader" class="w-full h-64 sm:h-72 rounded-2xl overflow-hidden bg-slate-900 flex items-center justify-center border-2 border-dashed border-slate-700"></div>
+        <p class="text-xs text-steel text-center italic">Arahkan stiker barcode barang ke depan kamera. Sistem akan membaca barcode secara otomatis.</p>
+        <div class="flex justify-end gap-2">
+            <x-button type="button" variant="secondary" x-on:click="stopKamera(); $dispatch('tutup-modal', { name: 'scan-kamera' })">Tutup Kamera</x-button>
+        </div>
+    </div>
+</x-modal>
+
 </x-app-layout>
 
 <script>
@@ -265,6 +284,55 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
     return {
         daftarBarang: dataBarang,
         customerList: dataCustomer,
+        html5QrCode: null,
+        kameraAktif: false,
+
+        bukaScannerKamera() {
+            this.$dispatch('buka-modal', { name: 'scan-kamera' });
+            this.$nextTick(() => {
+                this.mulaiKamera();
+            });
+        },
+
+        mulaiKamera() {
+            if (typeof Html5Qrcode === 'undefined') {
+                if (window.toastGagal) window.toastGagal('Library kamera scanner belum siap.');
+                return;
+            }
+            if (this.html5QrCode) {
+                this.stopKamera();
+            }
+            this.html5QrCode = new Html5Qrcode("html5-qr-code-reader");
+            const config = { fps: 15, qrbox: { width: 250, height: 180 } };
+            
+            this.html5QrCode.start(
+                { facingMode: "environment" },
+                config,
+                (decodedText) => {
+                    this.barcode = decodedText;
+                    this.tambahDariBarcode();
+                    this.stopKamera();
+                    this.$dispatch('tutup-modal', { name: 'scan-kamera' });
+                    if (window.toastSukses) window.toastSukses('Barcode terdeteksi: ' + decodedText);
+                },
+                () => {}
+            ).then(() => {
+                this.kameraAktif = true;
+            }).catch(err => {
+                if (window.toastGagal) window.toastGagal('Gagal membuka kamera: ' + (err.message || 'Izin kamera ditolak.'));
+            });
+        },
+
+        stopKamera() {
+            if (this.html5QrCode && this.kameraAktif) {
+                this.html5QrCode.stop().then(() => {
+                    this.html5QrCode.clear();
+                    this.kameraAktif = false;
+                }).catch(() => {
+                    this.kameraAktif = false;
+                });
+            }
+        },
         customerId: dataCustomer[0].id,
         batasDiskonPersen: batasDiskonPersen,
         izinkanStokMinus: izinkanStokMinus,
