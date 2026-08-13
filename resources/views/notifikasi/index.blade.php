@@ -56,7 +56,7 @@
         </div>
 
         <div class="ml-auto flex items-center gap-2">
-            <x-button variant="secondary" type="button" x-on:click="tandaiSemuaDibaca()" :disabled="totalBelumDibaca === 0">
+            <x-button variant="secondary" type="button" x-on:click="tandaiSemuaDibaca()" x-bind:disabled="totalBelumDibaca === 0">
                 <x-icon name="check-check" class="w-4 h-4 text-emerald-600" /> Tandai Semua Dibaca
             </x-button>
         </div>

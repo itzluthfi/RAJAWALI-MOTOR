@@ -312,7 +312,7 @@
                                 type="button"
                                 x-on:click="tandaiSemuaDibaca()"
                                 class="text-xs font-semibold text-rajawali hover:underline disabled:opacity-40"
-                                :disabled="totalBelumDibaca === 0"
+                                x-bind:disabled="totalBelumDibaca === 0"
                             >
                                 Tandai semua dibaca
                             </button>
