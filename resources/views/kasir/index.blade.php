@@ -218,7 +218,7 @@
 
 <!-- Modal Cari Barang (F2) -->
 <x-modal name="cari-barang" title="Cari Barang & Sparepart (F2)">
-    <div class="space-y-3" x-data x-init="$nextTick(() => $refs.modalCariInput?.focus())">
+    <div class="space-y-3" x-init="$nextTick(() => $refs.modalCariInput?.focus())">
         <div class="relative">
             <x-icon name="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-steel" />
             <input
@@ -257,7 +257,7 @@
 </x-modal>
 
 <x-modal name="diskon-nota" title="Diskon Nota">
-    <div x-data x-init="$nextTick(() => $el.querySelector('input')?.focus())">
+    <div x-init="$nextTick(() => $el.querySelector('input')?.focus())">
         <x-input label="Jumlah diskon (Rp)" type="number" x-model.number="diskonNota" />
         <div class="flex justify-end gap-2 mt-4">
             <x-button variant="secondary" x-on:click="$dispatch('tutup-modal', { name: 'diskon-nota' })">Batal</x-button>
