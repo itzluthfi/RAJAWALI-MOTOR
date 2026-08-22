@@ -202,7 +202,7 @@
                             <span class="text-[11px] text-steel/70">(maks <span x-text="batasDiskonPersen"></span>%)</span>
                         </template>
                     </span>
-                    <input type="number" min="0" x-model.number="diskonNota" x-on:change="validasiDiskonNota()" class="w-28 text-right font-mono border border-line rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-rajawali">
+                    <input type="number" min="0" x-model.number="diskonNota" x-on:focus="$event.target.select()" x-on:click="$event.target.select()" x-on:change="validasiDiskonNota()" class="w-28 text-right font-mono border border-line rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-rajawali">
                 </div>
                 <div class="flex justify-between items-baseline pt-2 border-t border-line">
                     <span class="font-display font-bold text-ink">GRAND TOTAL</span>
@@ -214,7 +214,7 @@
                     <div>
                         <div class="flex justify-between items-center mt-2">
                             <span class="text-steel">Bayar <span class="text-xs">(F9)</span></span>
-                            <input x-ref="bayar" type="number" min="0" x-model.number="bayar" class="w-32 text-right font-mono border border-line rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-rajawali">
+                            <input x-ref="bayar" type="number" min="0" x-model.number="bayar" x-on:focus="$event.target.select()" x-on:click="$event.target.select()" class="w-32 text-right font-mono border border-line rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-rajawali">
                         </div>
                         <div class="flex justify-between items-baseline">
                             <span class="font-display font-semibold text-ink">Kembali</span>
@@ -228,7 +228,7 @@
                     <div>
                         <div class="flex justify-between items-center mt-2">
                             <span class="text-steel">Uang Muka (DP)</span>
-                            <input type="number" min="0" x-model.number="uangMuka" class="w-32 text-right font-mono border border-line rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-rajawali">
+                            <input type="number" min="0" x-model.number="uangMuka" x-on:focus="$event.target.select()" x-on:click="$event.target.select()" class="w-32 text-right font-mono border border-line rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-rajawali">
                         </div>
                         <div class="flex justify-between items-baseline">
                             <span class="font-display font-semibold text-ink">Sisa Piutang</span>
