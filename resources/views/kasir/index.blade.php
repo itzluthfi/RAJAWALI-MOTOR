@@ -13,17 +13,48 @@
     {{-- ATAS --}}
     <div class="flex items-center gap-3 flex-wrap">
         <div class="relative flex-1 min-w-64 flex items-center gap-2">
-            <div class="relative flex-1">
+            <div class="relative flex-1" x-on:click.outside="fokusMainInput = false">
                 <x-icon name="scan-barcode" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-steel" />
                 <input
                     x-ref="barcode"
                     x-model="barcode"
-                    x-on:keydown.enter.prevent="tambahDariBarcode()"
+                    x-on:focus="fokusMainInput = true"
+                    x-on:keydown.down.prevent="indeksLive = Math.min(indeksLive + 1, hasilLive.length - 1)"
+                    x-on:keydown.up.prevent="indeksLive = Math.max(indeksLive - 1, 0)"
+                    x-on:keydown.enter.prevent="pilihLiveAtauBarcode()"
                     type="text"
                     autocomplete="off"
-                    placeholder="Scan atau ketik kode barang lalu Enter..."
+                    placeholder="Scan atau ketik nama barang / kode / barcode..."
                     class="w-full rounded-md border border-line bg-white pl-9 pr-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-rajawali focus:border-rajawali"
                 >
+
+                <!-- Live Search Floating Dropdown Popup -->
+                <div
+                    x-show="fokusMainInput && barcode.trim().length >= 1 && hasilLive.length > 0"
+                    x-cloak
+                    class="absolute left-0 right-0 top-full mt-1 bg-white border-2 border-rajawali rounded-lg shadow-2xl z-50 max-h-80 overflow-y-auto divide-y divide-line"
+                >
+                    <template x-for="(b, idx) in hasilLive" :key="b.id">
+                        <div
+                            x-on:click="pilihBarangLive(b)"
+                            x-on:mouseenter="indeksLive = idx"
+                            :class="indeksLive === idx ? 'bg-rajawali/10 font-bold border-l-4 border-rajawali' : 'hover:bg-canvas'"
+                            class="p-2.5 cursor-pointer flex justify-between items-center transition text-xs"
+                        >
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-mono text-xs font-bold text-rajawali" x-text="b.kode"></span>
+                                    <span class="font-bold text-sm text-ink" x-text="b.nama"></span>
+                                </div>
+                                <p class="text-[11px] text-steel mt-0.5">Barcode: <span class="font-mono" x-text="b.barcode || '-'"></span> | Rak: <span x-text="b.lokasi_rak || '-'"></span></p>
+                            </div>
+                            <div class="text-right">
+                                <span class="font-mono font-bold text-sm text-ink block" x-text="formatRp(b.harga)"></span>
+                                <span class="text-[11px] font-mono text-steel">Stok: <strong :class="b.stok <= 0 ? 'text-rajawali' : 'text-lunas'" x-text="b.stok"></strong></span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
             </div>
             <button type="button" x-on:click="bukaScannerKamera()" class="px-3 py-2.5 bg-rajawali/10 text-rajawali rounded-md hover:bg-rajawali/20 font-bold text-xs flex items-center gap-1.5 shrink-0 transition" data-tooltip="Scan Barcode via Kamera HP / Laptop">
                 <x-icon name="camera" class="w-4 h-4" />
@@ -224,6 +255,7 @@
             <input
                 x-ref="modalCariInput"
                 x-model="cariQuery"
+                x-on:keydown.enter.prevent="pilihTopBarangModal()"
                 type="text"
                 placeholder="Ketik nama barang, kode, atau barcode..."
                 class="w-full rounded-md border border-line bg-white pl-9 pr-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-rajawali"
@@ -340,6 +372,8 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
         jenisBayar: 'tunai',
         barcode: '',
         cariQuery: '',
+        indeksLive: 0,
+        fokusMainInput: false,
         keranjang: [],
         barisAktif: null,
         diskonNota: 0,
@@ -353,6 +387,58 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
         initApp() {
             this.$watch('customerId', () => this.dapatkanHargaTerakhir());
             this.$watch('barisAktif', () => this.dapatkanHargaTerakhir());
+        },
+
+        get hasilLive() {
+            const q = (this.barcode || '').trim().toLowerCase();
+            if (!q) return [];
+            return this.daftarBarang.filter(b => 
+                b.nama.toLowerCase().includes(q) || 
+                b.kode.toLowerCase().includes(q) || 
+                (b.barcode && b.barcode.toLowerCase().includes(q))
+            ).slice(0, 8);
+        },
+
+        pilihLiveAtauBarcode() {
+            const q = this.barcode.trim();
+            if (!q) return;
+
+            if (this.hasilLive.length > 0 && this.indeksLive >= 0 && this.indeksLive < this.hasilLive.length) {
+                this.tambahBarangKeKeranjang(this.hasilLive[this.indeksLive]);
+                this.barcode = '';
+                this.indeksLive = 0;
+                this.fokusMainInput = false;
+                return;
+            }
+
+            this.tambahDariBarcode();
+        },
+
+        pilihBarangLive(b) {
+            this.tambahBarangKeKeranjang(b);
+            this.barcode = '';
+            this.indeksLive = 0;
+            this.fokusMainInput = false;
+            this.$nextTick(() => this.$refs.barcode?.focus());
+        },
+
+        bukaModalCari() {
+            this.cariQuery = this.barcode;
+            this.$dispatch('buka-modal', { name: 'cari-barang' });
+            this.$nextTick(() => {
+                setTimeout(() => {
+                    if (this.$refs.modalCariInput) {
+                        this.$refs.modalCariInput.focus();
+                        this.$refs.modalCariInput.select();
+                    }
+                }, 100);
+            });
+        },
+
+        pilihTopBarangModal() {
+            if (this.daftarBarangFiltered.length > 0) {
+                this.pilihBarangDariModal(this.daftarBarangFiltered[0]);
+            }
         },
 
         get daftarBarangFiltered() {
@@ -634,7 +720,7 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
         tanganiShortcut(e) {
             if (this.modalTerbuka > 0 && e.key !== 'Escape') return;
 
-            if (e.key === 'F2') { e.preventDefault(); this.$dispatch('buka-modal', { name: 'cari-barang' }); }
+            if (e.key === 'F2') { e.preventDefault(); this.bukaModalCari(); }
             if (e.key === 'F6') { e.preventDefault(); this.$dispatch('buka-modal', { name: 'diskon-nota' }); }
             if (e.key === 'F8') { e.preventDefault(); this.kosongkanKeranjang(); }
             if (e.key === 'F9') { e.preventDefault(); this.jenisBayar === 'tunai' && this.$refs.bayar?.focus(); }
