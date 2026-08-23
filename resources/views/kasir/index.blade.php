@@ -195,40 +195,65 @@
             {{-- PEMBAYARAN & TOTAL --}}
             <div class="space-y-2 text-sm font-bold">
                 <div class="flex justify-between"><span class="text-steel">Subtotal</span><span class="font-mono" x-text="formatRp(subtotal)"></span></div>
-                <div class="flex justify-between items-center">
-                    <span class="text-steel">
-                        Diskon Nota
-                        <template x-if="batasDiskonPersen > 0">
-                            <span class="text-[11px] text-steel/70">(maks <span x-text="batasDiskonPersen"></span>%)</span>
-                        </template>
-                    </span>
-                    <div class="flex items-center gap-1.5">
-                        <div class="inline-flex rounded-md border border-line bg-canvas p-0.5 text-xs font-mono">
-                            <button
-                                type="button"
-                                x-on:click="diskonNotaMode = 'rp'; validasiDiskonNota()"
-                                :class="diskonNotaMode === 'rp' ? 'bg-rajawali text-white font-bold' : 'text-steel hover:text-ink'"
-                                class="px-2 py-0.5 rounded transition"
-                            >Rp</button>
-                            <button
-                                type="button"
-                                x-on:click="diskonNotaMode = 'persen'; validasiDiskonNota()"
-                                :class="diskonNotaMode === 'persen' ? 'bg-rajawali text-white font-bold' : 'text-steel hover:text-ink'"
-                                class="px-2 py-0.5 rounded transition"
-                            >%</button>
+                <div class="space-y-1">
+                    <div class="flex justify-between items-center">
+                        <span class="text-steel">
+                            Diskon Nota
+                            <template x-if="batasDiskonPersen > 0">
+                                <span class="text-[11px] text-steel/70">(maks <span x-text="batasDiskonPersen"></span>%)</span>
+                            </template>
+                        </span>
+                        <div class="flex items-center gap-1.5">
+                            {{-- Toggle Button Segmented --}}
+                            <div class="inline-flex rounded-lg border border-slate-300 bg-slate-100 p-0.5 text-xs font-bold shadow-inner">
+                                <button
+                                    type="button"
+                                    x-on:click="diskonNotaMode = 'rp'; validasiDiskonNota()"
+                                    :class="diskonNotaMode === 'rp' ? 'bg-rajawali text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'"
+                                    class="px-2.5 py-1 rounded-md transition font-mono"
+                                    title="Diskon Mode Nominal (Rp)"
+                                >Rp</button>
+                                <button
+                                    type="button"
+                                    x-on:click="diskonNotaMode = 'persen'; validasiDiskonNota()"
+                                    :class="diskonNotaMode === 'persen' ? 'bg-rajawali text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'"
+                                    class="px-2.5 py-1 rounded-md transition font-mono"
+                                    title="Diskon Mode Persentase (%)"
+                                >%</button>
+                            </div>
+
+                            {{-- Input dengan Imbuhan Dinamis Rp / % --}}
+                            <div class="relative flex items-center">
+                                <span
+                                    x-show="diskonNotaMode === 'rp'"
+                                    class="absolute left-2 text-xs font-mono font-bold text-slate-500 pointer-events-none"
+                                >Rp</span>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    :max="diskonNotaMode === 'persen' ? 100 : null"
+                                    x-model="diskonNotaValue"
+                                    x-on:focus="$event.target.select()"
+                                    x-on:click="$event.target.select()"
+                                    x-on:input="validasiDiskonNota()"
+                                    placeholder="0"
+                                    :class="diskonNotaMode === 'rp' ? 'pl-7 pr-2' : 'pl-2 pr-6'"
+                                    class="w-28 text-right font-mono font-bold border border-slate-300 bg-white rounded-lg py-1 text-sm focus:outline-none focus:ring-2 focus:ring-rajawali focus:border-rajawali"
+                                >
+                                <span
+                                    x-show="diskonNotaMode === 'persen'"
+                                    class="absolute right-2 text-xs font-mono font-bold text-slate-500 pointer-events-none"
+                                >%</span>
+                            </div>
                         </div>
-                        <input
-                            type="number"
-                            min="0"
-                            :max="diskonNotaMode === 'persen' ? 100 : null"
-                            x-model="diskonNotaValue"
-                            x-on:focus="$event.target.select()"
-                            x-on:click="$event.target.select()"
-                            x-on:input="validasiDiskonNota()"
-                            placeholder="0"
-                            class="w-24 text-right font-mono border border-line bg-white rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-rajawali"
-                        >
                     </div>
+
+                    {{-- Dynamic Nominal Preview --}}
+                    <template x-if="diskonNotaMode === 'persen' && diskonNotaNominal > 0">
+                        <div class="text-right text-xs text-emerald-700 font-mono font-bold">
+                            = Potongan <span x-text="formatRp(diskonNotaNominal)"></span>
+                        </div>
+                    </template>
                 </div>
                 <div class="flex justify-between items-baseline pt-2 border-t border-line">
                     <span class="font-display font-bold text-ink">GRAND TOTAL</span>
