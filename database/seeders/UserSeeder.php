@@ -11,6 +11,9 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
+        // Hapus username lama (kasir1, gudang1, montir1) agar tidak bentrok
+        User::whereIn('username', ['kasir1', 'gudang1', 'montir1'])->delete();
+
         $akun = [
             ['name' => 'Budi Santoso', 'username' => 'owner', 'peran' => 'owner'],
             ['name' => 'Admin Toko', 'username' => 'admin', 'peran' => 'admin'],
