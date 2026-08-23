@@ -198,9 +198,17 @@
                             <td class="px-3 py-2 text-steel" x-text="idx + 1"></td>
                             <td class="px-3 py-2 font-mono text-xs text-steel font-bold" x-text="item.kode"></td>
                             <td class="px-3 py-2 font-bold text-ink">
-                                <span x-text="item.nama"></span>
-                                <template x-if="item.tierLabel">
-                                    <span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-100 text-amber-800 border border-amber-300" x-text="item.tierLabel"></span>
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span x-text="item.nama"></span>
+                                    <template x-if="item.tierLabel">
+                                        <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-100 text-amber-900 border border-amber-300" x-text="item.tierLabel"></span>
+                                    </template>
+                                </div>
+                                <template x-if="item.hargaOriginal && item.harga < item.hargaOriginal">
+                                    <div class="text-[11px] text-emerald-700 font-mono font-bold mt-0.5 flex items-center gap-1">
+                                        <span>🎉 Diskon Grosir: Hemat Rp <span x-text="formatRp(item.hargaOriginal - item.harga)"></span>/pcs</span>
+                                        <span>(Total hemat Rp <span x-text="formatRp((item.hargaOriginal - item.harga) * item.qty)"></span>)</span>
+                                    </div>
                                 </template>
                             </td>
                             <td class="px-3 py-2 text-right font-mono">
@@ -278,6 +286,12 @@
             {{-- PEMBAYARAN & TOTAL --}}
             <div class="space-y-2 text-sm font-bold">
                 <div class="flex justify-between"><span class="text-steel">Subtotal</span><span class="font-mono" x-text="formatRp(subtotal)"></span></div>
+                <template x-if="totalDiskonGrosir > 0">
+                    <div class="flex justify-between items-center bg-emerald-50 border border-emerald-200 px-2.5 py-1.5 rounded-lg text-emerald-800 text-xs font-bold">
+                        <span>🎉 Total Hemat Diskon Grosir:</span>
+                        <span class="font-mono text-xs font-black text-emerald-700">Rp <span x-text="formatRp(totalDiskonGrosir)"></span></span>
+                    </div>
+                </template>
                 <div class="space-y-1">
                     <div class="flex justify-between items-center">
                         <span class="text-steel">
@@ -637,6 +651,13 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
                 return Math.round((this.subtotal * val) / 100);
             }
             return Math.round(val);
+        },
+
+        get totalDiskonGrosir() {
+            return this.keranjang.reduce((acc, item) => {
+                const hemat = (item.hargaOriginal && item.harga < item.hargaOriginal) ? (item.hargaOriginal - item.harga) : 0;
+                return acc + (hemat * item.qty);
+            }, 0);
         },
 
         async dapatkanHargaTerakhir() {
