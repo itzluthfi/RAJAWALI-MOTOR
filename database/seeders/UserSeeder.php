@@ -14,9 +14,7 @@ class UserSeeder extends Seeder
         $akun = [
             ['name' => 'Budi Santoso', 'username' => 'owner', 'peran' => 'owner'],
             ['name' => 'Admin Toko', 'username' => 'admin', 'peran' => 'admin'],
-            ['name' => 'Sari Wulandari', 'username' => 'kasir1', 'peran' => 'kasir'],
-            ['name' => 'Joko Prasetyo', 'username' => 'gudang1', 'peran' => 'gudang'],
-            ['name' => 'Wawan Setiawan', 'username' => 'montir1', 'peran' => 'montir'],
+            ['name' => 'Sari Wulandari', 'username' => 'kasir', 'peran' => 'kasir'],
         ];
 
         foreach ($akun as $data) {

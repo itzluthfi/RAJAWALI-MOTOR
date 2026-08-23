@@ -137,9 +137,7 @@
                 <div class="flex flex-wrap gap-1.5" id="demo-role-buttons">
                     <button type="button" onclick="isiUsername('owner')" class="px-3 py-1 rounded-lg bg-[#B0181C] hover:bg-[#8f1013] text-white text-xs font-bold transition-all shadow-sm">Owner</button>
                     <button type="button" onclick="isiUsername('admin')" class="px-3 py-1 rounded-lg bg-white border border-slate-300 hover:border-[#B0181C] text-slate-700 hover:text-[#B0181C] text-xs font-semibold transition-all">Admin</button>
-                    <button type="button" onclick="isiUsername('kasir1')" class="px-3 py-1 rounded-lg bg-white border border-slate-300 hover:border-[#B0181C] text-slate-700 hover:text-[#B0181C] text-xs font-semibold transition-all">Kasir</button>
-                    <button type="button" onclick="isiUsername('gudang1')" class="px-3 py-1 rounded-lg bg-white border border-slate-300 hover:border-[#B0181C] text-slate-700 hover:text-[#B0181C] text-xs font-semibold transition-all">Gudang</button>
-                    <button type="button" onclick="isiUsername('montir1')" class="px-3 py-1 rounded-lg bg-white border border-slate-300 hover:border-[#B0181C] text-slate-700 hover:text-[#B0181C] text-xs font-semibold transition-all">Montir</button>
+                    <button type="button" onclick="isiUsername('kasir')" class="px-3 py-1 rounded-lg bg-white border border-slate-300 hover:border-[#B0181C] text-slate-700 hover:text-[#B0181C] text-xs font-semibold transition-all">Kasir</button>
                 </div>
             </div>
 

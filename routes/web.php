@@ -75,7 +75,7 @@ Route::prefix('admin')->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])->middleware('auth')->name('logout');
 
     Route::middleware('auth')->group(function () {
-        $semuaPeran = 'owner,admin,kasir,gudang,montir';
+        $semuaPeran = 'owner,admin,kasir';
 
         Route::get('/dashboard', fn () => view('dashboard.index'))->middleware("peran:{$semuaPeran}")->name('dashboard');
         Route::get('/notifikasi', fn () => view('notifikasi.index'))->middleware("peran:{$semuaPeran}")->name('notifikasi.index');
@@ -116,7 +116,7 @@ Route::prefix('admin')->group(function () {
             })->name('show');
         });
 
-        Route::prefix('pembelian')->name('pembelian.')->middleware('peran:owner,admin,kasir,gudang')->group(function () {
+        Route::prefix('pembelian')->name('pembelian.')->middleware('peran:owner,admin,kasir')->group(function () {
             Route::get('/', [\App\Http\Controllers\PembelianController::class, 'index'])->name('index');
             Route::get('/tambah', [\App\Http\Controllers\PembelianController::class, 'create'])->name('create');
             Route::post('/', [\App\Http\Controllers\PembelianController::class, 'store'])->name('store');
@@ -124,14 +124,14 @@ Route::prefix('admin')->group(function () {
         });
 
         Route::prefix('retur')->name('retur.')->group(function () {
-            Route::get('/', [\App\Http\Controllers\ReturController::class, 'index'])->middleware('peran:owner,admin,kasir,gudang')->name('index');
+            Route::get('/', [\App\Http\Controllers\ReturController::class, 'index'])->middleware('peran:owner,admin,kasir')->name('index');
             Route::get('/penjualan/tambah', [\App\Http\Controllers\ReturController::class, 'createPenjualan'])->middleware('peran:owner,admin,kasir')->name('penjualan.create');
-            Route::get('/pembelian/tambah', [\App\Http\Controllers\ReturController::class, 'createPembelian'])->middleware('peran:owner,admin,gudang')->name('pembelian.create');
-            Route::post('/pembelian', [\App\Http\Controllers\ReturController::class, 'storePembelian'])->middleware('peran:owner,admin,gudang')->name('pembelian.store');
-            Route::get('/{id}', [\App\Http\Controllers\ReturController::class, 'show'])->middleware('peran:owner,admin,kasir,gudang')->name('show');
+            Route::get('/pembelian/tambah', [\App\Http\Controllers\ReturController::class, 'createPembelian'])->middleware('peran:owner,admin')->name('pembelian.create');
+            Route::post('/pembelian', [\App\Http\Controllers\ReturController::class, 'storePembelian'])->middleware('peran:owner,admin')->name('pembelian.store');
+            Route::get('/{id}', [\App\Http\Controllers\ReturController::class, 'show'])->middleware('peran:owner,admin,kasir')->name('show');
         });
 
-        Route::prefix('service')->name('service.')->middleware('peran:owner,admin,kasir,montir')->group(function () {
+        Route::prefix('service')->name('service.')->middleware('peran:owner,admin,kasir')->group(function () {
             Route::get('/', [\App\Http\Controllers\ServiceController::class, 'index'])->name('index');
             Route::get('/tambah', [\App\Http\Controllers\ServiceController::class, 'create'])->name('create');
             Route::post('/', [\App\Http\Controllers\ServiceController::class, 'store'])->name('store');
@@ -139,7 +139,7 @@ Route::prefix('admin')->group(function () {
             Route::patch('/{service}/status', [\App\Http\Controllers\ServiceController::class, 'updateStatus'])->name('status');
         });
 
-        Route::prefix('barang')->name('barang.')->middleware('peran:owner,admin,gudang')->group(function () {
+        Route::prefix('barang')->name('barang.')->middleware('peran:owner,admin')->group(function () {
             Route::get('/', [BarangController::class, 'index'])->name('index');
             Route::post('/', [BarangController::class, 'store'])->name('store');
             Route::put('/{barang}', [BarangController::class, 'update'])->name('update');
@@ -155,7 +155,7 @@ Route::prefix('admin')->group(function () {
             Route::patch('/{customer}/toggle-aktif', [CustomerController::class, 'toggleAktif'])->name('toggle-aktif');
         });
 
-        Route::prefix('supplier')->name('supplier.')->middleware('peran:owner,admin,gudang')->group(function () {
+        Route::prefix('supplier')->name('supplier.')->middleware('peran:owner,admin')->group(function () {
             Route::get('/', [SupplierController::class, 'index'])->name('index');
             Route::post('/', [SupplierController::class, 'store'])->name('store');
             Route::put('/{supplier}', [SupplierController::class, 'update'])->name('update');
@@ -169,7 +169,7 @@ Route::prefix('admin')->group(function () {
             Route::patch('/{sales}/toggle-aktif', [SalesController::class, 'toggleAktif'])->name('toggle-aktif');
         });
 
-        Route::prefix('stok')->name('stok.')->middleware('peran:owner,admin,gudang')->group(function () {
+        Route::prefix('stok')->name('stok.')->middleware('peran:owner,admin')->group(function () {
             Route::get('/kartu', fn () => view('stok.kartu'))->name('kartu');
             Route::get('/rekap', fn () => view('stok.rekap'))->name('rekap');
             Route::get('/opname', fn () => view('stok.opname'))->name('opname');

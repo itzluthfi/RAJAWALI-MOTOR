@@ -63,33 +63,33 @@
                 <x-nav-item href="{{ route('notifikasi.index') }}" icon="bell" :active="request()->routeIs('notifikasi.*')">Notifikasi &amp; Aktivitas</x-nav-item>
             </x-nav-group>
 
-            @if(in_array($peranSaya, ['owner', 'admin', 'kasir', 'gudang', 'montir']))
+            @if(in_array($peranSaya, ['owner', 'admin', 'kasir']))
                 <x-nav-group label="Transaksi">
                     @if(in_array($peranSaya, ['owner', 'admin', 'kasir']))
                         <x-nav-item href="{{ route('kasir') }}" icon="scan-barcode" :active="request()->routeIs('kasir')">Kasir POS</x-nav-item>
                         <x-nav-item href="{{ route('penjualan.index') }}" icon="receipt" :active="request()->routeIs('penjualan.*')" :badge="$sidebarNotaHariIniCount ?? 0" badgeColor="bg-emerald-600 text-white">Nota Penjualan</x-nav-item>
                     @endif
-                    @if(in_array($peranSaya, ['owner', 'admin', 'gudang', 'kasir']))
+                    @if(in_array($peranSaya, ['owner', 'admin', 'kasir']))
                         <x-nav-item href="{{ route('pembelian.index') }}" icon="truck" :active="request()->routeIs('pembelian.*')">Pembelian</x-nav-item>
                     @endif
-                    @if(in_array($peranSaya, ['owner', 'admin', 'kasir', 'gudang']))
+                    @if(in_array($peranSaya, ['owner', 'admin', 'kasir']))
                         <x-nav-item href="{{ route('retur.index') }}" icon="undo-2" :active="request()->routeIs('retur.*')">Retur Barang</x-nav-item>
                     @endif
-                    @if(in_array($peranSaya, ['owner', 'admin', 'kasir', 'montir']))
+                    @if(in_array($peranSaya, ['owner', 'admin', 'kasir']))
                         <x-nav-item href="{{ route('service.index') }}" icon="wrench" :active="request()->routeIs('service.*')">Service Bengkel</x-nav-item>
                     @endif
                 </x-nav-group>
             @endif
 
-            @if(in_array($peranSaya, ['owner', 'admin', 'gudang', 'kasir']))
+            @if(in_array($peranSaya, ['owner', 'admin', 'kasir']))
                 <x-nav-group label="Master Data">
-                    @if(in_array($peranSaya, ['owner', 'admin', 'gudang']))
+                    @if(in_array($peranSaya, ['owner', 'admin']))
                         <x-nav-item href="{{ route('barang.index') }}" icon="package" :active="request()->routeIs('barang.*')">Master Barang</x-nav-item>
                     @endif
                     @if(in_array($peranSaya, ['owner', 'admin', 'kasir']))
                         <x-nav-item href="{{ route('customer.index') }}" icon="users" :active="request()->routeIs('customer.*')">Master Customer</x-nav-item>
                     @endif
-                    @if(in_array($peranSaya, ['owner', 'admin', 'gudang']))
+                    @if(in_array($peranSaya, ['owner', 'admin']))
                         <x-nav-item href="{{ route('supplier.index') }}" icon="factory" :active="request()->routeIs('supplier.*')">Master Supplier</x-nav-item>
                     @endif
                     @if(in_array($peranSaya, ['owner', 'admin']))
@@ -98,7 +98,7 @@
                 </x-nav-group>
             @endif
 
-            @if(in_array($peranSaya, ['owner', 'admin', 'gudang']))
+            @if(in_array($peranSaya, ['owner', 'admin']))
                 <x-nav-group label="Stok">
                     <x-nav-item href="{{ route('stok.kartu') }}" icon="notebook-text" :active="request()->routeIs('stok.kartu')">Kartu Stok</x-nav-item>
                     <x-nav-item href="{{ route('stok.rekap') }}" icon="layers" :active="request()->routeIs('stok.rekap')">Rekap Stok</x-nav-item>

@@ -29,7 +29,7 @@ class UserController extends Controller
             'username' => ['required', 'string', 'max:50', 'unique:users,username'],
             'email' => ['nullable', 'email', 'max:150', 'unique:users,email'],
             'password' => ['required', 'string', 'min:6'],
-            'peran' => ['required', 'string', Rule::in(['owner', 'admin', 'kasir', 'gudang', 'montir'])],
+            'peran' => ['required', 'string', Rule::in(['owner', 'admin', 'kasir'])],
         ]);
 
         $validated['aktif'] = true;
@@ -45,7 +45,7 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:150'],
             'username' => ['required', 'string', 'max:50', Rule::unique('users', 'username')->ignore($user->id)],
             'email' => ['nullable', 'email', 'max:150', Rule::unique('users', 'email')->ignore($user->id)],
-            'peran' => ['required', 'string', Rule::in(['owner', 'admin', 'kasir', 'gudang', 'montir'])],
+            'peran' => ['required', 'string', Rule::in(['owner', 'admin', 'kasir'])],
             'password' => ['nullable', 'string', 'min:6'],
         ]);
 

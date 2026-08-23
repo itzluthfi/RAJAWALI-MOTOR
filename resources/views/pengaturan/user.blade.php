@@ -82,8 +82,6 @@
                     <option value="owner">Owner</option>
                     <option value="admin">Admin</option>
                     <option value="kasir">Kasir</option>
-                    <option value="gudang">Gudang</option>
-                    <option value="montir">Montir</option>
                 </x-select>
                 <x-input label="Kata Sandi" name="password" type="password" ::placeholder="modeEdit ? 'Kosongkan jika tidak diubah' : 'Minimal 6 karakter'" ::required="!modeEdit" />
 
