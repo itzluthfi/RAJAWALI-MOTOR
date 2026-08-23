@@ -14,14 +14,14 @@ class BarangSeeder extends Seeder
 {
     public function run(): void
     {
-        $sparepart = Group::where('nama', 'Sparepart')->firstOrFail();
-        $oli = Group::where('nama', 'Oli')->firstOrFail();
-        $jasaGroup = Group::where('nama', 'Jasa & Service')->firstOrFail();
+        $sparepart = Group::firstOrCreate(['nama' => 'Sparepart']);
+        $oli = Group::firstOrCreate(['nama' => 'Oli']);
+        $jasaGroup = Group::firstOrCreate(['nama' => 'Jasa & Service']);
         
-        $pcs = Satuan::where('nama', 'PCS')->firstOrFail();
-        $set = Satuan::where('nama', 'SET')->firstOrFail();
-        $botol = Satuan::where('nama', 'BOTOL')->firstOrFail();
-        $satuanJasa = Satuan::where('nama', 'JASA')->firstOrFail();
+        $pcs = Satuan::firstOrCreate(['nama' => 'PCS']);
+        $set = Satuan::firstOrCreate(['nama' => 'SET']);
+        $botol = Satuan::firstOrCreate(['nama' => 'BOTOL']);
+        $satuanJasa = Satuan::firstOrCreate(['nama' => 'JASA']);
 
         $daftar = [
             // SPAREPART & OLI UTAMA
