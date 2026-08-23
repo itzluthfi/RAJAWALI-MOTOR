@@ -35,36 +35,70 @@
                         <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">No Retur</th>
                         <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Tanggal</th>
                         <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Jenis</th>
-                        <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Referensi / Pihak Terkait</th>
+                        <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Referensi Transaksi</th>
                         <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Alasan Retur</th>
                         <th class="text-right font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Total (Rp)</th>
+                        <th class="text-right font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900 no-print">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($returs as $r)
                         <tr class="border-b border-line last:border-0 hover:bg-canvas transition duration-150">
-                            <td class="px-4 py-3 font-mono text-xs font-bold text-rajawali">{{ $r->nomor_retur }}</td>
-                            <td class="px-4 py-3 text-steel">{{ $r->tanggal->format('d M Y') }}</td>
+                            <td class="px-4 py-3 font-mono text-xs font-bold text-rajawali">
+                                <a href="{{ route('retur.show', $r->nomor_retur) }}" class="hover:underline">{{ $r->nomor_retur }}</a>
+                            </td>
+                            <td class="px-4 py-3 text-steel text-xs">{{ $r->tanggal->format('d M Y') }}</td>
                             <td class="px-4 py-3 font-bold">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs {{ $r->jenis === 'penjualan' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800' }}">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs {{ $r->jenis === 'penjualan' ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-blue-100 text-blue-800 border border-blue-300' }}">
                                     {{ $r->jenis === 'penjualan' ? 'Retur Penjualan' : 'Retur Pembelian' }}
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-ink">
                                 @if($r->jenis === 'penjualan')
-                                    <span class="font-bold block">{{ $r->customer->nama ?? 'Customer Umum' }}</span>
-                                    <span class="font-mono text-xs text-steel">Nota: {{ $r->penjualan->nomor_nota ?? '-' }}</span>
+                                    <span class="font-bold block text-xs">{{ $r->customer->nama ?? 'Customer Umum' }}</span>
+                                    @if($r->penjualan)
+                                        <a href="{{ route('penjualan.show', $r->penjualan->nomor_nota) }}" class="inline-flex items-center gap-1 font-mono text-xs text-rajawali font-bold hover:underline">
+                                            <span>Nota: {{ $r->penjualan->nomor_nota }}</span>
+                                            <x-icon name="external-link" class="w-3 h-3" />
+                                        </a>
+                                    @else
+                                        <span class="font-mono text-xs text-steel">Nota: -</span>
+                                    @endif
                                 @else
-                                    <span class="font-bold block">{{ $r->supplier->nama ?? '-' }}</span>
-                                    <span class="font-mono text-xs text-steel">Faktur: {{ $r->pembelian->nomor_pembelian ?? '-' }}</span>
+                                    <span class="font-bold block text-xs">{{ $r->supplier->nama ?? '-' }}</span>
+                                    @if($r->pembelian)
+                                        <a href="{{ route('pembelian.show', $r->pembelian->nomor_pembelian) }}" class="inline-flex items-center gap-1 font-mono text-xs text-blue-700 font-bold hover:underline">
+                                            <span>Faktur: {{ $r->pembelian->nomor_pembelian }}</span>
+                                            <x-icon name="external-link" class="w-3 h-3" />
+                                        </a>
+                                    @else
+                                        <span class="font-mono text-xs text-steel">Faktur: -</span>
+                                    @endif
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-steel text-xs italic">{{ $r->alasan ?? '-' }}</td>
                             <td class="px-4 py-3 text-right font-mono font-bold text-ink">Rp {{ number_format($r->total, 0, ',', '.') }}</td>
+                            <td class="px-4 py-3 text-right no-print">
+                                <div class="flex justify-end gap-1.5">
+                                    <x-button as="a" href="{{ route('retur.show', $r->nomor_retur) }}" variant="secondary" size="xs" data-tooltip="Lihat Detail Retur">
+                                        <x-icon name="eye" class="w-3.5 h-3.5" /> Detail
+                                    </x-button>
+
+                                    @if($r->jenis === 'penjualan' && $r->penjualan)
+                                        <x-button as="a" href="{{ route('penjualan.show', $r->penjualan->nomor_nota) }}" variant="primary" size="xs" data-tooltip="Buka Nota Penjualan Asli">
+                                            <x-icon name="file-text" class="w-3.5 h-3.5" /> Transaksi
+                                        </x-button>
+                                    @elseif($r->jenis === 'pembelian' && $r->pembelian)
+                                        <x-button as="a" href="{{ route('pembelian.show', $r->pembelian->nomor_pembelian) }}" variant="primary" size="xs" data-tooltip="Buka Faktur Pembelian Asli">
+                                            <x-icon name="file-text" class="w-3.5 h-3.5" /> Transaksi
+                                        </x-button>
+                                    @endif
+                                </div>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-4 py-8 text-center text-steel italic">Belum ada data transaksi retur barang.</td>
+                            <td colspan="7" class="px-4 py-8 text-center text-steel italic">Belum ada data transaksi retur barang.</td>
                         </tr>
                     @endforelse
                 </tbody>

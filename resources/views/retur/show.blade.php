@@ -13,16 +13,42 @@
                 Staff: <strong class="text-ink font-bold">{{ $retur->user?->name ?? 'Staff' }}</strong>
             </p>
         </div>
-        <div>
+        <div class="flex items-center gap-2">
             <x-badge status="batal">{{ strtoupper($retur->jenis) }}</x-badge>
+            
+            @if($retur->jenis === 'penjualan' && $retur->penjualan)
+                <a href="{{ route('penjualan.show', $retur->penjualan->nomor_nota) }}" class="px-3 py-2 bg-rajawali text-white font-bold rounded-lg text-xs hover:bg-rajawali-dark transition flex items-center gap-1.5 shadow-sm">
+                    <x-icon name="file-text" class="w-4 h-4" /> Buka Nota Penjualan Asli
+                </a>
+            @elseif($retur->jenis === 'pembelian' && $retur->pembelian)
+                <a href="{{ route('pembelian.show', $retur->pembelian->nomor_pembelian) }}" class="px-3 py-2 bg-blue-700 text-white font-bold rounded-lg text-xs hover:bg-blue-800 transition flex items-center gap-1.5 shadow-sm">
+                    <x-icon name="file-text" class="w-4 h-4" /> Buka Faktur Pembelian Asli
+                </a>
+            @endif
         </div>
     </div>
 
     <x-card class="mb-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
             <div>
                 <p class="text-steel font-bold">Pihak Terkait:</p>
                 <p class="font-bold text-ink text-sm">{{ $retur->customer?->nama ?? $retur->supplier?->nama ?? '-' }}</p>
+            </div>
+            <div>
+                <p class="text-steel font-bold">Dokumen Transaksi Asli:</p>
+                @if($retur->penjualan)
+                    <a href="{{ route('penjualan.show', $retur->penjualan->nomor_nota) }}" class="font-bold text-rajawali text-sm font-mono hover:underline flex items-center gap-1">
+                        <span>Nota: {{ $retur->penjualan->nomor_nota }}</span>
+                        <x-icon name="external-link" class="w-3.5 h-3.5" />
+                    </a>
+                @elseif($retur->pembelian)
+                    <a href="{{ route('pembelian.show', $retur->pembelian->nomor_pembelian) }}" class="font-bold text-blue-700 text-sm font-mono hover:underline flex items-center gap-1">
+                        <span>Faktur: {{ $retur->pembelian->nomor_pembelian }}</span>
+                        <x-icon name="external-link" class="w-3.5 h-3.5" />
+                    </a>
+                @else
+                    <p class="text-steel italic">Tidak ada referensi dokumen</p>
+                @endif
             </div>
             <div>
                 <p class="text-steel font-bold">Alasan Retur:</p>
@@ -32,7 +58,7 @@
     </x-card>
 
     <x-card :padded="false" class="overflow-hidden shadow-lg border border-slate-200/80">
-        <div class="px-6 py-4 border-b border-line bg-canvas font-bold text-sm text-steel">Rincian Barang Diberikan</div>
+        <div class="px-6 py-4 border-b border-line bg-canvas font-bold text-sm text-steel">Rincian Barang Diretur</div>
         <table class="w-full text-sm">
             <thead class="bg-slate-100 text-steel text-xs uppercase tracking-wide border-b border-line font-bold">
                 <tr>
