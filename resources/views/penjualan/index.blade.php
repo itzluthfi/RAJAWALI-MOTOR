@@ -37,16 +37,19 @@
                 <div class="border-t border-line/60 pt-2 flex justify-between items-center text-xs">
                     <div>
                         <p class="font-medium text-ink">{{ $p->customer?->nama ?? 'Umum / Tunai' }}</p>
-                        <p class="text-steel text-[11px] uppercase">{{ $p->metode_pembayaran }}</p>
+                        <p class="text-steel text-[11px] uppercase">{{ $p->metode_pembayaran }} · Kasir: {{ $p->user?->name ?? 'Staff' }}</p>
                     </div>
                     <p class="font-mono font-bold text-base text-ink">Rp {{ number_format($p->total_akhir, 0, ',', '.') }}</p>
                 </div>
-                <div class="border-t border-line/60 pt-2 flex justify-end gap-2">
-                    <a href="{{ route('penjualan.show', $p->nomor_nota) }}" class="px-3 py-1.5 rounded-lg border border-line text-xs font-semibold text-ink hover:bg-canvas flex items-center gap-1">
+                <div class="border-t border-line/60 pt-2 flex justify-end gap-1.5">
+                    <a href="{{ route('penjualan.show', $p->nomor_nota) }}" class="px-2.5 py-1.5 rounded-lg border border-line text-xs font-semibold text-ink hover:bg-canvas flex items-center gap-1">
                         <x-icon name="eye" class="w-3.5 h-3.5" /> Detail
                     </a>
-                    <a href="{{ route('cetak.nota', $p->nomor_nota) }}" target="_blank" class="px-3 py-1.5 rounded-lg border border-line text-xs font-semibold text-ink hover:bg-canvas flex items-center gap-1">
-                        <x-icon name="printer" class="w-3.5 h-3.5" /> Cetak
+                    <a href="{{ route('cetak.nota', $p->nomor_nota) }}" target="_blank" class="px-2.5 py-1.5 rounded-lg border border-red-200 text-xs font-semibold text-rajawali hover:bg-red-50 flex items-center gap-1">
+                        <x-icon name="printer" class="w-3.5 h-3.5" /> Struk
+                    </a>
+                    <a href="{{ route('cetak.faktur', $p->nomor_nota) }}" target="_blank" class="px-2.5 py-1.5 rounded-lg border border-blue-200 text-xs font-semibold text-blue-600 hover:bg-blue-50 flex items-center gap-1">
+                        <x-icon name="file-text" class="w-3.5 h-3.5" /> Faktur A5
                     </a>
                 </div>
             </div>
@@ -74,39 +77,49 @@
             <table class="w-full text-sm" id="tabel-penjualan">
                 <thead class="bg-[#B0181C] text-white text-xs uppercase tracking-wide">
                     <tr>
-                        <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">No Nota</th>
-                        <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Tanggal</th>
-                        <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Customer</th>
-                        <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Kasir</th>
-                        <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Metode</th>
-                        <th class="text-right font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Total Akhir</th>
-                        <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Status</th>
+                        <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Nota & Waktu</th>
+                        <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Customer & Kasir</th>
+                        <th class="text-right font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Total & Metode</th>
+                        <th class="text-center font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Status</th>
                         <th class="text-right font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900 no-print">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($penjualans as $p)
                         <tr class="border-b border-line last:border-0 hover:bg-canvas transition duration-150">
-                            <td class="px-4 py-2.5 font-mono text-xs font-bold text-rajawali">{{ $p->nomor_nota }}</td>
-                            <td class="px-4 py-2.5 text-xs text-steel">{{ $p->created_at->translatedFormat('d M Y H:i') }}</td>
-                            <td class="px-4 py-2.5 font-medium">{{ $p->customer?->nama ?? 'Umum / Tunai' }}</td>
-                            <td class="px-4 py-2.5 text-xs text-steel">{{ $p->user?->name ?? 'Kasir' }}</td>
-                            <td class="px-4 py-2.5 text-xs uppercase font-mono">{{ $p->metode_pembayaran }}</td>
-                            <td class="px-4 py-2.5 text-right font-mono font-semibold">Rp {{ number_format($p->total_akhir, 0, ',', '.') }}</td>
                             <td class="px-4 py-2.5">
+                                <span class="font-mono text-xs font-bold text-rajawali block">{{ $p->nomor_nota }}</span>
+                                <span class="text-[11px] text-steel">{{ $p->created_at->translatedFormat('d M Y H:i') }}</span>
+                            </td>
+                            <td class="px-4 py-2.5">
+                                <div class="font-medium text-ink text-sm">{{ $p->customer?->nama ?? 'Umum / Tunai' }}</div>
+                                <div class="text-[11px] text-steel">Kasir: {{ $p->user?->name ?? 'Kasir' }}</div>
+                            </td>
+                            <td class="px-4 py-2.5 text-right">
+                                <div class="font-mono font-bold text-sm text-ink">Rp {{ number_format($p->total_akhir, 0, ',', '.') }}</div>
+                                <div class="text-[11px] text-steel uppercase font-mono">{{ $p->metode_pembayaran }}</div>
+                            </td>
+                            <td class="px-4 py-2.5 text-center">
                                 <x-badge :status="$p->status_bayar === 'lunas' ? 'lunas' : ($p->status_bayar === 'piutang' ? 'tempo' : 'batal')">
                                     {{ ucfirst($p->status_bayar) }}
                                 </x-badge>
                             </td>
-                            <td class="px-4 py-2.5 text-right">
-                                <div class="flex justify-end gap-1">
-                                    <a href="{{ route('penjualan.show', $p->nomor_nota) }}" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-canvas" data-tooltip="Lihat Detail"><x-icon name="eye" class="w-4 h-4" /></a>
-                                    <a href="{{ route('cetak.nota', $p->nomor_nota) }}" target="_blank" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-canvas" data-tooltip="Cetak Ulang Nota"><x-icon name="printer" class="w-4 h-4" /></a>
+                            <td class="px-4 py-2.5 text-right no-print">
+                                <div class="flex justify-end items-center gap-1">
+                                    <a href="{{ route('penjualan.show', $p->nomor_nota) }}" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-slate-100 transition" data-tooltip="Lihat Detail">
+                                        <x-icon name="eye" class="w-4 h-4" />
+                                    </a>
+                                    <a href="{{ route('cetak.nota', $p->nomor_nota) }}" target="_blank" class="p-1.5 rounded-md text-steel hover:text-rajawali hover:bg-red-50 transition" data-tooltip="Cetak Struk Thermal (58/80mm)">
+                                        <x-icon name="printer" class="w-4 h-4" />
+                                    </a>
+                                    <a href="{{ route('cetak.faktur', $p->nomor_nota) }}" target="_blank" class="p-1.5 rounded-md text-steel hover:text-blue-600 hover:bg-blue-50 transition" data-tooltip="Cetak Faktur A5 (NCR)">
+                                        <x-icon name="file-text" class="w-4 h-4" />
+                                    </a>
                                 </div>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="8"><x-empty-state icon="receipt" judul="Belum ada transaksi penjualan" /></td></tr>
+                        <tr><td colspan="5"><x-empty-state icon="receipt" judul="Belum ada transaksi penjualan" /></td></tr>
                     @endforelse
                 </tbody>
             </table>

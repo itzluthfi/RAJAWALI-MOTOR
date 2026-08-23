@@ -5,8 +5,26 @@
         ->first();
 @endphp
 <x-print-layout title="Nota {{ $id }}">
+<style>
+    @media print {
+        @page {
+            size: 80mm auto;
+            margin: 0;
+        }
+        body {
+            background-color: #fff !important;
+            padding: 0 !important;
+        }
+        .struk-box {
+            border: none !important;
+            box-shadow: none !important;
+            padding: 2mm !important;
+            max-width: 100% !important;
+        }
+    }
+</style>
 @if($penjualan)
-<div class="max-w-[80mm] mx-auto p-4 font-mono text-xs leading-relaxed bg-white text-black border border-slate-200 rounded-lg shadow-sm">
+<div class="struk-box max-w-[80mm] mx-auto p-4 font-mono text-xs leading-relaxed bg-white text-black border border-slate-200 rounded-lg shadow-sm">
     <div class="text-center space-y-1 mb-3">
         <img alt="Rajawali Motor Logo" class="h-10 w-auto mx-auto object-contain mb-1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsYEm9KYYbuD248b0jN_sheEfynwQ6j7teJdvKA8edK8NYF0ndmkXVXlqw9SKIhago4iUYt5RmUV5kgkIuq0AjjoDKToRqxiuEM17EOurrulLi0qsUlk36AxIH4JObdUrym7rxUnRAwC9aLkxP4pUlSgGe9qLiTLXOV0I1-pYXxewRVi_zU2DtKVLzY0W20Ve5lzZD-FdFadE3YvJ_ozDGIJmgDt6aLfSKhBNi1YFqbLL-76iue9ykhTo7OsirOQuyfFH_HfkN0Dc"/>
         <p class="font-bold text-sm tracking-wide">RAJAWALI MOTOR</p>

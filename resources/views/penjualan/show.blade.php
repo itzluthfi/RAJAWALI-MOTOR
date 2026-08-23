@@ -20,10 +20,10 @@
             </x-badge>
 
             <a href="{{ route('cetak.nota', $penjualan->nomor_nota) }}" target="_blank" class="px-3 py-2 bg-rajawali text-white font-bold rounded-lg text-xs hover:bg-rajawali-dark transition flex items-center gap-1.5 shadow-sm">
-                <x-icon name="printer" class="w-4 h-4" /> Struk 80mm
+                <x-icon name="printer" class="w-4 h-4" /> Struk Thermal (58/80mm)
             </a>
             <a href="{{ route('cetak.faktur', $penjualan->nomor_nota) }}" target="_blank" class="px-3 py-2 bg-slate-800 text-white font-bold rounded-lg text-xs hover:bg-slate-900 transition flex items-center gap-1.5 shadow-sm">
-                <x-icon name="file-text" class="w-4 h-4" /> Faktur A4
+                <x-icon name="file-text" class="w-4 h-4" /> Faktur Penjualan (A5)
             </a>
         </div>
     </div>

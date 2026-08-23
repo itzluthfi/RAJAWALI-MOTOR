@@ -5,8 +5,27 @@
         ->first();
 @endphp
 <x-print-layout title="Faktur Penjualan {{ $id }}">
+<style>
+    @media print {
+        @page {
+            size: 210mm 148mm; /* Ukuran Kertas Faktur A5 Landscape */
+            margin: 6mm;
+        }
+        body {
+            background-color: #fff !important;
+        }
+        .faktur-box {
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+        }
+    }
+</style>
 @if($penjualan)
-<div class="max-w-4xl mx-auto p-8 bg-white text-slate-900 font-sans border border-slate-200 rounded-2xl shadow-sm my-6">
+<div class="faktur-box max-w-4xl mx-auto p-8 bg-white text-slate-900 font-sans border border-slate-200 rounded-2xl shadow-sm my-6">
     <!-- Header -->
     <div class="flex justify-between items-start border-b border-slate-200 pb-6 mb-6">
         <div class="flex items-center gap-4">
