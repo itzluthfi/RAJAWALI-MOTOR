@@ -110,7 +110,13 @@ class KasirController extends Controller
                 $uangMuka = (float) ($validated['uang_muka'] ?? 0);
                 $totalAkhir = max(0, $subtotal - $diskon + $pajak);
                 $bayarInput = (float) ($validated['bayar'] ?? 0);
-                $bayar = ($validated['metode_pembayaran'] === 'tunai' || $bayarInput <= 0) ? $totalAkhir : $bayarInput;
+
+                if ($validated['metode_pembayaran'] === 'tunai') {
+                    $bayar = $bayarInput > 0 ? $bayarInput : $totalAkhir;
+                } else {
+                    $bayar = $bayarInput;
+                }
+
                 $kembali = max(0, $bayar - $totalAkhir);
 
                 $penjualan = Penjualan::create([
