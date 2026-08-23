@@ -87,6 +87,7 @@ class KasirController extends Controller
 
         try {
             $penjualan = DB::transaction(function () use ($validated, $request) {
+                $pengaturan = PengaturanToko::current();
                 $nomorNota = Penjualan::buatNomorNota();
                 $subtotal = 0;
 
@@ -96,6 +97,13 @@ class KasirController extends Controller
                     $qty = (float) $item['qty'];
                     $harga = (float) $item['harga'];
                     $diskonBaris = (float) ($item['diskon'] ?? 0);
+
+                    // Cek ketersediaan stok fisik untuk barang (kecuali Jasa & Service)
+                    $isJasa = $barang->group && str_contains(strtolower($barang->group->nama), 'jasa');
+                    if (! $pengaturan->izinkan_stok_minus && ! $isJasa && $barang->stok < $qty) {
+                        throw new \RuntimeException("Stok barang '{$barang->nama}' (Kode: {$barang->kode}) tidak mencukupi. Sisa stok: {$barang->stok}, diminta: {$qty}.");
+                    }
+
                     $itemSubtotal = ($qty * $harga) - $diskonBaris;
                     $subtotal += $itemSubtotal;
 
@@ -149,6 +157,13 @@ class KasirController extends Controller
                         'hpp' => $di['hpp'],
                         'subtotal' => $di['subtotal'],
                     ]);
+
+                    // Kurangi stok barang fisik
+                    $isJasa = $di['barang']->group && str_contains(strtolower($di['barang']->group->nama), 'jasa');
+                    if (! $isJasa) {
+                        $di['barang']->stok = max(0, $di['barang']->stok - $di['qty']);
+                        $di['barang']->save();
+                    }
 
                     StokMutasi::create([
                         'barang_id' => $di['barang']->id,

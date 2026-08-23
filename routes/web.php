@@ -77,7 +77,7 @@ Route::prefix('admin')->group(function () {
     Route::middleware('auth')->group(function () {
         $semuaPeran = 'owner,admin,kasir';
 
-        Route::get('/dashboard', fn () => view('dashboard.index'))->middleware("peran:{$semuaPeran}")->name('dashboard');
+        Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, '__invoke'])->middleware("peran:{$semuaPeran}")->name('dashboard');
         Route::get('/notifikasi', fn () => view('notifikasi.index'))->middleware("peran:{$semuaPeran}")->name('notifikasi.index');
 
         Route::get('/kasir', [KasirController::class, 'index'])->middleware('peran:owner,admin,kasir')->name('kasir');
