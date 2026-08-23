@@ -69,7 +69,7 @@
                         <x-nav-item href="{{ route('kasir') }}" icon="scan-barcode" :active="request()->routeIs('kasir')">Kasir POS</x-nav-item>
                         <x-nav-item href="{{ route('penjualan.index') }}" icon="receipt" :active="request()->routeIs('penjualan.*')" :badge="$sidebarNotaHariIniCount ?? 0" badgeColor="bg-emerald-600 text-white">Nota Penjualan</x-nav-item>
                     @endif
-                    @if(in_array($peranSaya, ['owner', 'admin', 'gudang']))
+                    @if(in_array($peranSaya, ['owner', 'admin', 'gudang', 'kasir']))
                         <x-nav-item href="{{ route('pembelian.index') }}" icon="truck" :active="request()->routeIs('pembelian.*')">Pembelian</x-nav-item>
                     @endif
                     @if(in_array($peranSaya, ['owner', 'admin', 'kasir', 'gudang']))

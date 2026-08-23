@@ -116,7 +116,7 @@ Route::prefix('admin')->group(function () {
             })->name('show');
         });
 
-        Route::prefix('pembelian')->name('pembelian.')->middleware('peran:owner,admin,gudang')->group(function () {
+        Route::prefix('pembelian')->name('pembelian.')->middleware('peran:owner,admin,kasir,gudang')->group(function () {
             Route::get('/', [\App\Http\Controllers\PembelianController::class, 'index'])->name('index');
             Route::get('/tambah', [\App\Http\Controllers\PembelianController::class, 'create'])->name('create');
             Route::post('/', [\App\Http\Controllers\PembelianController::class, 'store'])->name('store');
