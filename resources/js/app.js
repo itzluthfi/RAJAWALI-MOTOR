@@ -18,7 +18,27 @@ window.toastSukses = (pesan) => {
     });
 };
 
+window.modalStokGagal = (pesan, judul = 'Stok Tidak Mencukupi!') => {
+    Swal.fire({
+        icon: 'error',
+        title: judul,
+        text: pesan,
+        confirmButtonText: 'Saya Mengerti (Periksa Stok)',
+        confirmButtonColor: '#B0181C',
+        position: 'center',
+        toast: false,
+        customClass: {
+            popup: 'rounded-2xl shadow-2xl border border-slate-100 p-6',
+            confirmButton: 'px-6 py-2.5 rounded-xl font-bold text-sm shadow-md bg-[#B0181C]'
+        }
+    });
+};
+
 window.toastGagal = (pesan) => {
+    if (typeof pesan === 'string' && pesan.toLowerCase().includes('stok')) {
+        window.modalStokGagal(pesan);
+        return;
+    }
     Swal.fire({
         toast: true,
         position: 'top-end',
