@@ -22,8 +22,8 @@
     <!-- Top Action Bar (No Print) -->
     <div class="no-print sticky top-0 z-50 bg-slate-900 text-white px-4 py-3 shadow-lg flex items-center justify-between">
         <div class="flex items-center gap-3">
-            <button type="button" onclick="history.back()" class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold transition flex items-center gap-1.5">
-                <span>← Kembali</span>
+            <button type="button" onclick="kembaliAtauTutup()" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition flex items-center gap-1.5 border border-white/10">
+                <span>← Kembali / Tutup Tab</span>
             </button>
             <div>
                 <h2 class="font-bold text-sm leading-tight text-white">{{ $title ?? 'Pratinjau Cetak Dokumen' }}</h2>
@@ -42,5 +42,18 @@
     <div class="p-4 sm:p-6 flex justify-center">
         {{ $slot }}
     </div>
+
+    <script>
+    function kembaliAtauTutup() {
+        if (window.opener || window.history.length <= 1) {
+            window.close();
+            setTimeout(() => {
+                window.location.href = "{{ route('penjualan.index') }}";
+            }, 300);
+        } else {
+            window.history.back();
+        }
+    }
+    </script>
 </body>
 </html>
