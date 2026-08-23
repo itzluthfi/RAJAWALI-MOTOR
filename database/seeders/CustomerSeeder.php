@@ -13,7 +13,7 @@ class CustomerSeeder extends Seeder
     {
         $daftar = [
             [
-                'nama' => 'Umum / On The Line',
+                'nama' => 'Umum',
                 'plat_nomor' => null,
                 'jenis_kendaraan' => null,
                 'kategori' => 'umum',

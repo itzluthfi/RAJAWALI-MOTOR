@@ -51,6 +51,7 @@ class KasirController extends Controller
                 'id' => $c->id,
                 'nama' => $c->nama,
                 'plat' => $c->plat_nomor,
+                'motor' => $c->jenis_kendaraan,
                 'kategori' => $c->kategori ?? 'umum',
                 'termin' => $c->termin_hari ?? 30,
             ])->values();
