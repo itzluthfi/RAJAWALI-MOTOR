@@ -2,7 +2,7 @@
 
 <div
     x-data="{ open: false }"
-    x-on:buka-modal.window="if ($event.detail.name === '{{ $name }}') open = true"
+    x-on:buka-modal.window="if ($event.detail && $event.detail.name === '{{ $name }}') { open = true; $nextTick(() => setTimeout(() => { const inp = $el.querySelector('input:not([type=hidden]), select, textarea'); if(inp) { inp.focus(); if (inp.select) inp.select(); } }, 60)); }"
     x-on:tutup-modal.window="if (!$event.detail || $event.detail.name === '{{ $name }}') open = false"
     x-on:keydown.escape.window="open = false"
     x-show="open"

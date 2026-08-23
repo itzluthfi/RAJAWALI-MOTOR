@@ -30,7 +30,7 @@
 
                 <!-- Live Search Floating Dropdown Popup -->
                 <div
-                    x-show="fokusMainInput && barcode.trim().length >= 1 && hasilLive.length > 0"
+                    x-show="barcode.trim().length >= 1 && hasilLive.length > 0"
                     x-cloak
                     class="absolute left-0 right-0 top-full mt-1 bg-white border-2 border-rajawali rounded-lg shadow-2xl z-50 max-h-80 overflow-y-auto divide-y divide-line"
                 >
@@ -917,21 +917,44 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
         },
 
         tanganiShortcut(e) {
-            if (this.modalTerbuka > 0 && e.key !== 'Escape') return;
+            const key = e.key;
 
-            if (e.key === 'F2') { e.preventDefault(); this.bukaModalCari(); }
-            if (e.key === 'F6') { e.preventDefault(); this.$dispatch('buka-modal', { name: 'diskon-nota' }); }
-            if (e.key === 'F8') { e.preventDefault(); this.kosongkanKeranjang(); }
-            if (e.key === 'F12' || (e.ctrlKey && e.key === 'Enter')) { e.preventDefault(); this.simpanNota(); }
-            if (e.key === 'Delete' && this.barisAktif !== null) {
+            if (key === 'F2') {
+                e.preventDefault();
+                e.stopPropagation();
+                this.bukaModalCari();
+                return;
+            }
+            if (key === 'F6') {
+                e.preventDefault();
+                e.stopPropagation();
+                this.$dispatch('buka-modal', { name: 'diskon-nota' });
+                return;
+            }
+            if (key === 'F8') {
+                e.preventDefault();
+                e.stopPropagation();
+                this.kosongkanKeranjang();
+                return;
+            }
+            if (key === 'F12' || (e.ctrlKey && key === 'Enter')) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.simpanNota();
+                return;
+            }
+
+            if (this.modalTerbuka > 0 && key !== 'Escape') return;
+
+            if (key === 'Delete' && this.barisAktif !== null) {
                 this.keranjang.splice(this.barisAktif, 1);
                 this.barisAktif = null;
                 this.hargaTerakhirInfo = null;
             }
-            if (e.key === 'ArrowDown' && document.activeElement === this.$refs.barcode) {
+            if (key === 'ArrowDown' && document.activeElement === this.$refs.barcode) {
                 this.barisAktif = this.barisAktif === null ? 0 : Math.min(this.barisAktif + 1, this.keranjang.length - 1);
             }
-            if (e.key === 'ArrowUp' && document.activeElement === this.$refs.barcode) {
+            if (key === 'ArrowUp' && document.activeElement === this.$refs.barcode) {
                 this.barisAktif = this.barisAktif === null ? 0 : Math.max(this.barisAktif - 1, 0);
             }
         },
