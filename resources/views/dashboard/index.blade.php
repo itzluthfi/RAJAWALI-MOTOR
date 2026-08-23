@@ -318,7 +318,7 @@
                             </thead>
                             <tbody class="divide-y divide-line">
                                 @forelse($hutangJatuhTempoList as $h)
-                                    @php $sisaHutang = max(0, $h->total - $h->bayar); @endphp
+                                    @php $sisaHutang = (float) $h->total; @endphp
                                     <tr class="hover:bg-canvas transition">
                                         <td class="px-4 py-2.5 font-bold text-xs text-ink">{{ $h->supplier?->nama ?? '-' }}</td>
                                         <td class="px-4 py-2.5 font-mono text-xs text-blue-700 font-bold">{{ $h->nomor_pembelian }}</td>

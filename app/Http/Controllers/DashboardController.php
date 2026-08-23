@@ -58,7 +58,7 @@ class DashboardController extends Controller
                 ->sum(DB::raw('total_akhir - uang_muka'));
 
             $totalHutang = (float) Pembelian::where('status_bayar', 'tempo')
-                ->sum(DB::raw('total - bayar'));
+                ->sum('total');
 
             // Chart data 30 hari terakhir
             for ($i = 29; $i >= 0; $i--) {

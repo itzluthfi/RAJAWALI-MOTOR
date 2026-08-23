@@ -171,6 +171,16 @@ class RajawaliDesktopMigrationTest extends TestCase
             'kode' => 'BANIRC', 'nama' => 'BAN IRC TUBELESS', 'group_id' => $group->id, 'satuan_id' => $satuan->id,
             'hpp' => 150000, 'harga_eceran' => 200000, 'harga_grosir' => 180000, 'stok_minimum' => 2,
         ]);
+        \App\Models\StokMutasi::create([
+            'barang_id' => $barang->id,
+            'tanggal' => now()->toDateString(),
+            'jenis_mutasi' => 'penyesuaian',
+            'no_dokumen' => 'INIT-TEST',
+            'masuk' => 10,
+            'keluar' => 0,
+            'hpp' => 150000,
+            'keterangan' => 'Stok awal test',
+        ]);
 
         // Coba checkout tempo dengan row discount dan down payment (DP)
         $response = $this->postJson('/admin/kasir', [
