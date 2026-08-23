@@ -52,12 +52,14 @@ class CustomerController extends Controller
                 'nama' => ['required', 'string', 'max:150'],
                 'plat_nomor' => ['nullable', 'string', 'max:30'],
                 'jenis_kendaraan' => ['nullable', 'string', 'max:100'],
-                'kategori' => ['required', 'string', 'in:umum,mitra,grosir'],
+                'kategori' => ['nullable', 'string', 'in:umum,mitra,grosir'],
                 'telepon' => ['nullable', 'string', 'max:30'],
                 'no_wa' => ['nullable', 'string', 'max:30'],
                 'alamat' => ['nullable', 'string', 'max:255'],
                 'termin_hari' => ['required', 'integer', 'min:0', 'max:365'],
             ]);
+
+            $data['kategori'] = $data['kategori'] ?? 'umum';
 
             DB::transaction(function () use ($data, $customer) {
                 $customer ? $customer->update($data) : Customer::create($data);

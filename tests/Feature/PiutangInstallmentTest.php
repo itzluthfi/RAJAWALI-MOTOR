@@ -8,6 +8,7 @@ use App\Models\Customer;
 use App\Models\Penjualan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class PiutangInstallmentTest extends TestCase
@@ -16,19 +17,20 @@ class PiutangInstallmentTest extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->create(['peran' => 'admin']);
+        return User::factory()->create(['username' => 'admin_' . Str::random(6), 'peran' => 'admin']);
     }
 
     public function test_can_pay_piutang_in_installments(): void
     {
-        $this->actingAs($this->admin());
+        $adminUser = $this->admin();
+        $this->actingAs($adminUser);
 
         $customer = Customer::create(['nama' => 'Toko Maju', 'termin_hari' => 30]);
 
         $penjualan = Penjualan::create([
             'nomor_nota' => 'PJ-TEMPO-001',
             'customer_id' => $customer->id,
-            'user_id' => $this->admin()->id,
+            'user_id' => $adminUser->id,
             'subtotal' => 1000000,
             'diskon' => 0,
             'pajak' => 0,

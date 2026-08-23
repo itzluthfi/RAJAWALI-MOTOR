@@ -10,6 +10,7 @@ use App\Models\Group;
 use App\Models\Satuan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class MitraGrosirDiscountTest extends TestCase
@@ -18,7 +19,7 @@ class MitraGrosirDiscountTest extends TestCase
 
     private function kasir(): User
     {
-        return User::factory()->create(['peran' => 'kasir']);
+        return User::factory()->create(['username' => 'kasir_' . Str::random(6), 'peran' => 'kasir']);
     }
 
     public function test_pos_includes_harga_grosir_and_customer_kategori(): void

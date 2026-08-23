@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class CustomerAttributesTest extends TestCase
@@ -15,7 +16,7 @@ class CustomerAttributesTest extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->create(['peran' => 'admin']);
+        return User::factory()->create(['username' => 'admin_' . Str::random(6), 'peran' => 'admin']);
     }
 
     public function test_can_create_customer_with_rich_attributes(): void

@@ -12,6 +12,7 @@ use App\Models\PenjualanDetail;
 use App\Models\Satuan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class ReceiptPrintoutTest extends TestCase
@@ -20,12 +21,13 @@ class ReceiptPrintoutTest extends TestCase
 
     private function kasir(): User
     {
-        return User::factory()->create(['peran' => 'kasir']);
+        return User::factory()->create(['username' => 'kasir_' . Str::random(6), 'peran' => 'kasir']);
     }
 
     public function test_receipt_does_not_contain_kembali(): void
     {
-        $this->actingAs($this->kasir());
+        $kasirUser = $this->kasir();
+        $this->actingAs($kasirUser);
 
         $customer = Customer::create(['nama' => 'Budi']);
         $group = Group::create(['nama' => 'Sparepart']);
@@ -43,7 +45,7 @@ class ReceiptPrintoutTest extends TestCase
         $penjualan = Penjualan::create([
             'nomor_nota' => 'PJ-TEST-001',
             'customer_id' => $customer->id,
-            'user_id' => $this->kasir()->id,
+            'user_id' => $kasirUser->id,
             'subtotal' => 25000,
             'diskon' => 0,
             'pajak' => 0,

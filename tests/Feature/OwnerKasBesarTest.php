@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Models\KasFlow;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class OwnerKasBesarTest extends TestCase
@@ -15,12 +16,12 @@ class OwnerKasBesarTest extends TestCase
 
     private function owner(): User
     {
-        return User::factory()->create(['peran' => 'owner']);
+        return User::factory()->create(['username' => 'owner_' . Str::random(6), 'peran' => 'owner']);
     }
 
     private function kasir(): User
     {
-        return User::factory()->create(['peran' => 'kasir']);
+        return User::factory()->create(['username' => 'kasir_' . Str::random(6), 'peran' => 'kasir']);
     }
 
     public function test_owner_can_access_kas_besar(): void
