@@ -38,6 +38,10 @@ class KasirController extends Controller
             'nama' => $b->nama,
             'harga' => (float) $b->harga_eceran,
             'harga_grosir' => (float) ($b->harga_grosir > 0 ? $b->harga_grosir : $b->harga_eceran),
+            'min_qty_grosir_1' => (float) ($b->min_qty_grosir_1 ?? 3),
+            'harga_grosir_1' => (float) ($b->harga_grosir_1 > 0 ? $b->harga_grosir_1 : ($b->harga_grosir > 0 ? $b->harga_grosir : $b->harga_eceran)),
+            'min_qty_grosir_2' => (float) ($b->min_qty_grosir_2 ?? 24),
+            'harga_grosir_2' => (float) ($b->harga_grosir_2 > 0 ? $b->harga_grosir_2 : ($b->harga_grosir_1 > 0 ? $b->harga_grosir_1 : $b->harga_eceran)),
             'hpp' => (float) $b->hpp,
             'stok' => $stok[$b->id] ?? 0.0,
         ])->values();

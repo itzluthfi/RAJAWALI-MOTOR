@@ -197,7 +197,12 @@
                         >
                             <td class="px-3 py-2 text-steel" x-text="idx + 1"></td>
                             <td class="px-3 py-2 font-mono text-xs text-steel font-bold" x-text="item.kode"></td>
-                            <td class="px-3 py-2 font-bold text-ink" x-text="item.nama"></td>
+                            <td class="px-3 py-2 font-bold text-ink">
+                                <span x-text="item.nama"></span>
+                                <template x-if="item.tierLabel">
+                                    <span class="ml-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-100 text-amber-800 border border-amber-300" x-text="item.tierLabel"></span>
+                                </template>
+                            </td>
                             <td class="px-3 py-2 text-right font-mono">
                                 <input
                                     type="number" min="1" step="1"
@@ -697,11 +702,29 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
             this.$nextTick(() => this.$refs.barcode?.focus());
         },
 
-        tambahBarangKeKeranjang(barang) {
+        hitungHargaTier(barang, qty) {
             const cust = this.customerList.find(c => c.id == this.customerId);
-            const isTierGrosir = cust && (cust.kategori === 'mitra' || cust.kategori === 'grosir');
-            const hargaPakai = isTierGrosir && barang.harga_grosir ? barang.harga_grosir : barang.harga;
+            const isMitraGrosir = cust && (cust.kategori === 'mitra' || cust.kategori === 'grosir');
 
+            const minQty2 = Number(barang.min_qty_grosir_2 || 24);
+            const minQty1 = Number(barang.min_qty_grosir_1 || 3);
+            const hg2 = Number(barang.harga_grosir_2 || 0);
+            const hg1 = Number(barang.harga_grosir_1 || barang.harga_grosir || 0);
+            const hEceran = Number(barang.harga || 0);
+
+            if (hg2 > 0 && qty >= minQty2) {
+                return { harga: hg2, label: `Grosir Karton (≥${minQty2})` };
+            }
+            if (hg1 > 0 && qty >= minQty1) {
+                return { harga: hg1, label: `Semi-Grosir (≥${minQty1})` };
+            }
+            if (isMitraGrosir && hg1 > 0) {
+                return { harga: hg1, label: `Mitra/Grosir` };
+            }
+            return { harga: hEceran, label: null };
+        },
+
+        tambahBarangKeKeranjang(barang) {
             const ada = this.keranjang.find(i => i.kode === barang.kode);
             const qtyDiminta = ada ? ada.qty + 1 : 1;
 
@@ -718,11 +741,18 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
                 ada.qty++;
                 this.recalculateDiskonRow(this.keranjang.indexOf(ada));
             } else {
+                const tier = this.hitungHargaTier(barang, 1);
                 this.keranjang.push({
                     uid: this.uidCounter++,
                     kode: barang.kode,
                     nama: barang.nama,
-                    harga: hargaPakai,
+                    hargaOriginal: barang.harga,
+                    hargaGrosir1: barang.harga_grosir_1 || barang.harga_grosir,
+                    minQty1: barang.min_qty_grosir_1 || 3,
+                    hargaGrosir2: barang.harga_grosir_2,
+                    minQty2: barang.min_qty_grosir_2 || 24,
+                    harga: tier.harga,
+                    tierLabel: tier.label,
                     hpp: barang.hpp,
                     stok: barang.stok,
                     qty: 1,
@@ -731,6 +761,23 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
                 });
                 this.barisAktif = this.keranjang.length - 1;
             }
+        },
+
+        updateHargaTierItem(idx) {
+            const item = this.keranjang[idx];
+            if (!item) return;
+
+            const barangRef = {
+                harga: item.hargaOriginal,
+                harga_grosir_1: item.hargaGrosir1,
+                min_qty_grosir_1: item.minQty1,
+                harga_grosir_2: item.hargaGrosir2,
+                min_qty_grosir_2: item.minQty2,
+            };
+
+            const tier = this.hitungHargaTier(barangRef, item.qty);
+            item.harga = tier.harga;
+            item.tierLabel = tier.label;
         },
 
         pilihBarangDariModal(barang) {
@@ -756,6 +803,7 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
         },
 
         recalculateDiskonRow(idx) {
+            this.updateHargaTierItem(idx);
             const item = this.keranjang[idx];
             if (!item) return;
             if (item.diskonPersen > 0) {

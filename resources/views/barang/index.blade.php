@@ -198,10 +198,33 @@
                 <x-input label="HPP" name="hpp" type="number" mono x-model="form.hpp" required />
             @endif
 
-            <x-input label="Harga Eceran" name="harga_eceran" type="number" mono x-model="form.harga_eceran" required />
-            <x-input label="Harga Grosir" name="harga_grosir" type="number" mono x-model="form.harga_grosir" required />
+            <x-input label="Harga Eceran (Rp)" name="harga_eceran" type="number" mono x-model="form.harga_eceran" required />
+            <x-input label="Harga Grosir Default (Rp)" name="harga_grosir" type="number" mono x-model="form.harga_grosir" required />
+
+            <div class="col-span-2 border-t border-slate-200 pt-3 mt-1">
+                <h4 class="font-bold text-xs text-steel uppercase tracking-wider mb-2 flex items-center gap-1">
+                    <x-icon name="tags" class="w-3.5 h-3.5 text-rajawali" /> Setting Grosir Bertingkat (Otomatis Sesuai Qty Pembelian)
+                </h4>
+                <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <div class="space-y-1.5">
+                        <span class="text-xs font-bold text-slate-700 block">Tier 1: Semi-Grosir (Pembelian Sedang)</span>
+                        <div class="grid grid-cols-2 gap-2">
+                            <x-input label="Min Qty" name="min_qty_grosir_1" type="number" step="1" mono x-model="form.min_qty_grosir_1" placeholder="3" />
+                            <x-input label="Harga (Rp)" name="harga_grosir_1" type="number" mono x-model="form.harga_grosir_1" placeholder="0" />
+                        </div>
+                    </div>
+                    <div class="space-y-1.5">
+                        <span class="text-xs font-bold text-slate-700 block">Tier 2: Grosir Karton (Pembelian Besar)</span>
+                        <div class="grid grid-cols-2 gap-2">
+                            <x-input label="Min Qty" name="min_qty_grosir_2" type="number" step="1" mono x-model="form.min_qty_grosir_2" placeholder="24" />
+                            <x-input label="Harga (Rp)" name="harga_grosir_2" type="number" mono x-model="form.harga_grosir_2" placeholder="0" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <x-input label="Stok Minimum" name="stok_minimum" type="number" step="0.001" mono x-model="form.stok_minimum" required />
-            <x-input label="Lokasi Rak" name="lokasi_rak" x-model="form.lokasi_rak" placeholder="cth. A-12" class="col-span-2" />
+            <x-input label="Lokasi Rak" name="lokasi_rak" x-model="form.lokasi_rak" placeholder="cth. A-12" />
 
             <div class="col-span-2 flex justify-end gap-2 mt-2">
                 <x-button type="button" variant="secondary" x-on:click="$dispatch('tutup-modal', { name: 'form-barang' })">Batal</x-button>
@@ -251,14 +274,22 @@ function formBarang(adalahOwner) {
     return {
         modeEdit: false,
         adalahOwner: adalahOwner,
-        form: { kode: '', nama: '', group_id: '', sub_group_id: '', satuan_id: '', hpp: 0, harga_eceran: 0, harga_grosir: 0, stok_minimum: 0, lokasi_rak: '' },
+        form: {
+            kode: '', nama: '', group_id: '', sub_group_id: '', satuan_id: '', hpp: 0, harga_eceran: 0, harga_grosir: 0,
+            min_qty_grosir_1: 3, harga_grosir_1: 0, min_qty_grosir_2: 24, harga_grosir_2: 0,
+            stok_minimum: 0, lokasi_rak: ''
+        },
         urlUpdate: '', idSedangDiubah: null,
         daftarBarcode: [],
         barangIdAktif: null,
 
         tambah() {
             this.modeEdit = false;
-            this.form = { kode: '', nama: '', group_id: '', sub_group_id: '', satuan_id: '', hpp: 0, harga_eceran: 0, harga_grosir: 0, stok_minimum: 0, lokasi_rak: '' };
+            this.form = {
+                kode: '', nama: '', group_id: '', sub_group_id: '', satuan_id: '', hpp: 0, harga_eceran: 0, harga_grosir: 0,
+                min_qty_grosir_1: 3, harga_grosir_1: 0, min_qty_grosir_2: 24, harga_grosir_2: 0,
+                stok_minimum: 0, lokasi_rak: ''
+            };
             this.$dispatch('buka-modal', { name: 'form-barang' });
         },
 
@@ -268,6 +299,8 @@ function formBarang(adalahOwner) {
                 kode: data.kode, nama: data.nama,
                 group_id: data.group_id ?? '', sub_group_id: data.sub_group_id ?? '', satuan_id: data.satuan_id ?? '',
                 hpp: data.hpp ?? 0, harga_eceran: data.harga_eceran, harga_grosir: data.harga_grosir,
+                min_qty_grosir_1: data.min_qty_grosir_1 ?? 3, harga_grosir_1: data.harga_grosir_1 ?? 0,
+                min_qty_grosir_2: data.min_qty_grosir_2 ?? 24, harga_grosir_2: data.harga_grosir_2 ?? 0,
                 stok_minimum: data.stok_minimum, lokasi_rak: data.lokasi_rak ?? '',
             };
             this.idSedangDiubah = data.id;

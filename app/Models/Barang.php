@@ -13,6 +13,7 @@ class Barang extends Model
     protected $fillable = [
         'kode', 'nama', 'group_id', 'sub_group_id', 'satuan_id',
         'harga_beli_terakhir', 'hpp', 'harga_eceran', 'harga_grosir',
+        'min_qty_grosir_1', 'harga_grosir_1', 'min_qty_grosir_2', 'harga_grosir_2',
         'stok_minimum', 'lokasi_rak', 'aktif',
     ];
 
@@ -24,6 +25,10 @@ class Barang extends Model
             'hpp' => 'decimal:2',
             'harga_eceran' => 'decimal:2',
             'harga_grosir' => 'decimal:2',
+            'min_qty_grosir_1' => 'decimal:3',
+            'harga_grosir_1' => 'decimal:2',
+            'min_qty_grosir_2' => 'decimal:3',
+            'harga_grosir_2' => 'decimal:2',
             'stok_minimum' => 'decimal:3',
         ];
     }

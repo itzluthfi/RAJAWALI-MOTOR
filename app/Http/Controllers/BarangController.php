@@ -79,6 +79,10 @@ class BarangController extends Controller
                 'satuan_id' => ['required', 'exists:satuans,id'],
                 'harga_eceran' => ['required', 'numeric', 'min:0'],
                 'harga_grosir' => ['required', 'numeric', 'min:0'],
+                'min_qty_grosir_1' => ['nullable', 'numeric', 'min:1'],
+                'harga_grosir_1' => ['nullable', 'numeric', 'min:0'],
+                'min_qty_grosir_2' => ['nullable', 'numeric', 'min:1'],
+                'harga_grosir_2' => ['nullable', 'numeric', 'min:0'],
                 'stok_minimum' => ['required', 'numeric', 'min:0'],
                 'lokasi_rak' => ['nullable', 'string', 'max:50'],
             ]);
