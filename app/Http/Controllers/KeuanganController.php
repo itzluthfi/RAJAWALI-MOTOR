@@ -73,6 +73,39 @@ class KeuanganController extends Controller
         ]);
     }
 
+    public function kasBesar(Request $request): View
+    {
+        if ($request->user()->peran !== 'owner') {
+            abort(403, 'Akses terbatas khusus Owner.');
+        }
+
+        $query = KasFlow::query();
+
+        if ($dari = $request->input('dari_tanggal')) {
+            $query->where('tanggal', '>=', $dari);
+        }
+        if ($sampai = $request->input('sampai_tanggal')) {
+            $query->where('tanggal', '<=', $sampai);
+        }
+
+        $mutasi = $query->orderBy('tanggal', 'desc')->orderBy('id', 'desc')->paginate(20)->withQueryString();
+
+        $totalMasuk = (float) KasFlow::where('tipe', 'masuk')->sum('nominal');
+        $totalKeluar = (float) KasFlow::where('tipe', 'keluar')->sum('nominal');
+        $saldoKasBesar = $totalMasuk - $totalKeluar;
+
+        return view('keuangan.kas-besar', [
+            'mutasi' => $mutasi,
+            'totalMasuk' => $totalMasuk,
+            'totalKeluar' => $totalKeluar,
+            'saldoKasBesar' => $saldoKasBesar,
+            'filter' => [
+                'dari_tanggal' => $request->input('dari_tanggal', ''),
+                'sampai_tanggal' => $request->input('sampai_tanggal', ''),
+            ]
+        ]);
+    }
+
     public function piutang(Request $request): View
     {
         // Query penjualan tempo yang belum lunas
@@ -154,15 +187,25 @@ class KeuanganController extends Controller
         }
     }
 
-    public function bayarPiutang(Penjualan $penjualan): RedirectResponse
+    public function bayarPiutang(Request $request, Penjualan $penjualan): RedirectResponse
     {
         try {
-            DB::transaction(function () use ($penjualan) {
-                $nominalPiutang = max(0, $penjualan->total_akhir - $penjualan->uang_muka);
-                
+            $sisaPiutang = max(0, $penjualan->total_akhir - $penjualan->uang_muka);
+            $nominalBayar = (float) $request->input('nominal_bayar', $sisaPiutang);
+
+            if ($nominalBayar <= 0) {
+                return back()->withErrors(['error' => 'Nominal bayar harus lebih dari 0.']);
+            }
+
+            DB::transaction(function () use ($penjualan, $nominalBayar, $sisaPiutang) {
+                $bayarNyicil = min($nominalBayar, $sisaPiutang);
+                $uangMukaBaru = $penjualan->uang_muka + $bayarNyicil;
+                $isLunas = $uangMukaBaru >= $penjualan->total_akhir;
+
                 $penjualan->update([
-                    'status_bayar' => 'lunas',
-                    'bayar' => $penjualan->total_akhir,
+                    'uang_muka' => $uangMukaBaru,
+                    'status_bayar' => $isLunas ? 'lunas' : 'piutang',
+                    'bayar' => $isLunas ? $penjualan->total_akhir : $uangMukaBaru,
                     'kembali' => 0,
                 ]);
 
@@ -173,15 +216,17 @@ class KeuanganController extends Controller
                     'sumber' => 'kas',
                     'kategori' => 'piutang',
                     'no_referensi' => $penjualan->nomor_nota,
-                    'nominal' => $nominalPiutang,
-                    'keterangan' => "Pelunasan Piutang Nota {$penjualan->nomor_nota}",
+                    'nominal' => $bayarNyicil,
+                    'keterangan' => $isLunas 
+                        ? "Pelunasan Piutang Nota {$penjualan->nomor_nota}"
+                        : "Cicilan Piutang Nota {$penjualan->nomor_nota} (Rp " . number_format($bayarNyicil, 0, ',', '.') . ")",
                 ]);
             });
 
-            return back()->with('sukses', 'Piutang berhasil dilunasi.');
+            return back()->with('sukses', 'Pembayaran/cicilan piutang berhasil dicatat.');
         } catch (Throwable $e) {
-            Log::error('Gagal melunasi piutang', ['pesan' => $e->getMessage()]);
-            return back()->withErrors(['error' => 'Gagal melunasi piutang: ' . $e->getMessage()]);
+            Log::error('Gagal melunasi/mencicil piutang', ['pesan' => $e->getMessage()]);
+            return back()->withErrors(['error' => 'Gagal memproses piutang: ' . $e->getMessage()]);
         }
     }
 

@@ -22,6 +22,9 @@ class CustomerController extends Controller
         if ($cari = $request->string('cari')->trim()->value()) {
             $query->where(function ($q) use ($cari) {
                 $q->where('nama', 'like', "%{$cari}%")
+                    ->orWhere('plat_nomor', 'like', "%{$cari}%")
+                    ->orWhere('jenis_kendaraan', 'like', "%{$cari}%")
+                    ->orWhere('no_wa', 'like', "%{$cari}%")
                     ->orWhere('telepon', 'like', "%{$cari}%");
             });
         }
@@ -47,7 +50,11 @@ class CustomerController extends Controller
         try {
             $data = $request->validate([
                 'nama' => ['required', 'string', 'max:150'],
+                'plat_nomor' => ['nullable', 'string', 'max:30'],
+                'jenis_kendaraan' => ['nullable', 'string', 'max:100'],
+                'kategori' => ['required', 'string', 'in:umum,mitra,grosir'],
                 'telepon' => ['nullable', 'string', 'max:30'],
+                'no_wa' => ['nullable', 'string', 'max:30'],
                 'alamat' => ['nullable', 'string', 'max:255'],
                 'termin_hari' => ['required', 'integer', 'min:0', 'max:365'],
             ]);

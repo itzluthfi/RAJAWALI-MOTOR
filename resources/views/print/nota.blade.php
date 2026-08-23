@@ -48,10 +48,7 @@
     
     <div class="border-t border-dashed border-black/40 my-2"></div>
     <div class="flex justify-between"><span>Metode:</span><span>{{ strtoupper($penjualan->metode_pembayaran) }}</span></div>
-    @if($penjualan->metode_pembayaran === 'tunai')
-        <div class="flex justify-between"><span>Bayar:</span><span>Rp {{ number_format($penjualan->bayar, 0, ',', '.') }}</span></div>
-        <div class="flex justify-between font-bold"><span>Kembali:</span><span>Rp {{ number_format($penjualan->kembali, 0, ',', '.') }}</span></div>
-    @else
+    @if($penjualan->metode_pembayaran === 'tempo')
         <div class="flex justify-between"><span>Uang Muka (DP):</span><span>Rp {{ number_format($penjualan->uang_muka, 0, ',', '.') }}</span></div>
         <div class="flex justify-between font-bold text-rajawali"><span>Sisa Piutang:</span><span>Rp {{ number_format(max(0, $penjualan->total_akhir - $penjualan->uang_muka), 0, ',', '.') }}</span></div>
     @endif

@@ -580,6 +580,10 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
         },
 
         tambahBarangKeKeranjang(barang) {
+            const cust = this.customerList.find(c => c.id == this.customerId);
+            const isTierGrosir = cust && (cust.kategori === 'mitra' || cust.kategori === 'grosir');
+            const hargaPakai = isTierGrosir && barang.harga_grosir ? barang.harga_grosir : barang.harga;
+
             const ada = this.keranjang.find(i => i.kode === barang.kode);
             const qtyDiminta = ada ? ada.qty + 1 : 1;
 
@@ -600,7 +604,7 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
                     uid: this.uidCounter++,
                     kode: barang.kode,
                     nama: barang.nama,
-                    harga: barang.harga,
+                    harga: hargaPakai,
                     hpp: barang.hpp,
                     stok: barang.stok,
                     qty: 1,

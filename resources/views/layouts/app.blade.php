@@ -112,7 +112,9 @@
                     <x-nav-item href="{{ route('keuangan.piutang') }}" icon="hand-coins" :active="request()->routeIs('keuangan.piutang')">Piutang Customer</x-nav-item>
                     <x-nav-item href="{{ route('keuangan.hutang') }}" icon="landmark" :active="request()->routeIs('keuangan.hutang')">Hutang Supplier</x-nav-item>
                     <x-nav-item href="{{ route('keuangan.kas') }}" icon="wallet" :active="request()->routeIs('keuangan.kas')">Kas Toko</x-nav-item>
-                    <x-nav-item href="{{ route('keuangan.bank') }}" icon="building-2" :active="request()->routeIs('keuangan.bank')">Bank</x-nav-item>
+                    @if($peranSaya === 'owner')
+                        <x-nav-item href="{{ route('keuangan.kas-besar') }}" icon="vault" :active="request()->routeIs('keuangan.kas-besar')">Kas Besar (Owner)</x-nav-item>
+                    @endif
                 </x-nav-group>
 
                 <x-nav-group label="Laporan">

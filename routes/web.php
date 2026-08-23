@@ -179,6 +179,7 @@ Route::prefix('admin')->group(function () {
             Route::get('/hutang', [\App\Http\Controllers\KeuanganController::class, 'hutang'])->name('hutang');
             Route::post('/hutang/{service}/pelunasan', [\App\Http\Controllers\KeuanganController::class, 'bayarHutang'])->name('hutang.bayar');
             Route::get('/kas', [\App\Http\Controllers\KeuanganController::class, 'kas'])->name('kas');
+            Route::get('/kas-besar', [\App\Http\Controllers\KeuanganController::class, 'kasBesar'])->middleware('peran:owner')->name('kas-besar');
             Route::get('/bank', [\App\Http\Controllers\KeuanganController::class, 'bank'])->name('bank');
             Route::post('/transaksi', [\App\Http\Controllers\KeuanganController::class, 'storeKasFlow'])->name('transaksi.store');
         });

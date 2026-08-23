@@ -37,6 +37,7 @@ class KasirController extends Controller
             'barcode' => $b->barcodes->firstWhere('utama', true)?->barcode ?? $b->barcodes->first()?->barcode ?? $b->kode,
             'nama' => $b->nama,
             'harga' => (float) $b->harga_eceran,
+            'harga_grosir' => (float) ($b->harga_grosir > 0 ? $b->harga_grosir : $b->harga_eceran),
             'hpp' => (float) $b->hpp,
             'stok' => $stok[$b->id] ?? 0.0,
         ])->values();
@@ -45,11 +46,13 @@ class KasirController extends Controller
             ->where('aktif', true)
             ->orderByRaw("CASE WHEN nama LIKE 'Umum%' THEN 0 ELSE 1 END")
             ->orderBy('nama')
-            ->get(['id', 'nama', 'termin_hari'])
+            ->get(['id', 'nama', 'plat_nomor', 'jenis_kendaraan', 'kategori', 'telepon', 'no_wa', 'termin_hari'])
             ->map(fn (Customer $c) => [
                 'id' => $c->id,
                 'nama' => $c->nama,
-                'termin' => $c->termin_hari,
+                'plat' => $c->plat_nomor,
+                'kategori' => $c->kategori ?? 'umum',
+                'termin' => $c->termin_hari ?? 30,
             ])->values();
 
         $pengaturan = PengaturanToko::current();

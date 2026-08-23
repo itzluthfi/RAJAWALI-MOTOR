@@ -8,7 +8,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Customer extends Model
 {
-    protected $fillable = ['nama', 'telepon', 'alamat', 'termin_hari', 'aktif'];
+    protected $fillable = [
+        'nama',
+        'plat_nomor',
+        'jenis_kendaraan',
+        'kategori',
+        'telepon',
+        'no_wa',
+        'alamat',
+        'termin_hari',
+        'aktif',
+    ];
 
     protected function casts(): array
     {
