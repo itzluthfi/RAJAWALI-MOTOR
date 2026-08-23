@@ -75,7 +75,7 @@ class KasirController extends Controller
             'items.*.diskon' => ['nullable', 'numeric', 'min:0'],
             'diskon' => ['nullable', 'numeric', 'min:0'],
             'pajak' => ['nullable', 'numeric', 'min:0'],
-            'bayar' => ['required', 'numeric', 'min:0'],
+            'bayar' => ['nullable', 'numeric', 'min:0'],
             'uang_muka' => ['nullable', 'numeric', 'min:0'],
             'metode_pembayaran' => ['required', 'string'],
             'catatan' => ['nullable', 'string', 'max:255'],
@@ -109,7 +109,8 @@ class KasirController extends Controller
                 $pajak = (float) ($validated['pajak'] ?? 0);
                 $uangMuka = (float) ($validated['uang_muka'] ?? 0);
                 $totalAkhir = max(0, $subtotal - $diskon + $pajak);
-                $bayar = (float) $validated['bayar'];
+                $bayarInput = (float) ($validated['bayar'] ?? 0);
+                $bayar = ($validated['metode_pembayaran'] === 'tunai' || $bayarInput <= 0) ? $totalAkhir : $bayarInput;
                 $kembali = max(0, $bayar - $totalAkhir);
 
                 $penjualan = Penjualan::create([

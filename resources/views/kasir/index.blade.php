@@ -193,7 +193,7 @@
             </div>
 
             {{-- PEMBAYARAN & TOTAL --}}
-            <div class="space-y-1.5 text-sm font-bold">
+            <div class="space-y-2 text-sm font-bold">
                 <div class="flex justify-between"><span class="text-steel">Subtotal</span><span class="font-mono" x-text="formatRp(subtotal)"></span></div>
                 <div class="flex justify-between items-center">
                     <span class="text-steel">
@@ -202,33 +202,45 @@
                             <span class="text-[11px] text-steel/70">(maks <span x-text="batasDiskonPersen"></span>%)</span>
                         </template>
                     </span>
-                    <input type="number" min="0" x-model.number="diskonNota" x-on:focus="$event.target.select()" x-on:click="$event.target.select()" x-on:change="validasiDiskonNota()" class="w-28 text-right font-mono border border-line rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-rajawali">
+                    <div class="flex items-center gap-1.5">
+                        <div class="inline-flex rounded-md border border-line bg-canvas p-0.5 text-xs font-mono">
+                            <button
+                                type="button"
+                                x-on:click="diskonNotaMode = 'rp'; validasiDiskonNota()"
+                                :class="diskonNotaMode === 'rp' ? 'bg-rajawali text-white font-bold' : 'text-steel hover:text-ink'"
+                                class="px-2 py-0.5 rounded transition"
+                            >Rp</button>
+                            <button
+                                type="button"
+                                x-on:click="diskonNotaMode = 'persen'; validasiDiskonNota()"
+                                :class="diskonNotaMode === 'persen' ? 'bg-rajawali text-white font-bold' : 'text-steel hover:text-ink'"
+                                class="px-2 py-0.5 rounded transition"
+                            >%</button>
+                        </div>
+                        <input
+                            type="number"
+                            min="0"
+                            :max="diskonNotaMode === 'persen' ? 100 : null"
+                            x-model="diskonNotaValue"
+                            x-on:focus="$event.target.select()"
+                            x-on:click="$event.target.select()"
+                            x-on:input="validasiDiskonNota()"
+                            placeholder="0"
+                            class="w-24 text-right font-mono border border-line bg-white rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-rajawali"
+                        >
+                    </div>
                 </div>
                 <div class="flex justify-between items-baseline pt-2 border-t border-line">
                     <span class="font-display font-bold text-ink">GRAND TOTAL</span>
                     <span class="font-mono font-black text-2xl text-rajawali" x-text="formatRp(grandTotal)"></span>
                 </div>
 
-                {{-- TUNAI --}}
-                <template x-if="jenisBayar === 'tunai'">
-                    <div>
-                        <div class="flex justify-between items-center mt-2">
-                            <span class="text-steel">Bayar <span class="text-xs">(F9)</span></span>
-                            <input x-ref="bayar" type="number" min="0" x-model.number="bayar" x-on:focus="$event.target.select()" x-on:click="$event.target.select()" class="w-32 text-right font-mono border border-line rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-rajawali">
-                        </div>
-                        <div class="flex justify-between items-baseline">
-                            <span class="font-display font-semibold text-ink">Kembali</span>
-                            <span class="font-mono font-bold text-xl" :class="kembalian < 0 ? 'text-rajawali' : 'text-lunas'" x-text="formatRp(kembalian)"></span>
-                        </div>
-                    </div>
-                </template>
-
                 {{-- TEMPO / KREDIT --}}
                 <template x-if="jenisBayar === 'tempo'">
                     <div>
                         <div class="flex justify-between items-center mt-2">
                             <span class="text-steel">Uang Muka (DP)</span>
-                            <input type="number" min="0" x-model.number="uangMuka" x-on:focus="$event.target.select()" x-on:click="$event.target.select()" class="w-32 text-right font-mono border border-line rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-rajawali">
+                            <input type="number" min="0" x-model.number="uangMuka" x-on:focus="$event.target.select()" x-on:click="$event.target.select()" class="w-32 text-right font-mono border border-line bg-white rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-rajawali">
                         </div>
                         <div class="flex justify-between items-baseline">
                             <span class="font-display font-semibold text-ink">Sisa Piutang</span>
@@ -288,10 +300,47 @@
     </div>
 </x-modal>
 
-<x-modal name="diskon-nota" title="Diskon Nota">
-    <div x-init="$nextTick(() => $el.querySelector('input')?.focus())">
-        <x-input label="Jumlah diskon (Rp)" type="number" x-model.number="diskonNota" />
-        <div class="flex justify-end gap-2 mt-4">
+<x-modal name="diskon-nota" title="Diskon Nota (F6)">
+    <div class="space-y-4" x-init="$nextTick(() => $refs.modalDiskonInput?.focus())">
+        <div class="flex items-center justify-between">
+            <label class="text-sm font-bold text-steel">Mode Diskon</label>
+            <div class="inline-flex rounded-md border border-line bg-canvas p-1 text-xs font-mono">
+                <button
+                    type="button"
+                    x-on:click="diskonNotaMode = 'rp'; validasiDiskonNota()"
+                    :class="diskonNotaMode === 'rp' ? 'bg-rajawali text-white font-bold' : 'text-steel hover:text-ink'"
+                    class="px-3 py-1.5 rounded transition"
+                >Nominal (Rp)</button>
+                <button
+                    type="button"
+                    x-on:click="diskonNotaMode = 'persen'; validasiDiskonNota()"
+                    :class="diskonNotaMode === 'persen' ? 'bg-rajawali text-white font-bold' : 'text-steel hover:text-ink'"
+                    class="px-3 py-1.5 rounded transition"
+                >Persentase (%)</button>
+            </div>
+        </div>
+
+        <div>
+            <label class="text-sm font-bold text-steel block mb-1" x-text="diskonNotaMode === 'persen' ? 'Diskon Persentase (%)' : 'Diskon Nominal (Rp)'"></label>
+            <input
+                x-ref="modalDiskonInput"
+                type="number"
+                min="0"
+                :max="diskonNotaMode === 'persen' ? 100 : null"
+                x-model="diskonNotaValue"
+                x-on:input="validasiDiskonNota()"
+                x-on:focus="$event.target.select()"
+                placeholder="Kosongkan jika tidak ada diskon"
+                class="w-full rounded-md border border-line bg-white px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-rajawali"
+            >
+        </div>
+
+        <div class="text-xs text-steel font-mono bg-canvas p-3 rounded-lg flex justify-between items-center">
+            <span>Potongan Diskon:</span>
+            <strong class="text-rajawali font-mono text-base font-black" x-text="formatRp(diskonNotaNominal)"></strong>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-line">
             <x-button variant="secondary" x-on:click="$dispatch('tutup-modal', { name: 'diskon-nota' })">Batal</x-button>
             <x-button variant="primary" x-on:click="validasiDiskonNota(); $dispatch('tutup-modal', { name: 'diskon-nota' })">Terapkan</x-button>
         </div>
@@ -372,11 +421,12 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
         jenisBayar: 'tunai',
         barcode: '',
         cariQuery: '',
+        diskonNotaMode: 'rp',
+        diskonNotaValue: '',
         indeksLive: 0,
         fokusMainInput: false,
         keranjang: [],
         barisAktif: null,
-        diskonNota: 0,
         bayar: 0,
         uangMuka: 0,
         uidCounter: 1,
@@ -449,6 +499,19 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
                 b.kode.toLowerCase().includes(q) || 
                 (b.barcode && b.barcode.toLowerCase().includes(q))
             );
+        },
+
+        get diskonNotaNominal() {
+            if (this.diskonNotaValue === '' || this.diskonNotaValue === null || isNaN(this.diskonNotaValue)) {
+                return 0;
+            }
+            const val = Number(this.diskonNotaValue);
+            if (val <= 0) return 0;
+
+            if (this.diskonNotaMode === 'persen') {
+                return Math.round((this.subtotal * val) / 100);
+            }
+            return Math.round(val);
         },
 
         async dapatkanHargaTerakhir() {
@@ -603,12 +666,27 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
         },
 
         validasiDiskonNota() {
-            if (this.batasDiskonPersen <= 0) return;
+            if (this.diskonNotaValue === '' || this.diskonNotaValue === null || isNaN(this.diskonNotaValue)) {
+                return;
+            }
 
-            const batasRp = this.subtotal * (this.batasDiskonPersen / 100);
-            if (this.diskonNota > batasRp) {
-                window.toastGagal(`Diskon nota melebihi batas ${this.batasDiskonPersen}% (maks Rp ${Math.round(batasRp).toLocaleString('id-ID')}).`);
-                this.diskonNota = Math.floor(batasRp);
+            const val = Number(this.diskonNotaValue);
+            if (val <= 0) return;
+
+            if (this.diskonNotaMode === 'persen') {
+                if (this.batasDiskonPersen > 0 && val > this.batasDiskonPersen) {
+                    window.toastGagal(`Batas maksimal diskon adalah ${this.batasDiskonPersen}%.`);
+                    this.diskonNotaValue = this.batasDiskonPersen;
+                }
+            } else {
+                if (this.subtotal > 0 && this.batasDiskonPersen > 0) {
+                    const persen = (val / this.subtotal) * 100;
+                    if (persen > this.batasDiskonPersen) {
+                        const maxRp = Math.floor((this.subtotal * this.batasDiskonPersen) / 100);
+                        window.toastGagal(`Diskon nota melebihi batas ${this.batasDiskonPersen}% (maks Rp ${maxRp.toLocaleString('id-ID')}).`);
+                        this.diskonNotaValue = maxRp;
+                    }
+                }
             }
         },
 
@@ -626,7 +704,7 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
             }).then(hasil => {
                 if (hasil.isConfirmed) {
                     this.keranjang = [];
-                    this.diskonNota = 0;
+                    this.diskonNotaValue = '';
                     this.bayar = 0;
                     this.uangMuka = 0;
                     this.barisAktif = null;
@@ -647,10 +725,8 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
                 window.toastGagal('Transaksi tempo wajib memilih customer terdaftar.');
                 return;
             }
-            if (this.jenisBayar === 'tunai' && this.bayar < this.grandTotal) {
-                window.toastGagal(`Pembayaran kurang Rp ${(this.grandTotal - this.bayar).toLocaleString('id-ID')}.`);
-                return;
-            }
+
+            const bayarFinal = this.jenisBayar === 'tunai' ? this.grandTotal : (this.uangMuka || 0);
 
             this.sedangMenyimpan = true;
 
@@ -670,8 +746,8 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
                             harga: i.harga,
                             diskon: i.diskon
                         })),
-                        diskon: this.diskonNota,
-                        bayar: this.bayar,
+                        diskon: this.diskonNotaNominal,
+                        bayar: bayarFinal,
                         uang_muka: this.uangMuka,
                         metode_pembayaran: this.jenisBayar,
                     })
@@ -685,13 +761,14 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
                     window.Swal.fire({
                         icon: 'success',
                         title: 'Transaksi Berhasil!',
+                        text: `Nota ${hasil.nomor_nota} telah disimpan.`,
                         html: `
-                            <p class="text-sm text-slate-600 mb-4">Nomor Nota: <strong>${hasil.nomor_nota}</strong></p>
-                            <p class="text-xs text-slate-500 mb-4">Pilih Format Cetakan Dokumen:</p>
-                            <div class="flex flex-col gap-2 w-full max-w-xs mx-auto">
-                                <a href="/admin/cetak/nota/${hasil.penjualan_id}" target="_blank" class="px-4 py-2 bg-[#B0181C] text-white rounded text-sm font-bold text-center hover:opacity-90 transition">🖨️ Struk Kasir (Thermal)</a>
-                                <a href="/admin/cetak/faktur/${hasil.penjualan_id}" target="_blank" class="px-4 py-2 bg-slate-700 text-white rounded text-sm font-bold text-center hover:opacity-90 transition">📄 Faktur Penjualan (A4)</a>
-                                <a href="/admin/cetak/surat-jalan/${hasil.penjualan_id}" target="_blank" class="px-4 py-2 bg-slate-500 text-white rounded text-sm font-bold text-center hover:opacity-90 transition">🚚 Surat Jalan Kiriman</a>
+                            <div class="space-y-3 text-center my-3">
+                                <p class="text-sm text-steel">Nomor Nota: <strong class="text-ink font-mono">${hasil.nomor_nota}</strong></p>
+                                <div class="flex justify-center gap-2 pt-2">
+                                    <a href="${hasil.cetak_url}?tipe=thermal" target="_blank" class="px-4 py-2 bg-rajawali text-white font-bold rounded-lg hover:bg-rajawali-dark text-sm transition">🖨️ Cetak Struk 80mm</a>
+                                    <a href="${hasil.cetak_url}?tipe=a4" target="_blank" class="px-4 py-2 bg-slate-800 text-white font-bold rounded-lg hover:bg-slate-900 text-sm transition">📄 Cetak Faktur A4</a>
+                                </div>
                             </div>
                         `,
                         showCancelButton: true,
@@ -701,7 +778,7 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
                     });
 
                     this.keranjang = [];
-                    this.diskonNota = 0;
+                    this.diskonNotaValue = '';
                     this.bayar = 0;
                     this.uangMuka = 0;
                     this.barisAktif = null;
@@ -723,7 +800,6 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
             if (e.key === 'F2') { e.preventDefault(); this.bukaModalCari(); }
             if (e.key === 'F6') { e.preventDefault(); this.$dispatch('buka-modal', { name: 'diskon-nota' }); }
             if (e.key === 'F8') { e.preventDefault(); this.kosongkanKeranjang(); }
-            if (e.key === 'F9') { e.preventDefault(); this.jenisBayar === 'tunai' && this.$refs.bayar?.focus(); }
             if (e.key === 'F12' || (e.ctrlKey && e.key === 'Enter')) { e.preventDefault(); this.simpanNota(); }
             if (e.key === 'Delete' && this.barisAktif !== null) {
                 this.keranjang.splice(this.barisAktif, 1);
@@ -749,10 +825,10 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
             return this.keranjang.reduce((t, i) => t + (i.harga * i.qty - i.diskon), 0);
         },
         get grandTotal() {
-            return Math.max(this.subtotal - (this.diskonNota || 0), 0);
+            return Math.max(this.subtotal - this.diskonNotaNominal, 0);
         },
         get kembalian() {
-            return (this.bayar || 0) - this.grandTotal;
+            return 0;
         },
     };
 }
