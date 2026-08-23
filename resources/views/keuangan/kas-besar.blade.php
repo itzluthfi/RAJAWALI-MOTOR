@@ -71,7 +71,7 @@
                                 {{ strtoupper($m->tipe) }}
                             </span>
                         </td>
-                        <td class="px-4 py-2.5 font-medium text-xs">{{ uppercase_words($m->kategori) }}</td>
+                        <td class="px-4 py-2.5 font-medium text-xs">{{ ucwords(str_replace('_', ' ', $m->kategori ?? '')) }}</td>
                         <td class="px-4 py-2.5 font-mono text-xs">{{ $m->no_referensi ?? '-' }}</td>
                         <td class="px-4 py-2.5 text-xs text-steel">{{ $m->keterangan ?? '-' }}</td>
                         <td class="px-4 py-2.5 text-right font-mono font-bold {{ $m->tipe === 'masuk' ? 'text-emerald-700' : 'text-rajawali' }}">
