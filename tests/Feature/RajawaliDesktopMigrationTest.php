@@ -212,7 +212,8 @@ class RajawaliDesktopMigrationTest extends TestCase
 
     public function test_pos_last_price_endpoint(): void
     {
-        $this->actingAs($this->owner());
+        $owner = $this->owner();
+        $this->actingAs($owner);
 
         $customer = Customer::create(['nama' => 'Pelanggan Lama', 'termin_hari' => 0]);
         $group = Group::create(['nama' => 'Busi']);
@@ -224,7 +225,7 @@ class RajawaliDesktopMigrationTest extends TestCase
 
         // Catat penjualan sebelumnya ke customer tersebut dengan harga khusus Rp 14.000
         $penjualan = Penjualan::create([
-            'nomor_nota' => 'PJ2026080001', 'customer_id' => $customer->id, 'user_id' => 1,
+            'nomor_nota' => 'PJ2026080001', 'customer_id' => $customer->id, 'user_id' => $owner->id,
             'subtotal' => 14000, 'diskon' => 0, 'pajak' => 0, 'total_akhir' => 14000, 'bayar' => 14000,
             'kembali' => 0, 'metode_pembayaran' => 'tunai', 'status_bayar' => 'lunas'
         ]);
