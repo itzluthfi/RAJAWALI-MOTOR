@@ -145,9 +145,13 @@ class PembelianController extends Controller
         return redirect()->route('pembelian.index')->with('sukses', 'Faktur Pembelian berhasil disimpan!');
     }
 
-    public function show(int $id): View
+    public function show(string|int $id): View
     {
-        $pembelian = Pembelian::with(['supplier', 'user', 'details.barang'])->findOrFail($id);
+        $realId = \App\Services\IdHasher::decode($id);
+        $pembelian = Pembelian::with(['supplier', 'user', 'details.barang'])
+            ->where('nomor_pembelian', $id)
+            ->orWhere('id', $realId)
+            ->firstOrFail();
 
         return view('pembelian.show', compact('pembelian'));
     }

@@ -106,8 +106,11 @@ Route::prefix('admin')->group(function () {
             })->name('index');
 
             Route::get('/{id}', function ($id) {
-                $penjualan = \App\Models\Penjualan::with(['customer', 'user', 'details.barang'])->find($id) 
-                    ?? \App\Models\Penjualan::with(['customer', 'user', 'details.barang'])->where('nomor_nota', $id)->firstOrFail();
+                $realId = \App\Services\IdHasher::decode($id);
+                $penjualan = \App\Models\Penjualan::with(['customer', 'user', 'details.barang'])
+                    ->where('nomor_nota', $id)
+                    ->orWhere('id', $realId)
+                    ->firstOrFail();
 
                 return view('penjualan.show', compact('penjualan'));
             })->name('show');
@@ -123,9 +126,9 @@ Route::prefix('admin')->group(function () {
         Route::prefix('retur')->name('retur.')->group(function () {
             Route::get('/', [\App\Http\Controllers\ReturController::class, 'index'])->middleware('peran:owner,admin,kasir,gudang')->name('index');
             Route::get('/penjualan/tambah', [\App\Http\Controllers\ReturController::class, 'createPenjualan'])->middleware('peran:owner,admin,kasir')->name('penjualan.create');
-            Route::post('/penjualan', [\App\Http\Controllers\ReturController::class, 'storePenjualan'])->middleware('peran:owner,admin,kasir')->name('penjualan.store');
             Route::get('/pembelian/tambah', [\App\Http\Controllers\ReturController::class, 'createPembelian'])->middleware('peran:owner,admin,gudang')->name('pembelian.create');
             Route::post('/pembelian', [\App\Http\Controllers\ReturController::class, 'storePembelian'])->middleware('peran:owner,admin,gudang')->name('pembelian.store');
+            Route::get('/{id}', [\App\Http\Controllers\ReturController::class, 'show'])->middleware('peran:owner,admin,kasir,gudang')->name('show');
         });
 
         Route::prefix('service')->name('service.')->middleware('peran:owner,admin,kasir,montir')->group(function () {

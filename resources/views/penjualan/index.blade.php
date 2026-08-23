@@ -42,10 +42,10 @@
                     <p class="font-mono font-bold text-base text-ink">Rp {{ number_format($p->total_akhir, 0, ',', '.') }}</p>
                 </div>
                 <div class="border-t border-line/60 pt-2 flex justify-end gap-2">
-                    <a href="{{ route('penjualan.show', $p->id) }}" class="px-3 py-1.5 rounded-lg border border-line text-xs font-semibold text-ink hover:bg-canvas flex items-center gap-1">
+                    <a href="{{ route('penjualan.show', $p->nomor_nota) }}" class="px-3 py-1.5 rounded-lg border border-line text-xs font-semibold text-ink hover:bg-canvas flex items-center gap-1">
                         <x-icon name="eye" class="w-3.5 h-3.5" /> Detail
                     </a>
-                    <a href="{{ route('cetak.nota', $p->id) }}" target="_blank" class="px-3 py-1.5 rounded-lg border border-line text-xs font-semibold text-ink hover:bg-canvas flex items-center gap-1">
+                    <a href="{{ route('cetak.nota', $p->nomor_nota) }}" target="_blank" class="px-3 py-1.5 rounded-lg border border-line text-xs font-semibold text-ink hover:bg-canvas flex items-center gap-1">
                         <x-icon name="printer" class="w-3.5 h-3.5" /> Cetak
                     </a>
                 </div>
@@ -100,8 +100,8 @@
                             </td>
                             <td class="px-4 py-2.5 text-right">
                                 <div class="flex justify-end gap-1">
-                                    <a href="{{ route('penjualan.show', $p->id) }}" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-canvas" data-tooltip="Lihat Detail"><x-icon name="eye" class="w-4 h-4" /></a>
-                                    <a href="{{ route('cetak.nota', $p->id) }}" target="_blank" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-canvas" data-tooltip="Cetak Ulang Nota"><x-icon name="printer" class="w-4 h-4" /></a>
+                                    <a href="{{ route('penjualan.show', $p->nomor_nota) }}" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-canvas" data-tooltip="Lihat Detail"><x-icon name="eye" class="w-4 h-4" /></a>
+                                    <a href="{{ route('cetak.nota', $p->nomor_nota) }}" target="_blank" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-canvas" data-tooltip="Cetak Ulang Nota"><x-icon name="printer" class="w-4 h-4" /></a>
                                 </div>
                             </td>
                         </tr>

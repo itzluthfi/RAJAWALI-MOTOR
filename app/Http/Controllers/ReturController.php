@@ -217,4 +217,15 @@ class ReturController extends Controller
 
         return redirect()->route('retur.index')->with('sukses', 'Retur Pembelian berhasil disimpan!');
     }
+
+    public function show(string|int $id): View
+    {
+        $realId = \App\Services\IdHasher::decode($id);
+        $retur = Retur::with(['customer', 'supplier', 'user', 'penjualan', 'pembelian', 'details.barang'])
+            ->where('nomor_retur', $id)
+            ->orWhere('id', $realId)
+            ->firstOrFail();
+
+        return view('retur.show', compact('retur'));
+    }
 }
