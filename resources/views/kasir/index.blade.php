@@ -3,7 +3,7 @@
 <x-app-layout title="Kasir">
 
 <div
-    x-data="kasirApp(@js($daftarBarangJson), @js($daftarCustomerJson), @js($batasDiskonPersen), @js($izinkanStokMinus), @js($bolehJualDibawahHpp))"
+    x-data="kasirApp(@js($daftarBarangJson), @js($daftarCustomerJson), @js($batasDiskonPersen), @js($izinkanStokMinus), @js($bolehJualDibawahHpp), @js($printerStrukAktif), @js($printerFakturAktif))"
     x-init="initApp(); $nextTick(() => $refs.barcode.focus())"
     x-on:keydown.window="tanganiShortcut($event)"
     x-on:buka-modal.window="modalTerbuka++"
@@ -469,10 +469,12 @@
 </x-app-layout>
 
 <script>
-function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus, bolehJualDibawahHpp) {
+function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus, bolehJualDibawahHpp, printerStrukAktif, printerFakturAktif) {
     return {
         daftarBarang: dataBarang,
         customerList: dataCustomer,
+        printerStrukAktif: printerStrukAktif,
+        printerFakturAktif: printerFakturAktif,
         html5QrCode: null,
         kameraAktif: false,
 
@@ -928,6 +930,13 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
                 if (hasil.sukses) {
                     window.toastSukses(hasil.pesan);
 
+                    if (this.printerStrukAktif && hasil.cetak_url) {
+                        window.open(hasil.cetak_url, '_blank');
+                    }
+                    if (this.printerFakturAktif && hasil.nomor_nota) {
+                        window.open(`{{ url('/admin/cetak/faktur') }}/${hasil.nomor_nota}`, '_blank');
+                    }
+
                     window.Swal.fire({
                         icon: 'success',
                         title: 'Transaksi Berhasil!',
@@ -936,8 +945,8 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
                             <div class="space-y-3 text-center my-3">
                                 <p class="text-sm text-steel">Nomor Nota: <strong class="text-ink font-mono">${hasil.nomor_nota}</strong></p>
                                 <div class="flex justify-center gap-2 pt-2">
-                                    <a href="${hasil.cetak_url}?tipe=thermal" target="_blank" class="px-4 py-2 bg-rajawali text-white font-bold rounded-lg hover:bg-rajawali-dark text-sm transition">🖨️ Cetak Struk 80mm</a>
-                                    <a href="${hasil.cetak_url}?tipe=a4" target="_blank" class="px-4 py-2 bg-slate-800 text-white font-bold rounded-lg hover:bg-slate-900 text-sm transition">📄 Cetak Faktur A4</a>
+                                    <a href="${hasil.cetak_url}" target="_blank" class="px-3.5 py-2 bg-rajawali text-white font-bold rounded-lg hover:bg-rajawali-dark text-xs transition">🖨️ Cetak Struk (80mm)</a>
+                                    <a href="{{ url('/admin/cetak/faktur') }}/${hasil.nomor_nota}" target="_blank" class="px-3.5 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 text-xs transition">📑 Cetak Faktur (A5 NCR)</a>
                                 </div>
                             </div>
                         `,

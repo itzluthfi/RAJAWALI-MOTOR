@@ -32,9 +32,13 @@ class PengaturanTokoController extends Controller
                 'format_nota' => ['required', 'string', 'max:50'],
                 'batas_diskon_kasir_persen' => ['required', 'numeric', 'min:0', 'max:100'],
                 'izinkan_stok_minus' => ['nullable', 'boolean'],
+                'printer_struk_aktif' => ['nullable', 'boolean'],
+                'printer_faktur_aktif' => ['nullable', 'boolean'],
             ]);
 
             $data['izinkan_stok_minus'] = $request->boolean('izinkan_stok_minus');
+            $data['printer_struk_aktif'] = $request->boolean('printer_struk_aktif');
+            $data['printer_faktur_aktif'] = $request->boolean('printer_faktur_aktif');
 
             DB::transaction(function () use ($data) {
                 PengaturanToko::current()->update($data);

@@ -68,6 +68,8 @@ class KasirController extends Controller
             'daftarCustomerJson' => $daftarCustomer,
             'batasDiskonPersen' => $peran === 'kasir' ? (float) $pengaturan->batas_diskon_kasir_persen : 0,
             'izinkanStokMinus' => (bool) $pengaturan->izinkan_stok_minus,
+            'printerStrukAktif' => (bool) $pengaturan->printer_struk_aktif,
+            'printerFakturAktif' => (bool) $pengaturan->printer_faktur_aktif,
             'bolehJualDibawahHpp' => in_array($peran, ['owner', 'admin'], true),
         ]);
     }

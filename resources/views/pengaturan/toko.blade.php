@@ -10,6 +10,40 @@
             </div>
         </x-card>
 
+        <x-card title="Integrasi Mesin Printer Kasir & Faktur (Hardware)">
+            <div class="space-y-4">
+                <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-lg bg-rajawali/10 text-rajawali flex items-center justify-center shrink-0 mt-0.5">
+                        <x-icon name="printer" class="w-5 h-5" />
+                    </div>
+                    <div class="flex-1">
+                        <label class="flex items-center justify-between cursor-pointer">
+                            <span class="font-bold text-sm text-slate-900">Mesin 1: Printer Thermal Struk Kasir (58mm / 80mm)</span>
+                            <input type="hidden" name="printer_struk_aktif" value="0">
+                            <input type="checkbox" name="printer_struk_aktif" value="1" @checked(old('printer_struk_aktif', $pengaturan->printer_struk_aktif)) class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rajawali relative"></div>
+                        </label>
+                        <p class="text-xs text-steel mt-1">Jika aktif, sistem otomatis membuka pratinjau/cetak struk thermal kasir begitu transaksi berhasil disimpan.</p>
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 mt-0.5">
+                        <x-icon name="file-text" class="w-5 h-5" />
+                    </div>
+                    <div class="flex-1">
+                        <label class="flex items-center justify-between cursor-pointer">
+                            <span class="font-bold text-sm text-slate-900">Mesin 2: Printer Faktur Penjualan A5 (Kertas NCR / Inkjet)</span>
+                            <input type="hidden" name="printer_faktur_aktif" value="0">
+                            <input type="checkbox" name="printer_faktur_aktif" value="1" @checked(old('printer_faktur_aktif', $pengaturan->printer_faktur_aktif)) class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 relative"></div>
+                        </label>
+                        <p class="text-xs text-steel mt-1">Jika aktif, sistem otomatis membuka pratinjau/cetak faktur A5 landscape begitu transaksi tempo/grosir disimpan.</p>
+                    </div>
+                </div>
+            </div>
+        </x-card>
+
         <x-card title="Kebijakan Kasir & Stok POS">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
                 <x-input label="Batas Maksimal Diskon Kasir (%)" name="batas_diskon_kasir_persen" type="number" step="0.01" min="0" max="100" mono value="{{ old('batas_diskon_kasir_persen', $pengaturan->batas_diskon_kasir_persen) }}" required />

@@ -11,12 +11,15 @@ class PengaturanToko extends Model
     protected $fillable = [
         'nama_toko', 'alamat', 'telepon', 'format_nota',
         'batas_diskon_kasir_persen', 'izinkan_stok_minus',
+        'printer_struk_aktif', 'printer_faktur_aktif',
     ];
 
     protected function casts(): array
     {
         return [
             'izinkan_stok_minus' => 'boolean',
+            'printer_struk_aktif' => 'boolean',
+            'printer_faktur_aktif' => 'boolean',
             'batas_diskon_kasir_persen' => 'decimal:2',
         ];
     }
@@ -34,6 +37,8 @@ class PengaturanToko extends Model
             'format_nota' => 'PJ{tahun}{urutan}',
             'batas_diskon_kasir_persen' => 5,
             'izinkan_stok_minus' => false,
+            'printer_struk_aktif' => false,
+            'printer_faktur_aktif' => false,
         ]);
     }
 }
