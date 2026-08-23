@@ -194,8 +194,8 @@
                 @endforeach
             </x-select>
 
-            @if($peranSaya === 'owner')
-                <x-input label="HPP" name="hpp" type="number" mono x-model="form.hpp" required />
+            @if(in_array($peranSaya, ['owner', 'admin'], true))
+                <x-input label="HPP (Harga Pokok / Modal)" name="hpp" type="number" mono x-model="form.hpp" required />
             @endif
 
             <x-input label="Harga Eceran (Rp)" name="harga_eceran" type="number" mono x-model="form.harga_eceran" required />

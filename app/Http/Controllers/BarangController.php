@@ -87,7 +87,7 @@ class BarangController extends Controller
                 'lokasi_rak' => ['nullable', 'string', 'max:50'],
             ]);
 
-            if ($request->user()->peran === 'owner') {
+            if (in_array($request->user()->peran, ['owner', 'admin'], true)) {
                 $data['hpp'] = $request->validate(['hpp' => ['required', 'numeric', 'min:0']])['hpp'];
             }
 
