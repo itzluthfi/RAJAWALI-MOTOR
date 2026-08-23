@@ -55,17 +55,17 @@ class UserManagementTest extends TestCase
         $owner = $this->buatUserOwner();
 
         $response = $this->actingAs($owner)->post('/admin/pengaturan/user', [
-            'name' => 'Montir Handal',
-            'username' => 'montir1',
-            'email' => 'montir1@rajawalimotor.test',
+            'name' => 'Kasir Baru',
+            'username' => 'kasirbaru',
+            'email' => 'kasirbaru@rajawalimotor.test',
             'password' => 'password123',
-            'peran' => 'montir',
+            'peran' => 'kasir',
         ]);
 
         $response->assertRedirect(route('pengaturan.user'));
         $this->assertDatabaseHas('users', [
-            'username' => 'montir1',
-            'peran' => 'montir',
+            'username' => 'kasirbaru',
+            'peran' => 'kasir',
             'aktif' => true,
         ]);
     }
@@ -74,26 +74,26 @@ class UserManagementTest extends TestCase
     {
         $owner = $this->buatUserOwner();
         $target = User::create([
-            'name' => 'Gudang Lama',
-            'username' => 'gudang1',
-            'email' => 'gudang1@rajawalimotor.test',
+            'name' => 'Admin Lama',
+            'username' => 'admin1',
+            'email' => 'admin1@rajawalimotor.test',
             'password' => 'password',
-            'peran' => 'gudang',
+            'peran' => 'admin',
             'aktif' => true,
         ]);
 
         $response = $this->actingAs($owner)->put("/admin/pengaturan/user/{$target->id}", [
-            'name' => 'Gudang Baru',
-            'username' => 'gudang1',
-            'email' => 'gudangbaru@rajawalimotor.test',
-            'peran' => 'gudang',
+            'name' => 'Admin Baru',
+            'username' => 'admin1',
+            'email' => 'adminbaru@rajawalimotor.test',
+            'peran' => 'admin',
         ]);
 
         $response->assertRedirect(route('pengaturan.user'));
         $this->assertDatabaseHas('users', [
             'id' => $target->id,
-            'name' => 'Gudang Baru',
-            'email' => 'gudangbaru@rajawalimotor.test',
+            'name' => 'Admin Baru',
+            'email' => 'adminbaru@rajawalimotor.test',
         ]);
     }
 
