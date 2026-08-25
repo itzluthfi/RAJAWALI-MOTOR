@@ -6,14 +6,13 @@ namespace App\Http\Controllers;
 
 use App\Models\AuditLog;
 use App\Models\Barang;
-use App\Models\Customer;
 use App\Models\KasFlow;
 use App\Models\Pembelian;
 use App\Models\Penjualan;
 use App\Models\Retur;
 use App\Models\ReturDetail;
 use App\Models\StokMutasi;
-use App\Models\Supplier;
+use App\Services\StokService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,9 +22,9 @@ class ReturController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = Retur::with(['customer', 'supplier', 'user', 'penjualan', 'pembelian'])->latest();
+        $query = Retur::with(['customer', 'supplier', 'user'])->latest();
 
-        if ($request->filled('jenis') && $request->jenis !== 'semua') {
+        if ($request->filled('jenis')) {
             $query->where('jenis', $request->jenis);
         }
 
@@ -42,10 +41,19 @@ class ReturController extends Controller
         return view('retur.index', compact('returs'));
     }
 
-    public function createPenjualan(): View
+    public function createPenjualan(StokService $stokService): View
     {
         $penjualans = Penjualan::with('customer')->latest()->take(50)->get();
-        $barangs = Barang::where('aktif', true)->select('id', 'kode', 'nama', 'harga', 'stok')->get();
+        $barangList = Barang::where('aktif', true)->get();
+        $stokMap = $stokService->stokBanyakBarang($barangList->pluck('id'));
+
+        $barangs = $barangList->map(fn (Barang $b) => [
+            'id' => $b->id,
+            'kode' => $b->kode,
+            'nama' => $b->nama,
+            'harga' => (float) $b->harga_eceran,
+            'stok' => $stokMap[$b->id] ?? 0.0,
+        ]);
 
         return view('retur.form-penjualan', compact('penjualans', 'barangs'));
     }
@@ -57,7 +65,7 @@ class ReturController extends Controller
             'alasan' => 'required|string|max:255',
             'items' => 'required|array|min:1',
             'items.*.barang_id' => 'required|exists:barangs,id',
-            'items.*.jumlah' => 'required|integer|min:1',
+            'items.*.jumlah' => 'required|numeric|min:0.001',
             'items.*.harga' => 'required|numeric|min:0',
         ]);
 
@@ -93,18 +101,16 @@ class ReturController extends Controller
 
                 // Retur Penjualan = Barang Kembali Ke Toko = STOK BERTAMBAH
                 $barang = Barang::findOrFail($item['barang_id']);
-                $stokAwal = $barang->stok;
-                $barang->stok += $item['jumlah'];
-                $barang->save();
 
                 StokMutasi::create([
                     'barang_id' => $barang->id,
-                    'jenis' => 'masuk',
-                    'jumlah' => $item['jumlah'],
-                    'stok_sebelum' => $stokAwal,
-                    'stok_sesudah' => $barang->stok,
-                    'referensi' => $retur->nomor_retur,
-                    'keterangan' => 'Retur penjualan barang dari customer',
+                    'tanggal' => $request->tanggal,
+                    'jenis_mutasi' => 'masuk',
+                    'no_dokumen' => $retur->nomor_retur,
+                    'masuk' => $item['jumlah'],
+                    'keluar' => 0,
+                    'hpp' => $barang->hpp,
+                    'keterangan' => "Retur penjualan barang dari customer: {$request->alasan}",
                 ]);
             }
 
@@ -130,10 +136,19 @@ class ReturController extends Controller
         return redirect()->route('retur.index')->with('sukses', 'Retur Penjualan berhasil disimpan!');
     }
 
-    public function createPembelian(): View
+    public function createPembelian(StokService $stokService): View
     {
         $pembelians = Pembelian::with('supplier')->latest()->take(50)->get();
-        $barangs = Barang::where('aktif', true)->select('id', 'kode', 'nama', 'hpp', 'stok')->get();
+        $barangList = Barang::where('aktif', true)->get();
+        $stokMap = $stokService->stokBanyakBarang($barangList->pluck('id'));
+
+        $barangs = $barangList->map(fn (Barang $b) => [
+            'id' => $b->id,
+            'kode' => $b->kode,
+            'nama' => $b->nama,
+            'hpp' => (float) $b->hpp,
+            'stok' => $stokMap[$b->id] ?? 0.0,
+        ]);
 
         return view('retur.form-pembelian', compact('pembelians', 'barangs'));
     }
@@ -145,7 +160,7 @@ class ReturController extends Controller
             'alasan' => 'required|string|max:255',
             'items' => 'required|array|min:1',
             'items.*.barang_id' => 'required|exists:barangs,id',
-            'items.*.jumlah' => 'required|integer|min:1',
+            'items.*.jumlah' => 'required|numeric|min:0.001',
             'items.*.harga' => 'required|numeric|min:0',
         ]);
 
@@ -181,18 +196,16 @@ class ReturController extends Controller
 
                 // Retur Pembelian = Barang Dibalikkan Ke Supplier = STOK BERKURANG
                 $barang = Barang::findOrFail($item['barang_id']);
-                $stokAwal = $barang->stok;
-                $barang->stok = max(0, $barang->stok - $item['jumlah']);
-                $barang->save();
 
                 StokMutasi::create([
                     'barang_id' => $barang->id,
-                    'jenis' => 'keluar',
-                    'jumlah' => $item['jumlah'],
-                    'stok_sebelum' => $stokAwal,
-                    'stok_sesudah' => $barang->stok,
-                    'referensi' => $retur->nomor_retur,
-                    'keterangan' => 'Retur pembelian barang ke supplier',
+                    'tanggal' => $request->tanggal,
+                    'jenis_mutasi' => 'keluar',
+                    'no_dokumen' => $retur->nomor_retur,
+                    'masuk' => 0,
+                    'keluar' => $item['jumlah'],
+                    'hpp' => $barang->hpp,
+                    'keterangan' => "Retur pembelian barang ke supplier: {$request->alasan}",
                 ]);
             }
 
