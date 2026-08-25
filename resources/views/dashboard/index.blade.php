@@ -19,35 +19,7 @@
 @endphp
 <x-app-layout title="Dashboard {{ ucfirst($peranSaya) }}">
 
-    <!-- Header Banner Khusus Peran -->
-    <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-rajawali p-5 rounded-2xl text-white shadow-xl mb-6 relative overflow-hidden flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div class="relative z-10">
-            <div class="flex items-center gap-2 mb-1">
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-white/20 text-white backdrop-blur-md">
-                    Role: {{ ucfirst($peranSaya) }}
-                </span>
-                <span class="text-xs text-slate-300">· Seluruh data terhubung realtime</span>
-            </div>
-            <h1 class="font-display font-black text-2xl tracking-tight">Selamat Datang, {{ auth()->user()->name }} 👋</h1>
-            <p class="text-xs text-slate-300 mt-1 max-w-xl">
-                @if($peranSaya === 'owner')
-                    Ringkasan performa finansial, omzet toko, laba kotor, serta arus piutang &amp; hutang usaha Anda secara penuh.
-                @elseif($peranSaya === 'admin')
-                    Panel kontrol operasional toko, rekapitulasi pembelian barang, pemantauan stok menipis, dan hutang supplier.
-                @else
-                    Portal kasir cepat harian. Akses instan Kasir POS, service kendaraan, serta riwayat nota transaksi Anda.
-                @endif
-            </p>
-        </div>
 
-        <!-- Action Button Utama Khusus Kasir -->
-        @if($peranSaya === 'kasir')
-            <a href="{{ route('kasir') }}" class="relative z-10 px-5 py-3 bg-white text-rajawali hover:bg-slate-100 font-bold rounded-xl text-sm transition shadow-lg flex items-center gap-2 shrink-0">
-                <x-icon name="scan-barcode" class="w-5 h-5 text-rajawali" />
-                <span>⚡ Buka Kasir POS (F2)</span>
-            </a>
-        @endif
-    </div>
 
     <!-- METRIK UTAMA KASIR -->
     @if($peranSaya === 'kasir')
