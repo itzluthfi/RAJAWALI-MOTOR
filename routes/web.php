@@ -211,10 +211,14 @@ Route::prefix('admin')->group(function () {
         });
 
         Route::prefix('cetak')->name('cetak.')->middleware("peran:{$semuaPeran}")->group(function () {
-            Route::get('/nota/{id}', fn ($id) => view('print.nota', ['id' => $id]))->name('nota');
-            Route::get('/faktur/{id}', fn ($id) => view('print.faktur', ['id' => $id]))->name('faktur');
-            Route::get('/tanda-terima-service/{id}', fn ($id) => view('print.tanda-terima-service', ['id' => $id]))->name('tanda-terima-service');
-            Route::get('/surat-jalan/{id}', fn ($id) => view('print.surat-jalan', ['id' => $id]))->name('surat-jalan');
+            Route::get('/nota/{id}', [\App\Http\Controllers\CetakController::class, 'nota'])->name('nota');
+            Route::get('/nota/{id}/pdf', [\App\Http\Controllers\CetakController::class, 'notaPdf'])->name('nota.pdf');
+            Route::get('/faktur/{id}', [\App\Http\Controllers\CetakController::class, 'faktur'])->name('faktur');
+            Route::get('/faktur/{id}/pdf', [\App\Http\Controllers\CetakController::class, 'fakturPdf'])->name('faktur.pdf');
+            Route::get('/tanda-terima-service/{id}', [\App\Http\Controllers\CetakController::class, 'tandaTerimaService'])->name('tanda-terima-service');
+            Route::get('/tanda-terima-service/{id}/pdf', [\App\Http\Controllers\CetakController::class, 'tandaTerimaServicePdf'])->name('tanda-terima-service.pdf');
+            Route::get('/surat-jalan/{id}', [\App\Http\Controllers\CetakController::class, 'suratJalan'])->name('surat-jalan');
+            Route::get('/surat-jalan/{id}/pdf', [\App\Http\Controllers\CetakController::class, 'suratJalanPdf'])->name('surat-jalan.pdf');
         });
     });
 });
