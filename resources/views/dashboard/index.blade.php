@@ -1,4 +1,22 @@
-@php $peranSaya = auth()->user()->peran; @endphp
+@php
+    $peranSaya = auth()->user()->peran;
+    $omzetHariIni = $omzetHariIni ?? 0;
+    $notaHariIniCount = $notaHariIniCount ?? 0;
+    $growth = $growth ?? 0;
+    $labaKotorHariIni = $labaKotorHariIni ?? 0;
+    $pembelianHariIni = $pembelianHariIni ?? 0;
+    $totalPiutang = $totalPiutang ?? 0;
+    $totalHutang = $totalHutang ?? 0;
+    $notaSayaHariIniCount = $notaSayaHariIniCount ?? 0;
+    $omzetSayaHariIni = $omzetSayaHariIni ?? 0;
+    $penjualanBulanan = $penjualanBulanan ?? [];
+    $auditLogs = $auditLogs ?? collect();
+    $piutangJatuhTempoList = $piutangJatuhTempoList ?? collect();
+    $hutangJatuhTempoList = $hutangJatuhTempoList ?? collect();
+    $transaksiSayaTerakhir = $transaksiSayaTerakhir ?? collect();
+    $stokMenipisList = $stokMenipisList ?? collect();
+    $serviceAktif = $serviceAktif ?? collect();
+@endphp
 <x-app-layout title="Dashboard {{ ucfirst($peranSaya) }}">
 
     <!-- Header Banner Khusus Peran -->
