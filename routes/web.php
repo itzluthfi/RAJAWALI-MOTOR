@@ -121,6 +121,7 @@ Route::prefix('admin')->group(function () {
             Route::get('/tambah', [\App\Http\Controllers\PembelianController::class, 'create'])->name('create');
             Route::post('/', [\App\Http\Controllers\PembelianController::class, 'store'])->name('store');
             Route::get('/{id}', [\App\Http\Controllers\PembelianController::class, 'show'])->name('show');
+            Route::post('/{pembelian}/pelunasan', [\App\Http\Controllers\PembelianController::class, 'pelunasan'])->name('pelunasan');
         });
 
         Route::prefix('retur')->name('retur.')->group(function () {

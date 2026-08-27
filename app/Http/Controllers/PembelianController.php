@@ -155,4 +155,41 @@ class PembelianController extends Controller
 
         return view('pembelian.show', compact('pembelian'));
     }
+
+    public function pelunasan(Request $request, Pembelian $pembelian): RedirectResponse
+    {
+        if ($pembelian->status_bayar === 'lunas') {
+            return back()->with('sukses', 'Faktur Pembelian ini sudah dalam status lunas.');
+        }
+
+        $request->validate([
+            'sumber' => 'required|in:kas,bank',
+            'keterangan' => 'nullable|string|max:255',
+        ]);
+
+        DB::transaction(function () use ($request, $pembelian) {
+            $pembelian->update([
+                'status_bayar' => 'lunas',
+            ]);
+
+            KasFlow::create([
+                'tanggal' => now()->toDateString(),
+                'tipe' => 'keluar',
+                'sumber' => $request->sumber,
+                'kategori' => 'pembelian',
+                'no_referensi' => $pembelian->nomor_pembelian,
+                'nominal' => $pembelian->total,
+                'keterangan' => $request->keterangan ?: "Pelunasan hutang pembelian {$pembelian->nomor_pembelian} - Supplier: " . ($pembelian->supplier->nama ?? '-'),
+            ]);
+
+            AuditLog::catat(
+                'Pelunasan Hutang Pembelian',
+                'Pembelian',
+                $pembelian->nomor_pembelian,
+                "Pelunasan hutang sebesar Rp " . number_format((float) $pembelian->total, 0, ',', '.') . " via {$request->sumber}"
+            );
+        });
+
+        return back()->with('sukses', "Pelunasan hutang pembelian {$pembelian->nomor_pembelian} berhasil dicatat!");
+    }
 }

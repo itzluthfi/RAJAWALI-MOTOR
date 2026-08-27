@@ -1,5 +1,5 @@
 <x-app-layout title="Detail Faktur Pembelian {{ $pembelian->nomor_pembelian }}">
-    <div class="max-w-4xl mx-auto space-y-4">
+    <div class="max-w-4xl mx-auto space-y-4" x-data="{ openPelunasan: false, sumber: 'kas' }">
         <x-card>
             <div class="border-b border-line pb-4 mb-4 flex justify-between items-start flex-wrap gap-2">
                 <div>
@@ -12,7 +12,12 @@
                     <x-button as="a" href="{{ route('pembelian.index') }}" variant="secondary" size="xs">
                         <x-icon name="arrow-left" class="w-4 h-4" /> Kembali
                     </x-button>
-                    <x-button type="button" variant="primary" size="xs" onclick="window.print()">
+                    @if($pembelian->status_bayar === 'tempo')
+                        <x-button type="button" variant="primary" size="xs" x-on:click="openPelunasan = true" class="bg-emerald-600 hover:bg-emerald-700 text-white">
+                            <x-icon name="credit-card" class="w-4 h-4" /> Pelunasan Hutang
+                        </x-button>
+                    @endif
+                    <x-button type="button" variant="secondary" size="xs" onclick="window.print()">
                         <x-icon name="printer" class="w-4 h-4" /> Cetak
                     </x-button>
                 </div>
@@ -72,5 +77,49 @@
                 </div>
             @endif
         </x-card>
+
+        <!-- Modal Pelunasan Hutang Pembelian Detail -->
+        @if($pembelian->status_bayar === 'tempo')
+            <div x-show="openPelunasan" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
+                <div x-show="openPelunasan" x-transition.opacity class="absolute inset-0 bg-ink/40 backdrop-blur-xs" x-on:click="openPelunasan = false"></div>
+                <div x-show="openPelunasan" x-transition.scale.95 class="relative bg-surface rounded-xl shadow-2xl border border-line w-full max-w-md p-6 z-10">
+                    <div class="flex justify-between items-center pb-3 mb-4 border-b border-line">
+                        <h3 class="font-display font-bold text-base text-ink flex items-center gap-2">
+                            <x-icon name="credit-card" class="w-5 h-5 text-emerald-600" />
+                            <span>Pelunasan Hutang Pembelian</span>
+                        </h3>
+                        <button type="button" x-on:click="openPelunasan = false" class="text-steel hover:text-ink"><x-icon name="x" class="w-5 h-5" /></button>
+                    </div>
+
+                    <form action="{{ route('pembelian.pelunasan', $pembelian->id) }}" method="POST" class="space-y-4">
+                        @csrf
+                        <div class="p-3 bg-canvas border border-line rounded-lg text-xs space-y-1.5">
+                            <div class="flex justify-between"><span class="text-steel">No Pembelian:</span> <strong class="font-mono text-rajawali">{{ $pembelian->nomor_pembelian }}</strong></div>
+                            <div class="flex justify-between"><span class="text-steel">Supplier:</span> <strong class="text-ink">{{ $pembelian->supplier->nama ?? '-' }}</strong></div>
+                            <div class="flex justify-between pt-1 border-t border-line"><span class="text-steel font-bold">Total Pelunasan:</span> <strong class="font-mono text-sm text-emerald-600">Rp {{ number_format($pembelian->total, 0, ',', '.') }}</strong></div>
+                        </div>
+
+                        <div>
+                            <x-label>Sumber Kas / Bank Pembayaran</x-label>
+                            <x-select name="sumber" x-model="sumber" required class="w-full">
+                                <option value="kas">Kas Tunai Kasir / Toko</option>
+                                <option value="bank">Rekening Bank Toko (Transfer)</option>
+                            </x-select>
+                        </div>
+
+                        <div>
+                            <x-input name="keterangan" label="Catatan / Keterangan (Opsional)" placeholder="Contoh: Lunas via transfer BCA" />
+                        </div>
+
+                        <div class="flex justify-end gap-2 pt-3 border-t border-line">
+                            <x-button type="button" variant="secondary" x-on:click="openPelunasan = false">Batal</x-button>
+                            <x-button type="submit" variant="primary" class="bg-emerald-600 hover:bg-emerald-700 text-white">
+                                <x-icon name="check-circle" class="w-4 h-4" /> Simpan Pelunasan
+                            </x-button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        @endif
     </div>
 </x-app-layout>
