@@ -60,12 +60,18 @@ class DashboardController extends Controller
             $totalHutang = (float) Pembelian::where('status_bayar', 'tempo')
                 ->sum('total');
 
-            // Chart data 30 hari terakhir
+            // Chart data 30 hari terakhir (1 single grouped query instead of 30 queries)
+            $startDate = now()->subDays(29)->toDateString();
+            $salesByDate = Penjualan::whereDate('created_at', '>=', $startDate)
+                ->selectRaw('DATE(created_at) as tgl, SUM(total_akhir) as total')
+                ->groupBy(DB::raw('DATE(created_at)'))
+                ->pluck('total', 'tgl');
+
             for ($i = 29; $i >= 0; $i--) {
                 $tgl = now()->subDays($i)->toDateString();
                 $penjualanBulanan[] = [
                     'tgl' => now()->subDays($i)->format('d M'),
-                    'total' => (float) Penjualan::whereDate('created_at', $tgl)->sum('total_akhir'),
+                    'total' => (float) ($salesByDate[$tgl] ?? 0),
                 ];
             }
 

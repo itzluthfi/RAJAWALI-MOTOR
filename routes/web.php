@@ -171,10 +171,11 @@ Route::prefix('admin')->group(function () {
         });
 
         Route::prefix('stok')->name('stok.')->middleware('peran:owner,admin')->group(function () {
-            Route::get('/kartu', fn () => view('stok.kartu'))->name('kartu');
-            Route::get('/rekap', fn () => view('stok.rekap'))->name('rekap');
-            Route::get('/opname', fn () => view('stok.opname'))->name('opname');
-            Route::get('/menipis', fn () => view('stok.menipis'))->name('menipis');
+            Route::get('/kartu', [\App\Http\Controllers\StokController::class, 'kartu'])->name('kartu');
+            Route::get('/rekap', [\App\Http\Controllers\StokController::class, 'rekap'])->name('rekap');
+            Route::get('/opname', [\App\Http\Controllers\StokController::class, 'opname'])->name('opname');
+            Route::post('/opname', [\App\Http\Controllers\StokController::class, 'simpanOpname'])->name('opname.store');
+            Route::get('/menipis', [\App\Http\Controllers\StokController::class, 'menipis'])->name('menipis');
         });
 
         Route::prefix('keuangan')->name('keuangan.')->middleware('peran:owner,admin')->group(function () {

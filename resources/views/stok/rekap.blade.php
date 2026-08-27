@@ -1,49 +1,3 @@
-@php
-    $dariTanggal = request('dari_tanggal', now()->startOfMonth()->toDateString());
-    $sampaiTanggal = request('sampai_tanggal', now()->toDateString());
-
-    $daftarBarang = \App\Models\Barang::where('aktif', true)->orderBy('nama')->get();
-    $rekap = [];
-
-    foreach ($daftarBarang as $b) {
-        // Hitung stok awal sebelum dariTanggal
-        $stokAwal = (float) \App\Models\StokMutasi::query()
-            ->where('barang_id', $b->id)
-            ->where('tanggal', '<', $dariTanggal)
-            ->selectRaw('COALESCE(SUM(masuk) - SUM(keluar), 0) as saldo')
-            ->value('saldo');
-
-        // Hitung total masuk periode
-        $totalMasuk = (float) \App\Models\StokMutasi::query()
-            ->where('barang_id', $b->id)
-            ->whereBetween('tanggal', [$dariTanggal, $sampaiTanggal])
-            ->sum('masuk');
-
-        // Hitung total keluar periode
-        $totalKeluar = (float) \App\Models\StokMutasi::query()
-            ->where('barang_id', $b->id)
-            ->whereBetween('tanggal', [$dariTanggal, $sampaiTanggal])
-            ->sum('keluar');
-
-        $stokAkhir = $stokAwal + $totalMasuk - $totalKeluar;
-        $nilaiHpp = $stokAkhir * (float) $b->hpp;
-
-        // Skip jika tidak ada pergerakan dan stok kosong
-        if ($stokAwal == 0 && $totalMasuk == 0 && $totalKeluar == 0 && $stokAkhir == 0) {
-            continue;
-        }
-
-        $rekap[] = [
-            'kode' => $b->kode,
-            'nama' => $b->nama,
-            'awal' => $stokAwal,
-            'masuk' => $totalMasuk,
-            'keluar' => $totalKeluar,
-            'akhir' => $stokAkhir,
-            'nilai' => $nilaiHpp,
-        ];
-    }
-@endphp
 <x-app-layout title="Rekap Stok">
     <form method="GET" action="{{ route('stok.rekap') }}">
         <x-filter-bar class="no-print">
@@ -62,46 +16,48 @@
     </form>
 
     <x-card :padded="false" class="overflow-hidden shadow-lg border border-slate-200/80">
-        <div class="p-6 border-b border-line bg-surface flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div class="p-6 border-b border-line bg-surface flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 print-header">
             <div>
                 <p class="font-display font-black text-xl text-rajawali tracking-tight">RAJAWALI MOTOR SURABAYA</p>
-                <p class="text-sm font-bold text-ink mt-0.5">Laporan Rekapitulasi Stok Barang · Periode {{ date('d M Y', strtotime($dariTanggal)) }}–{{ date('d M Y', strtotime($sampaiTanggal)) }}</p>
+                <p class="text-sm font-bold text-ink mt-0.5">Rekapitulasi Mutasi Stok Barang · Periode {{ date('d M Y', strtotime($dariTanggal)) }} s/d {{ date('d M Y', strtotime($sampaiTanggal)) }}</p>
                 <p class="text-xs text-steel mt-0.5 italic">Jl. Samanhudi No.102, Jasem, Sidoarjo</p>
             </div>
-            <div class="text-left sm:text-right font-bold">
+            <div class="text-left sm:text-right">
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-canvas text-steel text-xs font-mono border border-line">
                     <x-icon name="clock" class="w-3.5 h-3.5" />
-                    Dicetak: {{ now()->setTimezone('Asia/Jakarta')->translatedFormat('d M Y H:i') }} WIB
+                    Dicetak: {{ now()->translatedFormat('d M Y H:i') }} WIB
                 </span>
+                <p class="text-xs font-bold text-emerald-700 mt-1">Total Nilai Persediaan: Rp {{ number_format($totalValuasiStok, 0, ',', '.') }}</p>
             </div>
         </div>
+
         <div class="overflow-x-auto">
-            <table class="w-full text-sm font-bold" id="tabel-rekap-stok">
+            <table class="w-full text-sm" id="tabel-rekap-stok">
                 <thead class="bg-[#B0181C] text-white text-xs uppercase tracking-wide">
                     <tr>
-                        <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Kode</th>
-                        <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Nama Barang</th>
+                        <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Kode Barang</th>
+                        <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Nama Barang / Sparepart</th>
                         <th class="text-right font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Stok Awal</th>
                         <th class="text-right font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Masuk</th>
                         <th class="text-right font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Keluar</th>
                         <th class="text-right font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Stok Akhir</th>
-                        <th class="text-right font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Nilai HPP (Rp)</th>
+                        <th class="text-right font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Nilai HPP Total (Rp)</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-line">
                     @forelse($rekap as $r)
                         <tr class="border-b border-line last:border-0 hover:bg-canvas transition duration-150">
-                            <td class="px-4 py-3 font-mono text-xs text-steel">{{ $r['kode'] }}</td>
+                            <td class="px-4 py-3 font-mono text-xs font-bold text-rajawali">{{ $r['kode'] }}</td>
                             <td class="px-4 py-3 font-bold text-ink">{{ $r['nama'] }}</td>
-                            <td class="px-4 py-3 text-right font-mono text-ink">{{ rtrim(rtrim(number_format($r['awal'], 3, ',', ''), '0'), ',') }}</td>
-                            <td class="px-4 py-3 text-right font-mono text-lunas font-bold">{{ $r['masuk'] > 0 ? rtrim(rtrim(number_format($r['masuk'], 3, ',', ''), '0'), ',') : '0' }}</td>
-                            <td class="px-4 py-3 text-right font-mono text-rajawali font-bold">{{ $r['keluar'] > 0 ? rtrim(rtrim(number_format($r['keluar'], 3, ',', ''), '0'), ',') : '0' }}</td>
-                            <td class="px-4 py-3 text-right font-mono font-bold text-ink">{{ rtrim(rtrim(number_format($r['akhir'], 3, ',', ''), '0'), ',') }}</td>
-                            <td class="px-4 py-3 text-right font-mono font-bold text-ink">Rp {{ number_format($r['nilai'], 0, ',', '.') }}</td>
+                            <td class="px-4 py-3 text-right font-mono font-medium text-steel">{{ number_format($r['awal'], 0, ',', '.') }}</td>
+                            <td class="px-4 py-3 text-right font-mono font-bold text-emerald-600">+{{ number_format($r['masuk'], 0, ',', '.') }}</td>
+                            <td class="px-4 py-3 text-right font-mono font-bold text-rajawali">-{{ number_format($r['keluar'], 0, ',', '.') }}</td>
+                            <td class="px-4 py-3 text-right font-mono font-bold text-ink {{ $r['akhir'] <= 0 ? 'text-rajawali' : '' }}">{{ number_format($r['akhir'], 0, ',', '.') }}</td>
+                            <td class="px-4 py-3 text-right font-mono font-bold text-emerald-700">Rp {{ number_format($r['nilai'], 0, ',', '.') }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center py-8 text-steel font-medium">Tidak ada pergerakan stok barang pada periode ini.</td>
+                            <td colspan="7" class="px-4 py-10 text-center text-steel italic">Tidak ada pergerakan stok pada periode ini.</td>
                         </tr>
                     @endforelse
                 </tbody>

@@ -1,32 +1,104 @@
 <x-app-layout title="Opname Stok">
-<div x-data="{ stokFisik: 68, stokSistem: 70 }">
-    <x-card class="mb-4">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
-            <x-select label="Barang" class="md:col-span-2">
-                <option>DISC PAD VARIO CBS</option>
-                <option>OLI FEDERAL MATIC 1L</option>
-            </x-select>
-            <div>
-                <label class="block text-xs font-semibold text-steel mb-1">Stok Sistem</label>
-                <p class="font-mono font-medium py-2" x-text="stokSistem"></p>
+<div class="max-w-3xl mx-auto" x-data="opnameApp(@js($barangListJson))">
+    @if(session('sukses'))
+        <div class="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-md text-sm font-bold">
+            {{ session('sukses') }}
+        </div>
+    @endif
+    @if($errors->any())
+        <div class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm font-bold">
+            {{ $errors->first() }}
+        </div>
+    @endif
+
+    <x-card>
+        <div class="border-b border-line pb-3 mb-4">
+            <h2 class="font-display font-bold text-lg text-ink">Penyesuaian Stok Opname Fisik</h2>
+            <p class="text-xs text-steel">Sesuaikan jumlah stok tercatat di sistem dengan hasil perhitungan fisik di toko/gudang.</p>
+        </div>
+
+        <form action="{{ route('stok.opname.store') }}" method="POST" class="space-y-4">
+            @csrf
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <x-label>Pilih Barang / Sparepart</x-label>
+                    <select
+                        name="barang_id"
+                        x-model="barangId"
+                        x-on:change="pilihBarang()"
+                        class="w-full text-xs font-bold rounded-lg border border-line bg-white px-3 py-2.5 focus:ring-2 focus:ring-rajawali"
+                        required
+                    >
+                        <option value="">-- Pilih Barang --</option>
+                        @foreach($daftarBarang as $b)
+                            <option value="{{ $b->id }}">{{ $b->kode }} - {{ $b->nama }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <x-label>Alasan Penyesuaian (Wajib Diisi)</x-label>
+                    <x-input name="alasan" placeholder="Contoh: Barang rusak, hilang, salah hitung" required />
+                </div>
             </div>
-            <div>
-                <label class="block text-xs font-semibold text-steel mb-1">Stok Fisik</label>
-                <input type="number" x-model.number="stokFisik" class="w-full rounded-md border border-line bg-white px-3 py-2 text-sm font-mono text-right focus:outline-none focus:ring-2 focus:ring-rajawali">
+
+            <div class="p-4 bg-canvas border border-line rounded-xl grid grid-cols-3 gap-4 text-center">
+                <div>
+                    <span class="text-xs text-steel font-bold uppercase">Stok Sistem Saat Ini</span>
+                    <p class="font-mono font-black text-xl text-ink mt-1" x-text="stokSistem"></p>
+                </div>
+                <div>
+                    <span class="text-xs text-steel font-bold uppercase">Stok Fisik Sebenarnya</span>
+                    <input
+                        type="number"
+                        name="stok_fisik"
+                        x-model.number="stokFisik"
+                        min="0"
+                        class="w-full mt-1 text-center font-mono font-black text-xl rounded-lg border border-line bg-white p-1.5 focus:ring-2 focus:ring-rajawali"
+                        required
+                    >
+                </div>
+                <div>
+                    <span class="text-xs text-steel font-bold uppercase">Selisih Penyesuaian</span>
+                    <p
+                        class="font-mono font-black text-xl mt-1"
+                        :class="selisih < 0 ? 'text-rajawali' : (selisih > 0 ? 'text-emerald-600' : 'text-steel')"
+                        x-text="(selisih > 0 ? '+' : '') + selisih"
+                    ></p>
+                </div>
             </div>
-        </div>
 
-        <div class="mt-3 text-sm" :class="stokFisik - stokSistem < 0 ? 'text-rajawali' : 'text-lunas'">
-            Selisih: <span class="font-mono font-semibold" x-text="(stokFisik - stokSistem > 0 ? '+' : '') + (stokFisik - stokSistem)"></span>
-        </div>
-
-        <div class="mt-3">
-            <x-input label="Alasan Selisih (wajib diisi)" placeholder="cth. Rusak, hilang, salah hitung" />
-        </div>
-
-        <div class="flex justify-end mt-4">
-            <x-button variant="primary" onclick="window.toastSukses('Penyesuaian stok berhasil disimpan.')"><x-icon name="save" class="w-4 h-4" /> Simpan Penyesuaian</x-button>
-        </div>
+            <div class="flex justify-end pt-3 border-t border-line">
+                <x-button type="submit" variant="primary">
+                    <x-icon name="save" class="w-4 h-4" /> Simpan Penyesuaian Stok
+                </x-button>
+            </div>
+        </form>
     </x-card>
 </div>
+
+<script>
+function opnameApp(daftarBarang) {
+    return {
+        daftarBarang: daftarBarang,
+        barangId: '',
+        stokSistem: 0,
+        stokFisik: 0,
+
+        pilihBarang() {
+            const b = this.daftarBarang.find(item => item.id == this.barangId);
+            if (b) {
+                this.stokSistem = Number(b.stok);
+                this.stokFisik = Number(b.stok);
+            } else {
+                this.stokSistem = 0;
+                this.stokFisik = 0;
+            }
+        },
+
+        get selisih() {
+            return this.stokFisik - this.stokSistem;
+        }
+    };
+}
+</script>
 </x-app-layout>

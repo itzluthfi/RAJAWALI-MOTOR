@@ -1,48 +1,3 @@
-@php
-    $daftarBarang = \App\Models\Barang::where('aktif', true)->orderBy('nama')->get();
-    
-    $barangId = request('barang_id', $daftarBarang->first()?->id);
-    $dariTanggal = request('dari_tanggal', now()->startOfMonth()->toDateString());
-    $sampaiTanggal = request('sampai_tanggal', now()->toDateString());
-
-    $mutasi = [];
-    $saldoAwal = 0;
-    $barangTerpilih = null;
-
-    if ($barangId) {
-        $barangTerpilih = \App\Models\Barang::find($barangId);
-        
-        // Hitung Saldo Awal sebelum $dariTanggal
-        $saldoAwal = (float) \App\Models\StokMutasi::query()
-            ->where('barang_id', $barangId)
-            ->where('tanggal', '<', $dariTanggal)
-            ->selectRaw('COALESCE(SUM(masuk) - SUM(keluar), 0) as saldo')
-            ->value('saldo');
-
-        // Ambil mutasi dalam periode
-        $mutasiRaw = \App\Models\StokMutasi::query()
-            ->where('barang_id', $barangId)
-            ->whereBetween('tanggal', [$dariTanggal, $sampaiTanggal])
-            ->orderBy('tanggal')
-            ->orderBy('id')
-            ->get();
-
-        $runningSaldo = $saldoAwal;
-        foreach ($mutasiRaw as $m) {
-            $runningSaldo = $runningSaldo + (float)$m->masuk - (float)$m->keluar;
-            $mutasi[] = [
-                'tanggal' => $m->tanggal->format('d M Y'),
-                'jenis' => ucfirst($m->jenis_mutasi),
-                'dok' => $m->no_dokumen,
-                'masuk' => (float)$m->masuk,
-                'keluar' => (float)$m->keluar,
-                'saldo' => $runningSaldo,
-                'hpp' => (float)$m->hpp,
-                'keterangan' => $m->keterangan ?? '-',
-            ];
-        }
-    }
-@endphp
 <x-app-layout title="Kartu Stok">
     <form method="GET" action="{{ route('stok.kartu') }}">
         <x-filter-bar class="no-print">
@@ -66,7 +21,7 @@
     </form>
 
     <x-card :padded="false" class="overflow-hidden shadow-lg border border-slate-200/80">
-        <div class="p-6 border-b border-line bg-surface flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div class="p-6 border-b border-line bg-surface flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 print-header">
             <div>
                 <p class="font-display font-black text-xl text-rajawali tracking-tight">RAJAWALI MOTOR SURABAYA</p>
                 <p class="text-sm font-bold text-ink mt-0.5">Kartu Mutasi Stok Barang · {{ $barangTerpilih?->nama ?? '' }}</p>
@@ -75,45 +30,48 @@
             <div class="text-left sm:text-right font-bold">
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-canvas text-steel text-xs font-mono border border-line">
                     <x-icon name="clock" class="w-3.5 h-3.5" />
-                    Dicetak: {{ now()->setTimezone('Asia/Jakarta')->translatedFormat('d M Y H:i') }} WIB
+                    Dicetak: {{ now()->translatedFormat('d M Y H:i') }} WIB
                 </span>
+                <p class="text-xs text-steel mt-1">Saldo Awal Periode: <span class="font-mono text-ink font-bold">{{ number_format($saldoAwal, 0, ',', '.') }}</span></p>
             </div>
         </div>
+
         <div class="overflow-x-auto">
-            <table class="w-full text-sm font-bold" id="tabel-kartu-stok">
+            <table class="w-full text-sm" id="tabel-kartu-stok">
                 <thead class="bg-[#B0181C] text-white text-xs uppercase tracking-wide">
                     <tr>
                         <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Tanggal</th>
-                        <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Mutasi</th>
+                        <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Jenis Mutasi</th>
                         <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">No. Dokumen</th>
                         <th class="text-right font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Masuk</th>
                         <th class="text-right font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Keluar</th>
-                        <th class="text-right font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Saldo</th>
-                        <th class="text-right font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">HPP (Rp)</th>
+                        <th class="text-right font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Saldo Akhir</th>
                         <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Keterangan</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr class="bg-slate-50 border-b border-line">
-                        <td class="px-4 py-3 text-steel font-medium" colspan="3">SALDO AWAL PERIODE ({{ date('d-m-Y', strtotime($dariTanggal)) }})</td>
-                        <td class="px-4 py-3 text-right font-mono" colspan="2">-</td>
-                        <td class="px-4 py-3 text-right font-mono font-bold text-ink">{{ rtrim(rtrim(number_format($saldoAwal, 3, ',', ''), '0'), ',') }}</td>
-                        <td class="px-4 py-3 text-right font-mono" colspan="2">-</td>
+                <tbody class="divide-y divide-line">
+                    <tr class="bg-canvas font-bold border-b border-line">
+                        <td colspan="5" class="px-4 py-2.5 text-steel text-xs uppercase">Saldo Awal Sebelum Periode:</td>
+                        <td class="px-4 py-2.5 text-right font-mono text-ink">{{ number_format($saldoAwal, 0, ',', '.') }}</td>
+                        <td></td>
                     </tr>
                     @forelse($mutasi as $m)
                         <tr class="border-b border-line last:border-0 hover:bg-canvas transition duration-150">
-                            <td class="px-4 py-3 text-steel">{{ $m['tanggal'] }}</td>
-                            <td class="px-4 py-3">{{ $m['jenis'] }}</td>
-                            <td class="px-4 py-3 font-mono text-xs text-rajawali">{{ $m['dok'] }}</td>
-                            <td class="px-4 py-3 text-right font-mono text-lunas font-bold">{{ $m['masuk'] > 0 ? rtrim(rtrim(number_format($m['masuk'], 3, ',', ''), '0'), ',') : '-' }}</td>
-                            <td class="px-4 py-3 text-right font-mono text-rajawali font-bold">{{ $m['keluar'] > 0 ? rtrim(rtrim(number_format($m['keluar'], 3, ',', ''), '0'), ',') : '-' }}</td>
-                            <td class="px-4 py-3 text-right font-mono text-ink font-bold">{{ rtrim(rtrim(number_format($m['saldo'], 3, ',', ''), '0'), ',') }}</td>
-                            <td class="px-4 py-3 text-right font-mono text-ink">Rp {{ number_format($m['hpp'], 0, ',', '.') }}</td>
-                            <td class="px-4 py-3 text-xs text-steel font-medium">{{ $m['keterangan'] }}</td>
+                            <td class="px-4 py-3 text-steel text-xs">{{ $m['tanggal'] }}</td>
+                            <td class="px-4 py-3 font-bold text-ink">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs {{ $m['masuk'] > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800' }}">
+                                    {{ $m['jenis'] }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 font-mono text-xs text-rajawali font-bold">{{ $m['dok'] }}</td>
+                            <td class="px-4 py-3 text-right font-mono font-bold text-emerald-600">{{ $m['masuk'] > 0 ? '+' . number_format($m['masuk'], 0, ',', '.') : '-' }}</td>
+                            <td class="px-4 py-3 text-right font-mono font-bold text-rajawali">{{ $m['keluar'] > 0 ? '-' . number_format($m['keluar'], 0, ',', '.') : '-' }}</td>
+                            <td class="px-4 py-3 text-right font-mono font-black text-ink">{{ number_format($m['saldo'], 0, ',', '.') }}</td>
+                            <td class="px-4 py-3 text-steel text-xs">{{ $m['keterangan'] }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center py-8 text-steel font-medium">Tidak ada transaksi mutasi barang pada periode ini.</td>
+                            <td colspan="7" class="px-4 py-8 text-center text-steel italic">Tidak ada transaksi mutasi stok untuk barang ini pada periode terpilih.</td>
                         </tr>
                     @endforelse
                 </tbody>
