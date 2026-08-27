@@ -19,6 +19,14 @@
                 {{ strtoupper($penjualan->status_bayar) }}
             </x-badge>
 
+            @php
+                $teksWa = \App\Services\WhatsAppReceiptService::buatTeksNota($penjualan);
+                $waUrl = \App\Services\WhatsAppReceiptService::buatUrlWhatsApp($penjualan->customer->telepon ?? '', $teksWa);
+            @endphp
+            <a href="{{ $waUrl }}" target="_blank" class="px-3 py-2 bg-emerald-600 text-white font-bold rounded-lg text-xs hover:bg-emerald-700 transition flex items-center gap-1.5 shadow-sm">
+                <x-icon name="message-circle" class="w-4 h-4" /> Kirim WhatsApp
+            </a>
+
             <a href="{{ route('cetak.nota', $penjualan->nomor_nota) }}" target="_blank" class="px-3 py-2 bg-rajawali text-white font-bold rounded-lg text-xs hover:bg-rajawali-dark transition flex items-center gap-1.5 shadow-sm">
                 <x-icon name="printer" class="w-4 h-4" /> Struk Thermal (58/80mm)
             </a>

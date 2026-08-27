@@ -4,24 +4,86 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\Barang;
 use App\Models\Customer;
 use App\Models\Group;
 use App\Models\PembelianDetail;
 use App\Models\Satuan;
 use App\Models\StokMutasi;
+use App\Services\DatabaseBackupService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Throwable;
 
 class UtilityController extends Controller
 {
     public function index(): View
     {
-        return view('utility.index');
+        $backups = DatabaseBackupService::getBackupList();
+        return view('utility.index', compact('backups'));
+    }
+
+    public function backupDatabase(): RedirectResponse
+    {
+        try {
+            $filename = DatabaseBackupService::createBackup();
+
+            AuditLog::catat(
+                'Backup Database',
+                'Utility',
+                $filename,
+                'Membuat berkas cadangan database baru: ' . $filename
+            );
+
+            return back()->with('sukses', "Berkas cadangan database '{$filename}' berhasil dibuat!");
+        } catch (Throwable $e) {
+            Log::error('Gagal membuat backup database', ['pesan' => $e->getMessage()]);
+            return back()->withErrors(['error' => 'Gagal membuat backup database: ' . $e->getMessage()]);
+        }
+    }
+
+    public function downloadBackup(string $filename): BinaryFileResponse|RedirectResponse
+    {
+        $safeFilename = basename($filename);
+        $filepath = storage_path('app/backups/' . $safeFilename);
+
+        if (!File::exists($filepath)) {
+            return back()->withErrors(['error' => 'Berkas backup database tidak ditemukan di server.']);
+        }
+
+        return response()->download($filepath, $safeFilename);
+    }
+
+    public function deleteBackup(string $filename): RedirectResponse
+    {
+        try {
+            $safeFilename = basename($filename);
+            $filepath = storage_path('app/backups/' . $safeFilename);
+
+            if (File::exists($filepath)) {
+                File::delete($filepath);
+
+                AuditLog::catat(
+                    'Hapus Backup Database',
+                    'Utility',
+                    $safeFilename,
+                    'Menghapus berkas cadangan database: ' . $safeFilename
+                );
+
+                return back()->with('sukses', "Berkas cadangan '{$safeFilename}' berhasil dihapus dari server.");
+            }
+
+            return back()->withErrors(['error' => 'Berkas backup tidak ditemukan.']);
+        } catch (Throwable $e) {
+            Log::error('Gagal menghapus backup database', ['pesan' => $e->getMessage()]);
+            return back()->withErrors(['error' => 'Gagal menghapus berkas backup: ' . $e->getMessage()]);
+        }
     }
 
     public function recalculateStok(): RedirectResponse

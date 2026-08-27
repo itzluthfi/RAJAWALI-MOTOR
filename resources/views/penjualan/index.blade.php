@@ -106,6 +106,13 @@
                             </td>
                             <td class="px-4 py-2.5 text-right no-print">
                                 <div class="flex justify-end items-center gap-1">
+                                    @php
+                                        $teksWa = \App\Services\WhatsAppReceiptService::buatTeksNota($p);
+                                        $waUrl = \App\Services\WhatsAppReceiptService::buatUrlWhatsApp($p->customer->telepon ?? '', $teksWa);
+                                    @endphp
+                                    <a href="{{ $waUrl }}" target="_blank" class="p-1.5 rounded-md text-steel hover:text-emerald-600 hover:bg-emerald-50 transition" data-tooltip="Kirim Struk via WhatsApp">
+                                        <x-icon name="message-circle" class="w-4 h-4" />
+                                    </a>
                                     <a href="{{ route('penjualan.show', $p->nomor_nota) }}" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-slate-100 transition" data-tooltip="Lihat Detail">
                                         <x-icon name="eye" class="w-4 h-4" />
                                     </a>

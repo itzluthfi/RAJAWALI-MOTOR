@@ -199,6 +199,9 @@ Route::prefix('admin')->group(function () {
             Route::get('/', [\App\Http\Controllers\UtilityController::class, 'index'])->name('index');
             Route::post('/hitung-ulang-stok', [\App\Http\Controllers\UtilityController::class, 'recalculateStok'])->name('recalculate-stok');
             Route::post('/maintenance-hpp', [\App\Http\Controllers\UtilityController::class, 'maintenanceHpp'])->name('maintenance-hpp');
+            Route::post('/backup', [\App\Http\Controllers\UtilityController::class, 'backupDatabase'])->name('backup');
+            Route::get('/backup/{filename}/download', [\App\Http\Controllers\UtilityController::class, 'downloadBackup'])->name('backup.download');
+            Route::delete('/backup/{filename}', [\App\Http\Controllers\UtilityController::class, 'deleteBackup'])->name('backup.delete');
             Route::post('/import-barang', [\App\Http\Controllers\UtilityController::class, 'importBarang'])->name('import-barang');
             Route::post('/import-customer', [\App\Http\Controllers\UtilityController::class, 'importCustomer'])->name('import-customer');
         });

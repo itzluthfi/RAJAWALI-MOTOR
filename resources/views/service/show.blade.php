@@ -165,8 +165,14 @@
         </x-card>
     </div>
 
-    <div class="flex justify-end gap-2 mt-6 no-print">
-        <x-button as="a" href="{{ route('service.index') }}" variant="secondary">Kembali</x-button>
+        @php
+            $teksWa = \App\Services\WhatsAppReceiptService::buatTeksServis($service);
+            $waUrl = \App\Services\WhatsAppReceiptService::buatUrlWhatsApp($service->customer->telepon ?? '', $teksWa);
+        @endphp
+        <x-button as="a" href="{{ $waUrl }}" target="_blank" variant="primary" class="bg-emerald-600 hover:bg-emerald-700 text-white">
+            <x-icon name="message-circle" class="w-4 h-4" /> Kirim WA Servis
+        </x-button>
+
         <x-button as="a" href="{{ route('cetak.tanda-terima-service', $service->id) }}" target="_blank" variant="secondary">
             <x-icon name="printer" class="w-4 h-4" /> Cetak Nota
         </x-button>
