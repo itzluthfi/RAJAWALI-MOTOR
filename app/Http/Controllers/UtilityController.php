@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Models\Barang;
 use App\Models\Customer;
 use App\Models\Group;
+use App\Models\PembelianDetail;
 use App\Models\Satuan;
 use App\Models\StokMutasi;
 use Illuminate\Http\RedirectResponse;
@@ -48,20 +49,31 @@ class UtilityController extends Controller
             DB::transaction(function () {
                 $barangs = Barang::all();
                 foreach ($barangs as $b) {
-                    // Cari harga pembelian terakhir dari kartu stok
-                    $lastPurchase = StokMutasi::where('barang_id', $b->id)
-                        ->where('jenis_mutasi', 'pembelian')
+                    // 1. Cari dari PembelianDetail (Riwayat Kulakan Pembelian dari Supplier)
+                    $pembelianTerakhir = PembelianDetail::where('barang_id', $b->id)
+                        ->where('harga_beli', '>', 0)
+                        ->latest('id')
+                        ->first();
+
+                    if ($pembelianTerakhir && $pembelianTerakhir->harga_beli > 0) {
+                        $b->update(['hpp' => $pembelianTerakhir->harga_beli]);
+                        continue;
+                    }
+
+                    // 2. Jika tidak ada di PembelianDetail, cari dari StokMutasi (Kartu Stok Masuk)
+                    $mutasiTerakhir = StokMutasi::where('barang_id', $b->id)
+                        ->where('hpp', '>', 0)
                         ->latest('tanggal')
                         ->latest('id')
                         ->first();
 
-                    if ($lastPurchase && $lastPurchase->hpp > 0) {
-                        $b->update(['hpp' => $lastPurchase->hpp]);
+                    if ($mutasiTerakhir && $mutasiTerakhir->hpp > 0) {
+                        $b->update(['hpp' => $mutasiTerakhir->hpp]);
                     }
                 }
             });
 
-            return back()->with('sukses', 'Proses maintenance HPP selesai. HPP barang telah disesuaikan dengan harga beli terakhir.');
+            return back()->with('sukses', 'Proses maintenance HPP selesai. Seluruh HPP barang telah otomatis diselaraskan dengan harga beli/kulakan terakhir.');
         } catch (Throwable $e) {
             Log::error('Gagal maintenance HPP', ['pesan' => $e->getMessage()]);
             return back()->withErrors(['error' => 'Gagal maintenance HPP: ' . $e->getMessage()]);
