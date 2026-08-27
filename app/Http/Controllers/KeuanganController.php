@@ -136,26 +136,38 @@ class KeuanganController extends Controller
 
     public function hutang(Request $request): View
     {
-        // Query service outsourcing (extern) yang belum lunas
-        $query = Service::with('supplier')
+        $queryPembelian = \App\Models\Pembelian::with('supplier')
+            ->where('status_bayar', 'tempo');
+
+        $queryService = Service::with('supplier')
             ->where('repaired_by', 'extern')
             ->where('status_lunas', false);
 
         if ($cari = $request->string('cari')->trim()->value()) {
-            $query->where(function ($q) use ($cari) {
+            $queryPembelian->where(function ($q) use ($cari) {
+                $q->where('nomor_pembelian', 'LIKE', "%{$cari}%")
+                  ->orWhere('nomor_faktur_supplier', 'LIKE', "%{$cari}%")
+                  ->orWhereHas('supplier', fn ($s) => $s->where('nama', 'LIKE', "%{$cari}%"));
+            });
+            $queryService->where(function ($q) use ($cari) {
                 $q->where('nomor_dokumen', 'LIKE', "%{$cari}%")
                   ->orWhereHas('supplier', fn ($s) => $s->where('nama', 'LIKE', "%{$cari}%"));
             });
         }
 
-        $hutangs = $query->latest()->get();
+        $pembelianHutangs = $queryPembelian->latest()->get();
+        $serviceHutangs = $queryService->latest()->get();
 
-        // Total Outstanding Hutang ke Supplier
-        $totalHutang = $hutangs->sum('grand_total_supplier');
+        $totalHutangPembelian = (float) $pembelianHutangs->sum('total');
+        $totalHutangService = (float) $serviceHutangs->sum('grand_total_supplier');
+        $totalHutang = $totalHutangPembelian + $totalHutangService;
 
         return view('keuangan.hutang', [
-            'hutangs' => $hutangs,
+            'pembelianHutangs' => $pembelianHutangs,
+            'serviceHutangs' => $serviceHutangs,
             'totalHutang' => $totalHutang,
+            'totalHutangPembelian' => $totalHutangPembelian,
+            'totalHutangService' => $totalHutangService,
             'filter' => [
                 'cari' => $request->input('cari', ''),
             ]
