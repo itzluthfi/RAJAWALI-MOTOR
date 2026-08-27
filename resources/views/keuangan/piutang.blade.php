@@ -62,7 +62,7 @@
                             <div class="flex justify-end gap-1">
                                 <x-button type="button" variant="secondary" class="text-xs px-2.5 py-1"
                                     x-on:click="bukaModalCicilan({{ $p->id }}, @js($p->nomor_nota), @js($p->customer->nama), {{ $sisa }})">
-                                    💵 Nyicil
+                                    <x-icon name="hand-coins" class="w-3.5 h-3.5" /> Nyicil
                                 </x-button>
 
                                 <form method="POST" action="{{ route('keuangan.piutang.bayar', $p) }}" onsubmit="return confirm('Pelunasan penuh untuk nota {{ $p->nomor_nota }}?')">

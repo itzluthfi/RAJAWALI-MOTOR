@@ -106,7 +106,9 @@
                         placeholder="Cari Nama / Plat / Motor / WA..."
                         class="w-full bg-white border border-slate-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-rajawali font-medium"
                     >
-                    <button x-show="cari" type="button" x-on:click="cari = ''" class="text-steel hover:text-ink text-xs font-bold px-1">✕</button>
+                    <button x-show="cari" type="button" x-on:click="cari = ''" class="text-steel hover:text-ink text-xs font-bold px-1">
+                        <x-icon name="x" class="w-3.5 h-3.5" />
+                    </button>
                 </div>
 
                 {{-- Customer List --}}
@@ -206,7 +208,8 @@
                                 </div>
                                 <template x-if="item.hargaOriginal && item.harga < item.hargaOriginal">
                                     <div class="text-[11px] text-emerald-700 font-mono font-bold mt-0.5 flex items-center gap-1">
-                                        <span>🎉 Diskon Grosir: Hemat Rp <span x-text="formatRp(item.hargaOriginal - item.harga)"></span>/pcs</span>
+                                        <x-icon name="sparkles" class="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                                        <span>Diskon Grosir: Hemat Rp <span x-text="formatRp(item.hargaOriginal - item.harga)"></span>/pcs</span>
                                         <span>(Total hemat Rp <span x-text="formatRp((item.hargaOriginal - item.harga) * item.qty)"></span>)</span>
                                     </div>
                                 </template>
@@ -288,7 +291,7 @@
                 <div class="flex justify-between"><span class="text-steel">Subtotal</span><span class="font-mono" x-text="formatRp(subtotal)"></span></div>
                 <template x-if="totalDiskonGrosir > 0">
                     <div class="flex justify-between items-center bg-emerald-50 border border-emerald-200 px-2.5 py-1.5 rounded-lg text-emerald-800 text-xs font-bold">
-                        <span>🎉 Total Hemat Diskon Grosir:</span>
+                        <span class="flex items-center gap-1"><x-icon name="sparkles" class="w-3.5 h-3.5 text-amber-600" /> Total Hemat Diskon Grosir:</span>
                         <span class="font-mono text-xs font-black text-emerald-700">Rp <span x-text="formatRp(totalDiskonGrosir)"></span></span>
                     </div>
                 </template>
@@ -966,8 +969,8 @@ function kasirApp(dataBarang, dataCustomer, batasDiskonPersen, izinkanStokMinus,
                             <div class="space-y-3 text-center my-3">
                                 <p class="text-sm text-steel">Nomor Nota: <strong class="text-ink font-mono">${hasil.nomor_nota}</strong></p>
                                 <div class="flex justify-center gap-2 pt-2">
-                                    <a href="${hasil.cetak_url}" target="_blank" class="px-3.5 py-2 bg-rajawali text-white font-bold rounded-lg hover:bg-rajawali-dark text-xs transition">🖨️ Cetak Struk (80mm)</a>
-                                    <a href="{{ url('/admin/cetak/faktur') }}/${hasil.nomor_nota}" target="_blank" class="px-3.5 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 text-xs transition">📑 Cetak Faktur (A5 NCR)</a>
+                                    <a href="${hasil.cetak_url}" target="_blank" class="px-3.5 py-2 bg-rajawali text-white font-bold rounded-lg hover:bg-rajawali-dark text-xs transition">Cetak Struk (80mm)</a>
+                                    <a href="{{ url('/admin/cetak/faktur') }}/${hasil.nomor_nota}" target="_blank" class="px-3.5 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 text-xs transition">Cetak Faktur (A5 NCR)</a>
                                 </div>
                             </div>
                         `,

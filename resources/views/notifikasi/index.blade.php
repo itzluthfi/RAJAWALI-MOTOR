@@ -25,33 +25,33 @@
                 type="button"
                 x-on:click="filterKategori = 'stok'"
                 :class="filterKategori === 'stok' ? 'bg-amber-600 text-white font-bold' : 'bg-surface text-steel hover:bg-canvas border border-line'"
-                class="px-3.5 py-1.5 rounded-lg text-xs transition duration-150"
+                class="px-3.5 py-1.5 rounded-lg text-xs transition duration-150 flex items-center gap-1.5"
             >
-                ⚠️ Stok
+                <x-icon name="triangle-alert" class="w-3.5 h-3.5" /> Stok
             </button>
             <button
                 type="button"
                 x-on:click="filterKategori = 'penjualan'"
                 :class="filterKategori === 'penjualan' ? 'bg-emerald-600 text-white font-bold' : 'bg-surface text-steel hover:bg-canvas border border-line'"
-                class="px-3.5 py-1.5 rounded-lg text-xs transition duration-150"
+                class="px-3.5 py-1.5 rounded-lg text-xs transition duration-150 flex items-center gap-1.5"
             >
-                💰 Penjualan
+                <x-icon name="receipt" class="w-3.5 h-3.5" /> Penjualan
             </button>
             <button
                 type="button"
                 x-on:click="filterKategori = 'service'"
                 :class="filterKategori === 'service' ? 'bg-blue-600 text-white font-bold' : 'bg-surface text-steel hover:bg-canvas border border-line'"
-                class="px-3.5 py-1.5 rounded-lg text-xs transition duration-150"
+                class="px-3.5 py-1.5 rounded-lg text-xs transition duration-150 flex items-center gap-1.5"
             >
-                🛠️ Service
+                <x-icon name="wrench" class="w-3.5 h-3.5" /> Service
             </button>
             <button
                 type="button"
                 x-on:click="filterKategori = 'keuangan'"
                 :class="filterKategori === 'keuangan' ? 'bg-purple-600 text-white font-bold' : 'bg-surface text-steel hover:bg-canvas border border-line'"
-                class="px-3.5 py-1.5 rounded-lg text-xs transition duration-150"
+                class="px-3.5 py-1.5 rounded-lg text-xs transition duration-150 flex items-center gap-1.5"
             >
-                🏦 Keuangan
+                <x-icon name="landmark" class="w-3.5 h-3.5" /> Keuangan
             </button>
         </div>
 
