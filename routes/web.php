@@ -189,8 +189,9 @@ Route::prefix('admin')->group(function () {
         });
 
         Route::prefix('laporan')->name('laporan.')->middleware('peran:owner,admin')->group(function () {
-            Route::get('/', fn () => view('laporan.index'))->name('index');
-            Route::get('/{jenis}', fn ($jenis) => view('laporan.tampil', ['jenis' => $jenis]))->name('tampil');
+            Route::get('/', [\App\Http\Controllers\LaporanController::class, 'index'])->name('index');
+            Route::get('/{jenis}', [\App\Http\Controllers\LaporanController::class, 'tampil'])->name('tampil');
+            Route::get('/{jenis}/pdf', [\App\Http\Controllers\LaporanController::class, 'downloadPdf'])->name('pdf');
         });
 
         Route::prefix('utility')->name('utility.')->middleware('peran:owner,admin')->group(function () {
