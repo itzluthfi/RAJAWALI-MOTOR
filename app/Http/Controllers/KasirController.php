@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\Barang;
 use App\Models\Customer;
 use App\Models\KasFlow;
 use App\Models\PengaturanToko;
 use App\Models\Penjualan;
 use App\Models\PenjualanDetail;
+use App\Models\Service;
+use App\Models\ServiceDetail;
+use App\Models\ServiceJasa;
 use App\Models\StokMutasi;
+use App\Models\User;
 use App\Services\StokService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,26 +30,31 @@ class KasirController extends Controller
     {
         $barang = Barang::query()
             ->where('aktif', true)
-            ->with('barcodes')
+            ->with(['barcodes', 'group'])
             ->orderBy('nama')
             ->get();
 
         $stok = $stokService->stokBanyakBarang($barang->pluck('id'));
 
-        $daftarBarang = $barang->map(fn (Barang $b) => [
-            'id' => $b->id,
-            'kode' => $b->kode,
-            'barcode' => $b->barcodes->firstWhere('utama', true)?->barcode ?? $b->barcodes->first()?->barcode ?? $b->kode,
-            'nama' => $b->nama,
-            'harga' => (float) $b->harga_eceran,
-            'harga_grosir' => (float) ($b->harga_grosir > 0 ? $b->harga_grosir : $b->harga_eceran),
-            'min_qty_grosir_1' => (float) ($b->min_qty_grosir_1 ?? 3),
-            'harga_grosir_1' => (float) ($b->harga_grosir_1 > 0 ? $b->harga_grosir_1 : ($b->harga_grosir > 0 ? $b->harga_grosir : $b->harga_eceran)),
-            'min_qty_grosir_2' => (float) ($b->min_qty_grosir_2 ?? 24),
-            'harga_grosir_2' => (float) ($b->harga_grosir_2 > 0 ? $b->harga_grosir_2 : ($b->harga_grosir_1 > 0 ? $b->harga_grosir_1 : $b->harga_eceran)),
-            'hpp' => (float) $b->hpp,
-            'stok' => $stok[$b->id] ?? 0.0,
-        ])->values();
+        $daftarBarang = $barang->map(function (Barang $b) use ($stok) {
+            $isJasa = $b->group && str_contains(strtolower($b->group->nama), 'jasa');
+
+            return [
+                'id' => $b->id,
+                'kode' => $b->kode,
+                'barcode' => $b->barcodes->firstWhere('utama', true)?->barcode ?? $b->barcodes->first()?->barcode ?? $b->kode,
+                'nama' => $b->nama,
+                'is_jasa' => $isJasa,
+                'harga' => (float) $b->harga_eceran,
+                'harga_grosir' => (float) ($b->harga_grosir > 0 ? $b->harga_grosir : $b->harga_eceran),
+                'min_qty_grosir_1' => (float) ($b->min_qty_grosir_1 ?? 3),
+                'harga_grosir_1' => (float) ($b->harga_grosir_1 > 0 ? $b->harga_grosir_1 : ($b->harga_grosir > 0 ? $b->harga_grosir : $b->harga_eceran)),
+                'min_qty_grosir_2' => (float) ($b->min_qty_grosir_2 ?? 24),
+                'harga_grosir_2' => (float) ($b->harga_grosir_2 > 0 ? $b->harga_grosir_2 : ($b->harga_grosir_1 > 0 ? $b->harga_grosir_1 : $b->harga_eceran)),
+                'hpp' => (float) $b->hpp,
+                'stok' => $isJasa ? 9999 : ($stok[$b->id] ?? 0.0),
+            ];
+        })->values();
 
         $daftarCustomer = Customer::query()
             ->where('aktif', true)
@@ -57,8 +67,40 @@ class KasirController extends Controller
                 'plat' => $c->plat_nomor,
                 'motor' => $c->jenis_kendaraan,
                 'kategori' => $c->kategori ?? 'umum',
+                'telepon' => $c->telepon ?? $c->no_wa ?? '',
                 'termin' => $c->termin_hari ?? 30,
             ])->values();
+
+        $montirs = User::query()
+            ->where('aktif', true)
+            ->whereIn('peran', ['montir', 'admin', 'owner'])
+            ->orderBy('name')
+            ->get(['id', 'name', 'peran'])
+            ->map(fn (User $u) => [
+                'id' => $u->id,
+                'nama' => $u->name,
+                'peran' => $u->peran,
+            ]);
+
+        $antreanService = Service::query()
+            ->whereIn('status', ['masuk', 'dikerjakan', 'selesai'])
+            ->where('status_lunas', false)
+            ->with(['customer', 'montir', 'details.barang', 'jasas'])
+            ->latest('id')
+            ->get()
+            ->map(fn (Service $s) => [
+                'id' => $s->id,
+                'nomor_dokumen' => $s->nomor_dokumen,
+                'tanggal_masuk' => $s->tanggal_masuk->format('d M Y'),
+                'customer_nama' => $s->customer->nama ?? 'Umum',
+                'customer_id' => $s->customer_id,
+                'plat_nomor' => $s->customer->plat_nomor ?? '-',
+                'merk_type' => $s->merk_type ?? $s->customer->jenis_kendaraan ?? '-',
+                'montir_nama' => $s->montir->name ?? '-',
+                'status' => $s->status,
+                'total_biaya' => (float) ($s->grand_total_nett ?? 0),
+                'keluhan' => $s->keluhan ?? '',
+            ]);
 
         $pengaturan = PengaturanToko::current();
         $peran = $request->user()->peran;
@@ -66,6 +108,8 @@ class KasirController extends Controller
         return view('kasir.index', [
             'daftarBarangJson' => $daftarBarang,
             'daftarCustomerJson' => $daftarCustomer,
+            'montirsJson' => $montirs,
+            'antreanServiceJson' => $antreanService,
             'batasDiskonPersen' => $peran === 'kasir' ? (float) $pengaturan->batas_diskon_kasir_persen : 0,
             'izinkanStokMinus' => (bool) $pengaturan->izinkan_stok_minus,
             'printerStrukAktif' => (bool) $pengaturan->printer_struk_aktif,
@@ -77,7 +121,13 @@ class KasirController extends Controller
     public function store(Request $request, StokService $stokService): JsonResponse
     {
         $validated = $request->validate([
+            'tipe_transaksi' => ['nullable', 'in:penjualan,service_spk,service_langsung,service_pelunasan'],
+            'service_id' => ['nullable', 'exists:services,id'],
             'customer_id' => ['nullable', 'exists:customers,id'],
+            'plat_nomor' => ['nullable', 'string', 'max:30'],
+            'merk_type' => ['nullable', 'string', 'max:100'],
+            'montir_id' => ['nullable', 'exists:users,id'],
+            'keluhan' => ['nullable', 'string', 'max:500'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.kode' => ['required', 'string'],
             'items.*.qty' => ['required', 'numeric', 'min:0.001'],
@@ -91,20 +141,105 @@ class KasirController extends Controller
             'catatan' => ['nullable', 'string', 'max:255'],
         ]);
 
+        $tipeTransaksi = $validated['tipe_transaksi'] ?? 'penjualan';
+
         try {
-            $penjualan = DB::transaction(function () use ($validated, $request, $stokService) {
+            $result = DB::transaction(function () use ($validated, $request, $stokService, $tipeTransaksi) {
                 $pengaturan = PengaturanToko::current();
+
+                // -------------------------------------------------------------
+                // CASE 1: SIMPAN SPK SERVIS BARU (MOTOR MASUK & DITINGGAL)
+                // -------------------------------------------------------------
+                if ($tipeTransaksi === 'service_spk') {
+                    $nomorDokumen = Service::buatNomorDokumen();
+                    
+                    // Pastikan ada customer (jika belum ada, hubungkan ke customer default atau pertama)
+                    $customerId = $validated['customer_id'] ?? Customer::firstOrCreate(
+                        ['nama' => 'Umum (Servis ' . ($validated['plat_nomor'] ?? 'Motor') . ')'],
+                        ['plat_nomor' => $validated['plat_nomor'] ?? '', 'jenis_kendaraan' => $validated['merk_type'] ?? '']
+                    )->id;
+
+                    $totalSupplier = 0.0;
+                    $totalNett = 0.0;
+
+                    $service = Service::create([
+                        'nomor_dokumen' => $nomorDokumen,
+                        'tanggal_masuk' => now()->toDateString(),
+                        'customer_id' => $customerId,
+                        'montir_id' => $validated['montir_id'] ?? null,
+                        'merk_type' => $validated['merk_type'] ?? null,
+                        'keluhan' => $validated['keluhan'] ?? null,
+                        'catatan' => $validated['catatan'] ?? null,
+                        'repaired_by' => 'intern',
+                        'status' => 'dikerjakan',
+                        'status_lunas' => false,
+                        'grand_total_supplier' => 0,
+                        'grand_total_nett' => 0,
+                    ]);
+
+                    foreach ($validated['items'] as $item) {
+                        $barang = Barang::where('kode', $item['kode'])->firstOrFail();
+                        $qty = (float) $item['qty'];
+                        $harga = (float) $item['harga'];
+                        $isJasa = $barang->group && str_contains(strtolower($barang->group->nama), 'jasa');
+
+                        if ($isJasa) {
+                            ServiceJasa::create([
+                                'service_id' => $service->id,
+                                'nama_jasa' => $barang->nama,
+                                'harga_supplier' => (float) $barang->hpp,
+                                'harga_nett' => $harga,
+                            ]);
+                            $totalSupplier += (float) $barang->hpp;
+                            $totalNett += $harga;
+                        } else {
+                            $subtotal = $qty * $harga;
+                            ServiceDetail::create([
+                                'service_id' => $service->id,
+                                'barang_id' => $barang->id,
+                                'qty' => $qty,
+                                'harga' => $harga,
+                                'subtotal' => $subtotal,
+                            ]);
+                            $totalNett += $subtotal;
+                        }
+                    }
+
+                    $service->update([
+                        'grand_total_supplier' => $totalSupplier,
+                        'grand_total_nett' => $totalNett,
+                    ]);
+
+                    AuditLog::catat(
+                        'Buat SPK Servis di Kasir',
+                        'Service',
+                        $nomorDokumen,
+                        "Servis motor {$service->merk_type} (Plat: {$validated['plat_nomor']}) Montir: " . ($service->montir->name ?? 'Belum Ditunjuk')
+                    );
+
+                    return [
+                        'sukses' => true,
+                        'pesan' => "SPK Tanda Terima Servis {$nomorDokumen} berhasil diterbitkan!",
+                        'nomor_dokumen' => $nomorDokumen,
+                        'tipe' => 'service_spk',
+                        'cetak_url' => route('cetak.tanda-terima-service', $nomorDokumen),
+                    ];
+                }
+
+                // -------------------------------------------------------------
+                // CASE 2: PENJUALAN KASIR POS / SERVIS LANGSUNG / PELUNASAN
+                // -------------------------------------------------------------
                 $nomorNota = Penjualan::buatNomorNota();
                 $subtotal = 0;
-
                 $dataItems = [];
+
                 foreach ($validated['items'] as $item) {
                     $barang = Barang::query()->where('kode', $item['kode'])->firstOrFail();
                     $qty = (float) $item['qty'];
                     $harga = (float) $item['harga'];
                     $diskonBaris = (float) ($item['diskon'] ?? 0);
 
-                    // Cek ketersediaan stok fisik via StokService (kecuali Jasa & Service)
+                    // Cek ketersediaan stok fisik (kecuali Jasa)
                     $stokSekarang = $stokService->stokSaatIni($barang);
                     $isJasa = $barang->group && str_contains(strtolower($barang->group->nama), 'jasa');
                     if (! $pengaturan->izinkan_stok_minus && ! $isJasa && $stokSekarang < $qty) {
@@ -116,6 +251,7 @@ class KasirController extends Controller
 
                     $dataItems[] = [
                         'barang' => $barang,
+                        'is_jasa' => $isJasa,
                         'qty' => $qty,
                         'harga' => $harga,
                         'diskon' => $diskonBaris,
@@ -138,6 +274,11 @@ class KasirController extends Controller
 
                 $kembali = max(0, $bayar - $totalAkhir);
 
+                $catatanTambahan = $validated['catatan'] ?? '';
+                if (!empty($validated['plat_nomor'])) {
+                    $catatanTambahan = trim("Plat: {$validated['plat_nomor']} (" . ($validated['merk_type'] ?? 'Motor') . ") | " . $catatanTambahan, " |");
+                }
+
                 $penjualan = Penjualan::create([
                     'nomor_nota' => $nomorNota,
                     'customer_id' => $validated['customer_id'] ?? null,
@@ -151,7 +292,7 @@ class KasirController extends Controller
                     'uang_muka' => $uangMuka,
                     'metode_pembayaran' => $validated['metode_pembayaran'],
                     'status_bayar' => ($validated['metode_pembayaran'] === 'tunai' || $bayar >= $totalAkhir) ? 'lunas' : 'piutang',
-                    'catatan' => $validated['catatan'] ?? null,
+                    'catatan' => $catatanTambahan ?: null,
                 ]);
 
                 foreach ($dataItems as $di) {
@@ -165,16 +306,19 @@ class KasirController extends Controller
                         'subtotal' => $di['subtotal'],
                     ]);
 
-                    StokMutasi::create([
-                        'barang_id' => $di['barang']->id,
-                        'tanggal' => now()->toDateString(),
-                        'jenis_mutasi' => 'penjualan',
-                        'no_dokumen' => $nomorNota,
-                        'masuk' => 0,
-                        'keluar' => $di['qty'],
-                        'hpp' => $di['hpp'],
-                        'keterangan' => "Penjualan POS Nota {$nomorNota}",
-                    ]);
+                    // Hanya catat mutasi stok keluar jika bukan tipe jasa
+                    if (! $di['is_jasa']) {
+                        StokMutasi::create([
+                            'barang_id' => $di['barang']->id,
+                            'tanggal' => now()->toDateString(),
+                            'jenis_mutasi' => 'penjualan',
+                            'no_dokumen' => $nomorNota,
+                            'masuk' => 0,
+                            'keluar' => $di['qty'],
+                            'hpp' => $di['hpp'],
+                            'keterangan' => "Penjualan POS Nota {$nomorNota}",
+                        ]);
+                    }
                 }
 
                 // Catat Arus Kas Masuk (KasFlow)
@@ -200,24 +344,153 @@ class KasirController extends Controller
                     ]);
                 }
 
-                return $penjualan;
+                // Jika pelunasan dari Service yang sudah ada sebelumnya
+                if ($tipeTransaksi === 'service_pelunasan' && !empty($validated['service_id'])) {
+                    $service = Service::find($validated['service_id']);
+                    if ($service) {
+                        $service->update([
+                            'status' => 'selesai',
+                            'status_lunas' => true,
+                            'grand_total_nett' => $totalAkhir,
+                        ]);
+                    }
+                }
+
+                return [
+                    'sukses' => true,
+                    'pesan' => "Transaksi {$penjualan->nomor_nota} berhasil disimpan.",
+                    'nomor_nota' => $penjualan->nomor_nota,
+                    'penjualan_id' => $penjualan->id,
+                    'tipe' => 'penjualan',
+                    'cetak_url' => route('cetak.nota', $penjualan->id),
+                ];
             });
 
-            return response()->json([
-                'sukses' => true,
-                'pesan' => "Transaksi {$penjualan->nomor_nota} berhasil disimpan.",
-                'nomor_nota' => $penjualan->nomor_nota,
-                'penjualan_id' => $penjualan->id,
-                'cetak_url' => route('cetak.nota', $penjualan->id),
-            ]);
+            return response()->json($result);
         } catch (Throwable $e) {
             Log::error('Gagal memproses transaksi kasir POS', ['pesan' => $e->getMessage()]);
 
             return response()->json([
                 'sukses' => false,
-                'pesan' => 'Gagal memproses transaksi kasir. ' . $e->getMessage(),
+                'pesan' => 'Gagal memproses transaksi kasir: ' . $e->getMessage(),
             ], 422);
         }
+    }
+
+    public function quickStoreCustomer(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'nama' => ['required', 'string', 'max:100'],
+            'telepon' => ['nullable', 'string', 'max:25'],
+            'plat_nomor' => ['nullable', 'string', 'max:20'],
+            'jenis_kendaraan' => ['nullable', 'string', 'max:100'],
+            'kategori' => ['nullable', 'in:umum,grosir,langganan'],
+        ]);
+
+        $customer = Customer::create([
+            'nama' => $validated['nama'],
+            'telepon' => $validated['telepon'] ?? null,
+            'no_wa' => $validated['telepon'] ?? null,
+            'plat_nomor' => $validated['plat_nomor'] ?? null,
+            'jenis_kendaraan' => $validated['jenis_kendaraan'] ?? null,
+            'kategori' => $validated['kategori'] ?? 'umum',
+            'aktif' => true,
+        ]);
+
+        AuditLog::catat('Tambah Customer Cepat', 'Customer', (string) $customer->id, "Customer: {$customer->nama} (Kasir POS)");
+
+        return response()->json([
+            'sukses' => true,
+            'pesan' => 'Customer baru berhasil ditambahkan.',
+            'customer' => [
+                'id' => $customer->id,
+                'nama' => $customer->nama,
+                'plat' => $customer->plat_nomor,
+                'motor' => $customer->jenis_kendaraan,
+                'kategori' => $customer->kategori ?? 'umum',
+                'telepon' => $customer->telepon ?? '',
+                'termin' => 30,
+            ],
+        ]);
+    }
+
+    public function antreanService(): JsonResponse
+    {
+        $antrean = Service::query()
+            ->whereIn('status', ['masuk', 'dikerjakan', 'selesai'])
+            ->where('status_lunas', false)
+            ->with(['customer', 'montir', 'details.barang', 'jasas'])
+            ->latest('id')
+            ->get()
+            ->map(fn (Service $s) => [
+                'id' => $s->id,
+                'nomor_dokumen' => $s->nomor_dokumen,
+                'tanggal_masuk' => $s->tanggal_masuk->format('d M Y'),
+                'customer_nama' => $s->customer->nama ?? 'Umum',
+                'customer_id' => $s->customer_id,
+                'plat_nomor' => $s->customer->plat_nomor ?? '-',
+                'merk_type' => $s->merk_type ?? $s->customer->jenis_kendaraan ?? '-',
+                'montir_nama' => $s->montir->name ?? '-',
+                'status' => $s->status,
+                'total_biaya' => (float) ($s->grand_total_nett ?? 0),
+                'keluhan' => $s->keluhan ?? '',
+            ]);
+
+        return response()->json([
+            'sukses' => true,
+            'antrean' => $antrean,
+        ]);
+    }
+
+    public function detailAntreanService(Service $service): JsonResponse
+    {
+        $service->load(['customer', 'montir', 'details.barang', 'jasas']);
+
+        $items = [];
+        foreach ($service->details as $d) {
+            if ($d->barang) {
+                $items[] = [
+                    'id' => $d->barang->id,
+                    'kode' => $d->barang->kode,
+                    'nama' => $d->barang->nama,
+                    'is_jasa' => false,
+                    'qty' => (float) $d->qty,
+                    'harga' => (float) $d->harga,
+                    'diskon' => 0,
+                    'subtotal' => (float) $d->subtotal,
+                ];
+            }
+        }
+
+        foreach ($service->jasas as $j) {
+            $items[] = [
+                'id' => null,
+                'kode' => 'JASA',
+                'nama' => $j->nama_jasa,
+                'is_jasa' => true,
+                'qty' => 1,
+                'harga' => (float) $j->harga_nett,
+                'diskon' => 0,
+                'subtotal' => (float) $j->harga_nett,
+            ];
+        }
+
+        return response()->json([
+            'sukses' => true,
+            'service' => [
+                'id' => $service->id,
+                'nomor_dokumen' => $service->nomor_dokumen,
+                'customer_id' => $service->customer_id,
+                'customer_nama' => $service->customer->nama ?? 'Umum',
+                'plat_nomor' => $service->customer->plat_nomor ?? '',
+                'merk_type' => $service->merk_type ?? '',
+                'montir_id' => $service->montir_id,
+                'montir_nama' => $service->montir->name ?? '',
+                'keluhan' => $service->keluhan ?? '',
+                'items' => $items,
+                'grand_total' => (float) $service->grand_total_nett,
+            ],
+        ]);
     }
 
     public function hargaTerakhir(Request $request): JsonResponse
@@ -229,7 +502,7 @@ class KasirController extends Controller
             return response()->json(['harga' => null]);
         }
 
-        $lastDetail = \App\Models\PenjualanDetail::query()
+        $lastDetail = PenjualanDetail::query()
             ->whereHas('penjualan', function ($q) use ($customerId) {
                 $q->where('customer_id', $customerId);
             })

@@ -65,19 +65,11 @@
 
             @if(in_array($peranSaya, ['owner', 'admin', 'kasir']))
                 <x-nav-group label="Transaksi">
-                    @if(in_array($peranSaya, ['owner', 'admin', 'kasir']))
-                        <x-nav-item href="{{ route('kasir') }}" icon="scan-barcode" :active="request()->routeIs('kasir')">Kasir POS</x-nav-item>
-                        <x-nav-item href="{{ route('penjualan.index') }}" icon="receipt" :active="request()->routeIs('penjualan.*')" :badge="$sidebarNotaHariIniCount ?? 0" badgeColor="bg-emerald-600 text-white">Nota Penjualan</x-nav-item>
-                    @endif
-                    @if(in_array($peranSaya, ['owner', 'admin', 'kasir']))
-                        <x-nav-item href="{{ route('pembelian.index') }}" icon="truck" :active="request()->routeIs('pembelian.*')">Pembelian</x-nav-item>
-                    @endif
-                    @if(in_array($peranSaya, ['owner', 'admin', 'kasir']))
-                        <x-nav-item href="{{ route('retur.index') }}" icon="undo-2" :active="request()->routeIs('retur.*')">Retur Barang</x-nav-item>
-                    @endif
-                    @if(in_array($peranSaya, ['owner', 'admin', 'kasir']))
-                        <x-nav-item href="{{ route('service.index') }}" icon="wrench" :active="request()->routeIs('service.*')">Service Bengkel</x-nav-item>
-                    @endif
+                    <x-nav-item href="{{ route('kasir') }}" icon="scan-barcode" :active="request()->routeIs('kasir')">Kasir POS</x-nav-item>
+                    <x-nav-item href="{{ route('penjualan.index') }}" icon="receipt" :active="request()->routeIs('penjualan.*')" :badge="$sidebarNotaHariIniCount ?? 0" badgeColor="bg-emerald-600 text-white">Nota Penjualan</x-nav-item>
+                    <x-nav-item href="{{ route('service.index') }}" icon="wrench" :active="request()->routeIs('service.*')">Antrean &amp; Servis</x-nav-item>
+                    <x-nav-item href="{{ route('pembelian.index') }}" icon="truck" :active="request()->routeIs('pembelian.*')">Pembelian Stok</x-nav-item>
+                    <x-nav-item href="{{ route('retur.index') }}" icon="undo-2" :active="request()->routeIs('retur.*')">Retur Barang</x-nav-item>
                 </x-nav-group>
             @endif
 

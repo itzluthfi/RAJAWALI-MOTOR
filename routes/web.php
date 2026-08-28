@@ -83,6 +83,9 @@ Route::prefix('admin')->group(function () {
         Route::get('/kasir', [KasirController::class, 'index'])->middleware('peran:owner,admin,kasir')->name('kasir');
         Route::post('/kasir', [KasirController::class, 'store'])->middleware('peran:owner,admin,kasir')->name('kasir.store');
         Route::get('/kasir/harga-terakhir', [KasirController::class, 'hargaTerakhir'])->middleware('peran:owner,admin,kasir')->name('kasir.harga-terakhir');
+        Route::post('/kasir/customer-cepat', [KasirController::class, 'quickStoreCustomer'])->middleware('peran:owner,admin,kasir')->name('kasir.customer-cepat');
+        Route::get('/kasir/antrean-service', [KasirController::class, 'antreanService'])->middleware('peran:owner,admin,kasir')->name('kasir.antrean-service');
+        Route::get('/kasir/antrean-service/{service}', [KasirController::class, 'detailAntreanService'])->middleware('peran:owner,admin,kasir')->name('kasir.antrean-service.detail');
 
         Route::prefix('penjualan')->name('penjualan.')->middleware('peran:owner,admin,kasir')->group(function () {
             Route::get('/', function (\Illuminate\Http\Request $request) {
