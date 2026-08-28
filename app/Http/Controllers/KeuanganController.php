@@ -27,10 +27,31 @@ class KeuanganController extends Controller
         if ($sampai = $request->input('sampai_tanggal')) {
             $query->where('tanggal', '<=', $sampai);
         }
+        if ($tipe = $request->input('tipe')) {
+            if ($tipe !== 'semua') {
+                $query->where('tipe', $tipe);
+            }
+        }
+        if ($kategori = $request->input('kategori')) {
+            if ($kategori !== 'semua') {
+                $query->where('kategori', $kategori);
+            }
+        }
+        if ($cari = $request->input('cari')) {
+            $query->where(function ($q) use ($cari) {
+                $q->where('keterangan', 'LIKE', "%{$cari}%")
+                  ->orWhere('no_referensi', 'LIKE', "%{$cari}%");
+            });
+        }
 
-        $mutasi = $query->orderBy('tanggal')->orderBy('id')->get();
+        // Hitung total masuk & keluar periode filter
+        $totalMasukPeriode = (float) (clone $query)->where('tipe', 'masuk')->sum('nominal');
+        $totalKeluarPeriode = (float) (clone $query)->where('tipe', 'keluar')->sum('nominal');
 
-        // Calculate running saldo
+        // Data terbaru paling atas (descending)
+        $mutasi = $query->orderBy('tanggal', 'desc')->orderBy('id', 'desc')->paginate(25)->withQueryString();
+
+        // Saldo total kas berjalan toko
         $saldoKas = (float) KasFlow::where('sumber', 'kas')
             ->selectRaw('COALESCE(SUM(CASE WHEN tipe = "masuk" THEN nominal ELSE -nominal END), 0) as saldo')
             ->value('saldo');
@@ -38,9 +59,14 @@ class KeuanganController extends Controller
         return view('keuangan.kas', [
             'mutasi' => $mutasi,
             'saldoKas' => $saldoKas,
+            'totalMasukPeriode' => $totalMasukPeriode,
+            'totalKeluarPeriode' => $totalKeluarPeriode,
             'filter' => [
                 'dari_tanggal' => $request->input('dari_tanggal', ''),
                 'sampai_tanggal' => $request->input('sampai_tanggal', ''),
+                'tipe' => $request->input('tipe', 'semua'),
+                'kategori' => $request->input('kategori', 'semua'),
+                'cari' => $request->input('cari', ''),
             ]
         ]);
     }
@@ -55,8 +81,19 @@ class KeuanganController extends Controller
         if ($sampai = $request->input('sampai_tanggal')) {
             $query->where('tanggal', '<=', $sampai);
         }
+        if ($tipe = $request->input('tipe')) {
+            if ($tipe !== 'semua') {
+                $query->where('tipe', $tipe);
+            }
+        }
+        if ($cari = $request->input('cari')) {
+            $query->where(function ($q) use ($cari) {
+                $q->where('keterangan', 'LIKE', "%{$cari}%")
+                  ->orWhere('no_referensi', 'LIKE', "%{$cari}%");
+            });
+        }
 
-        $mutasi = $query->orderBy('tanggal')->orderBy('id')->get();
+        $mutasi = $query->orderBy('tanggal', 'desc')->orderBy('id', 'desc')->paginate(25)->withQueryString();
 
         // Calculate running saldo bank
         $saldoBank = (float) KasFlow::where('sumber', 'bank')
@@ -69,6 +106,8 @@ class KeuanganController extends Controller
             'filter' => [
                 'dari_tanggal' => $request->input('dari_tanggal', ''),
                 'sampai_tanggal' => $request->input('sampai_tanggal', ''),
+                'tipe' => $request->input('tipe', 'semua'),
+                'cari' => $request->input('cari', ''),
             ]
         ]);
     }
