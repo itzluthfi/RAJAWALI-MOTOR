@@ -1,25 +1,23 @@
 <x-app-layout title="Nota Penjualan">
 
-    <form method="GET" action="{{ route('penjualan.index') }}">
-        <x-filter-bar class="no-print">
-            <x-input label="Cari No Nota / Customer" name="search" value="{{ request('search') }}" placeholder="PJ2026... atau nama customer" class="w-full sm:min-w-64" />
-            <x-select label="Status" name="status">
-                <option value="semua" @selected(request('status') === 'semua')>Semua Status</option>
-                <option value="lunas" @selected(request('status') === 'lunas')>Lunas</option>
-                <option value="piutang" @selected(request('status') === 'piutang')>Piutang / Tempo</option>
-                <option value="batal" @selected(request('status') === 'batal')>Batal</option>
-            </x-select>
-            <x-button type="submit" variant="primary" class="w-full sm:w-auto"><x-icon name="search" class="w-4 h-4" /> Cari Nota</x-button>
-            <div class="ml-auto flex gap-2">
-                <x-button type="button" variant="secondary" onclick="exportTableToExcel('tabel-penjualan', 'Laporan_Nota_Penjualan', 'Daftar Transaksi Nota Penjualan')">
-                    <x-icon name="file-spreadsheet" class="w-4 h-4 text-emerald-600" /> Export Excel
-                </x-button>
-                <x-button type="button" variant="secondary" onclick="cetakLaporanPdf()">
-                    <x-icon name="printer" class="w-4 h-4 text-rajawali" /> Cetak PDF
-                </x-button>
-            </div>
-        </x-filter-bar>
-    </form>
+    <x-filter-bar class="no-print" action="{{ route('penjualan.index') }}" method="GET">
+        <x-input label="Cari No Nota / Customer" name="search" value="{{ request('search') }}" placeholder="PJ2026... atau nama customer" class="w-full sm:min-w-64" />
+        <x-select label="Status" name="status">
+            <option value="semua" @selected(request('status') === 'semua')>Semua Status</option>
+            <option value="lunas" @selected(request('status') === 'lunas')>Lunas</option>
+            <option value="piutang" @selected(request('status') === 'piutang')>Piutang / Tempo</option>
+            <option value="batal" @selected(request('status') === 'batal')>Batal</option>
+        </x-select>
+        <x-button type="submit" variant="primary" class="w-full sm:w-auto"><x-icon name="search" class="w-4 h-4" /> Cari Nota</x-button>
+        <div class="ml-auto flex gap-2">
+            <x-button type="button" variant="secondary" onclick="exportTableToExcel('tabel-penjualan', 'Laporan_Nota_Penjualan', 'Daftar Transaksi Nota Penjualan')">
+                <x-icon name="file-spreadsheet" class="w-4 h-4 text-emerald-600" /> Export Excel
+            </x-button>
+            <x-button type="button" variant="secondary" onclick="cetakLaporanPdf()">
+                <x-icon name="printer" class="w-4 h-4 text-rajawali" /> Cetak PDF
+            </x-button>
+        </div>
+    </x-filter-bar>
 
     <!-- Mobile Card View (Tampil Hanya di Layar HP < 768px) -->
     <div class="grid grid-cols-1 gap-3 md:hidden">
@@ -41,7 +39,14 @@
                     </div>
                     <p class="font-mono font-bold text-base text-ink">Rp {{ number_format($p->total_akhir, 0, ',', '.') }}</p>
                 </div>
-                <div class="border-t border-line/60 pt-2 flex justify-end gap-1.5">
+                <div class="border-t border-line/60 pt-2 flex justify-end gap-1.5 items-center">
+                    @php
+                        $teksWa = \App\Services\WhatsAppReceiptService::buatTeksNota($p);
+                        $waUrl = \App\Services\WhatsAppReceiptService::buatUrlWhatsApp($p->customer->telepon ?? '', $teksWa);
+                    @endphp
+                    <a href="{{ $waUrl }}" target="_blank" class="px-2.5 py-1.5 rounded-lg bg-[#25D366] hover:bg-[#1ebd59] text-white text-xs font-bold flex items-center gap-1 shadow-xs transition">
+                        <x-icon name="whatsapp" class="w-3.5 h-3.5 text-white" /> WhatsApp
+                    </a>
                     <a href="{{ route('penjualan.show', $p->nomor_nota) }}" class="px-2.5 py-1.5 rounded-lg border border-line text-xs font-semibold text-ink hover:bg-canvas flex items-center gap-1">
                         <x-icon name="eye" class="w-3.5 h-3.5" /> Detail
                     </a>
@@ -77,9 +82,9 @@
             <table class="w-full text-sm" id="tabel-penjualan">
                 <thead class="bg-[#B0181C] text-white text-xs uppercase tracking-wide">
                     <tr>
-                        <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Nota & Waktu</th>
-                        <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Customer & Kasir</th>
-                        <th class="text-right font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Total & Metode</th>
+                        <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Nota &amp; Waktu</th>
+                        <th class="text-left font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Customer &amp; Kasir</th>
+                        <th class="text-right font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Total &amp; Metode</th>
                         <th class="text-center font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900">Status</th>
                         <th class="text-right font-bold px-4 py-3 bg-[#B0181C] text-white border-b border-red-900 no-print">Aksi</th>
                     </tr>
@@ -105,21 +110,21 @@
                                 </x-badge>
                             </td>
                             <td class="px-4 py-2.5 text-right no-print">
-                                <div class="flex justify-end items-center gap-1">
+                                <div class="flex justify-end items-center gap-1.5">
                                     @php
                                         $teksWa = \App\Services\WhatsAppReceiptService::buatTeksNota($p);
                                         $waUrl = \App\Services\WhatsAppReceiptService::buatUrlWhatsApp($p->customer->telepon ?? '', $teksWa);
                                     @endphp
-                                    <a href="{{ $waUrl }}" target="_blank" class="p-1.5 rounded-md text-steel hover:text-emerald-600 hover:bg-emerald-50 transition" data-tooltip="Kirim Struk via WhatsApp">
-                                        <x-icon name="message-circle" class="w-4 h-4" />
+                                    <a href="{{ $waUrl }}" target="_blank" class="p-1.5 rounded-lg bg-[#25D366] text-white hover:bg-[#1ebd59] shadow-xs transition flex items-center justify-center" data-tooltip="Kirim Struk WhatsApp">
+                                        <x-icon name="whatsapp" class="w-4 h-4 text-white" />
                                     </a>
-                                    <a href="{{ route('penjualan.show', $p->nomor_nota) }}" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-slate-100 transition" data-tooltip="Lihat Detail">
+                                    <a href="{{ route('penjualan.show', $p->nomor_nota) }}" class="p-1.5 rounded-lg text-steel hover:text-ink hover:bg-slate-100 transition" data-tooltip="Lihat Detail">
                                         <x-icon name="eye" class="w-4 h-4" />
                                     </a>
-                                    <a href="{{ route('cetak.nota', $p->nomor_nota) }}" target="_blank" class="p-1.5 rounded-md text-steel hover:text-rajawali hover:bg-red-50 transition" data-tooltip="Cetak Struk Thermal (58/80mm)">
+                                    <a href="{{ route('cetak.nota', $p->nomor_nota) }}" target="_blank" class="p-1.5 rounded-lg text-steel hover:text-rajawali hover:bg-red-50 transition" data-tooltip="Cetak Struk Thermal (58/80mm)">
                                         <x-icon name="printer" class="w-4 h-4" />
                                     </a>
-                                    <a href="{{ route('cetak.faktur', $p->nomor_nota) }}" target="_blank" class="p-1.5 rounded-md text-steel hover:text-blue-600 hover:bg-blue-50 transition" data-tooltip="Cetak Faktur A5 (NCR)">
+                                    <a href="{{ route('cetak.faktur', $p->nomor_nota) }}" target="_blank" class="p-1.5 rounded-lg text-steel hover:text-blue-600 hover:bg-blue-50 transition" data-tooltip="Cetak Faktur A5 (NCR)">
                                         <x-icon name="file-text" class="w-4 h-4" />
                                     </a>
                                 </div>

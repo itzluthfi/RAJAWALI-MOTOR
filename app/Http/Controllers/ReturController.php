@@ -24,7 +24,7 @@ class ReturController extends Controller
     {
         $query = Retur::with(['customer', 'supplier', 'user'])->latest();
 
-        if ($request->filled('jenis')) {
+        if ($request->filled('jenis') && $request->jenis !== 'semua') {
             $query->where('jenis', $request->jenis);
         }
 
