@@ -472,10 +472,10 @@
     </x-card>
 
     {{-- MODAL SCANNER KAMERA --}}
-    <x-modal name="scan-kamera" title="Scanner Kamera Barcode">
+    <x-modal name="scan-kamera" title="Scanner Kamera (Barcode &amp; QR Code)">
         <div class="space-y-4 text-center">
             <div id="html5-qr-code-reader" class="w-full max-w-sm mx-auto overflow-hidden rounded-2xl border border-line bg-black"></div>
-            <p class="text-xs text-steel font-bold">Arahkan kamera ke barcode produk.</p>
+            <p class="text-xs text-steel font-bold">Arahkan kamera ke Barcode (Garis) atau QR Code produk.</p>
             <x-button type="button" variant="secondary" x-on:click="$dispatch('tutup-modal', { name: 'scan-kamera' }); stopKamera()">Tutup Kamera</x-button>
         </div>
     </x-modal>
@@ -993,17 +993,34 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
         },
 
         tambahDariBarcode() {
-            const q = this.barcode.trim();
+            let q = this.barcode.trim();
             if (!q) return;
 
+            // Handle format QR Code JSON: {"kode":"..."} atau {"barcode":"..."}
+            if (q.startsWith('{') && q.endsWith('}')) {
+                try {
+                    const parsed = JSON.parse(q);
+                    q = (parsed.kode || parsed.barcode || parsed.id || q).toString().trim();
+                } catch {}
+            }
+
+            // Handle format URL pada QR Code: https://.../barang/DISVCBSTK
+            if (q.includes('/barang/')) {
+                const parts = q.split('/barang/');
+                if (parts.length > 1) {
+                    q = parts[1].split('?')[0].split('/')[0].trim();
+                }
+            }
+
+            const qLower = q.toLowerCase();
             const barang = this.daftarBarang.find(b => 
-                (b.barcode && b.barcode.toLowerCase() === q.toLowerCase()) || 
-                b.kode.toLowerCase() === q.toLowerCase() ||
-                b.nama.toLowerCase() === q.toLowerCase()
+                (b.barcode && b.barcode.toLowerCase() === qLower) || 
+                b.kode.toLowerCase() === qLower ||
+                b.nama.toLowerCase() === qLower
             );
 
             if (!barang) {
-                if (window.toastGagal) window.toastGagal(`Barang "${this.barcode}" tidak ditemukan.`);
+                if (window.toastGagal) window.toastGagal(`Item / Barcode "${this.barcode}" tidak ditemukan.`);
                 this.barcode = '';
                 return;
             }
