@@ -1,6 +1,6 @@
 <x-app-layout title="Kasir POS Terpadu">
 <div
-    x-data="kasirPosApp(@js($daftarBarang), @js($customers), @js($montirs))"
+    x-data="kasirPosApp(@js($daftarBarangJson), @js($daftarCustomerJson), @js($montirsJson))"
     x-init="initApp()"
     x-on:keydown.window="tanganiShortcut($event)"
     class="flex flex-col gap-3 -m-3 p-3 min-h-[calc(100vh-4.5rem)]"
