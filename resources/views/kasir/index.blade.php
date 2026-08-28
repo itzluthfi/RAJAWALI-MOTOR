@@ -566,46 +566,46 @@
     </x-modal>
 
     {{-- MODAL CUSTOMER BARU CEPAT (QUICK ADD) --}}
-    <x-modal name="tambah-customer-cepat" title="Pendaftaran Customer Baru Cepat">
-        <form x-on:submit.prevent="simpanCustomerCepat()" class="space-y-4">
-            <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900 font-bold flex items-start gap-2.5">
-                <x-icon name="info" class="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                <span>Cukup isi <strong>Nama Customer</strong> (wajib) &amp; <strong>No WhatsApp</strong> agar struk digital bisa dikirim via WA dan memudahkan pelacakan klaim garansi/retur.</span>
+    <x-modal name="tambah-customer-cepat" title="Tambah Pelanggan Cepat">
+        <form x-on:submit.prevent="simpanCustomerCepat()" class="space-y-3.5">
+            <div class="p-2.5 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900 font-bold flex items-center gap-2">
+                <x-icon name="info" class="w-4 h-4 text-blue-600 shrink-0" />
+                <span>Cukup isi <strong>Nama</strong> &amp; <strong>No. WhatsApp</strong> untuk kirim struk digital.</span>
             </div>
 
             <div>
-                <label class="block text-xs font-black text-slate-800 uppercase mb-1">Nama Customer *</label>
-                <input type="text" x-model="formCustomer.nama" required placeholder="Nama lengkap pelanggan..." class="w-full text-sm font-bold rounded-xl border-2 border-slate-300 px-3.5 py-2.5 focus:ring-2 focus:ring-rajawali focus:outline-none">
+                <label class="block text-xs font-black text-slate-800 uppercase mb-1">Nama Pelanggan *</label>
+                <input type="text" x-model="formCustomer.nama" required placeholder="Nama pelanggan..." class="w-full text-sm font-bold rounded-xl border-2 border-slate-300 px-3.5 py-2.5 focus:ring-2 focus:ring-rajawali focus:outline-none">
             </div>
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-xs font-black text-slate-800 uppercase mb-1">No WhatsApp / HP</label>
+                    <label class="block text-xs font-black text-slate-800 uppercase mb-1">No. WhatsApp / HP</label>
                     <input type="text" x-model="formCustomer.telepon" placeholder="08xxxxxxxxxx" class="w-full text-sm font-mono font-bold rounded-xl border-2 border-slate-300 px-3.5 py-2.5 focus:ring-2 focus:ring-rajawali focus:outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-black text-slate-800 uppercase mb-1">Kategori Pelanggan (Tingkat Harga)</label>
+                    <label class="block text-xs font-black text-slate-800 uppercase mb-1">Kategori Harga</label>
                     <select x-model="formCustomer.kategori" class="w-full text-sm font-bold rounded-xl border-2 border-slate-300 px-3.5 py-2.5 focus:ring-2 focus:ring-rajawali focus:outline-none bg-white">
-                        <option value="umum">Umum (Harga Eceran Standar)</option>
-                        <option value="mitra">Bengkel Rekanan / Mitra (Harga Khusus)</option>
-                        <option value="grosir">Toko Grosir / Reseller (Harga Partai)</option>
+                        <option value="umum">Umum</option>
+                        <option value="mitra">Mitra</option>
+                        <option value="grosir">Grosir</option>
                     </select>
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-xs font-black text-slate-800 uppercase mb-1">Plat Nomor Motor (Opsional)</label>
+                    <label class="block text-xs font-black text-slate-800 uppercase mb-1">Plat Nomor (Opsional)</label>
                     <input type="text" x-model="formCustomer.plat_nomor" placeholder="L 1234 ABC" class="w-full text-sm font-mono font-bold uppercase rounded-xl border-2 border-slate-300 px-3.5 py-2.5 focus:ring-2 focus:ring-rajawali focus:outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-black text-slate-800 uppercase mb-1">Tipe Motor (Opsional)</label>
-                    <input type="text" x-model="formCustomer.jenis_kendaraan" placeholder="Honda Vario 125" class="w-full text-sm font-bold rounded-xl border-2 border-slate-300 px-3.5 py-2.5 focus:ring-2 focus:ring-rajawali focus:outline-none">
+                    <input type="text" x-model="formCustomer.jenis_kendaraan" placeholder="Vario 125" class="w-full text-sm font-bold rounded-xl border-2 border-slate-300 px-3.5 py-2.5 focus:ring-2 focus:ring-rajawali focus:outline-none">
                 </div>
             </div>
 
             <div class="flex justify-end gap-2 pt-3 border-t border-line">
                 <x-button type="button" variant="secondary" x-on:click="$dispatch('tutup-modal', { name: 'tambah-customer-cepat' })">Batal</x-button>
                 <x-button type="submit" variant="primary">
-                    <x-icon name="save" class="w-4 h-4" /> Simpan &amp; Pilih Customer
+                    <x-icon name="save" class="w-4 h-4" /> Simpan &amp; Pilih
                 </x-button>
             </div>
         </form>

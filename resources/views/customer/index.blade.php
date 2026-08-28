@@ -107,11 +107,11 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="text-sm font-bold text-steel block mb-1">Kategori Customer</label>
+                        <label class="text-sm font-bold text-steel block mb-1">Kategori Pelanggan</label>
                         <select name="kategori" x-model="kategori" class="w-full rounded-md border border-line bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rajawali">
-                            <option value="umum">Umum (Eceran)</option>
-                            <option value="mitra">Mitra (Bengkel Rekanan)</option>
-                            <option value="grosir">Grosir (Partai Besar)</option>
+                            <option value="umum">Umum</option>
+                            <option value="mitra">Mitra</option>
+                            <option value="grosir">Grosir</option>
                         </select>
                     </div>
                     <x-input label="Termin Kredit (hari)" name="termin_hari" type="number" mono x-model="terminHari" required />
