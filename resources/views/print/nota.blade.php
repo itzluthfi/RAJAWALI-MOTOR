@@ -5,6 +5,7 @@
         ->orWhere('id', $realId)
         ->orWhere('id', is_numeric($id) ? (int)$id : 0)
         ->first();
+    $pengaturan = \App\Models\PengaturanToko::current();
 @endphp
 <x-print-layout title="Nota {{ $id }}">
 <style>
@@ -28,10 +29,15 @@
 @if($penjualan)
 <div class="struk-box max-w-[80mm] mx-auto p-4 font-mono text-xs leading-relaxed bg-white text-black border border-slate-200 rounded-lg shadow-sm">
     <div class="text-center space-y-1 mb-3">
-        <img alt="Rajawali Motor Logo" class="h-10 w-auto mx-auto object-contain mb-1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsYEm9KYYbuD248b0jN_sheEfynwQ6j7teJdvKA8edK8NYF0ndmkXVXlqw9SKIhago4iUYt5RmUV5kgkIuq0AjjoDKToRqxiuEM17EOurrulLi0qsUlk36AxIH4JObdUrym7rxUnRAwC9aLkxP4pUlSgGe9qLiTLXOV0I1-pYXxewRVi_zU2DtKVLzY0W20Ve5lzZD-FdFadE3YvJ_ozDGIJmgDt6aLfSKhBNi1YFqbLL-76iue9ykhTo7OsirOQuyfFH_HfkN0Dc"/>
-        <p class="font-bold text-sm tracking-wide">RAJAWALI MOTOR</p>
-        <p class="text-[11px]">Jl. Samanhudi No.102, Jasem, Sidoarjo</p>
-        <p class="text-[11px]">WA: +62 856-4888-8441 | Telp: (031) 8431234</p>
+        <img alt="{{ $pengaturan->nama_toko }} Logo" class="h-10 w-auto mx-auto object-contain mb-1" src="{{ $pengaturan->logo_url }}"/>
+        <p class="font-bold text-sm tracking-wide">{{ strtoupper($pengaturan->nama_toko) }}</p>
+        @if($pengaturan->slogan)
+            <p class="text-[10px] text-slate-600 italic">{{ $pengaturan->slogan }}</p>
+        @endif
+        <p class="text-[11px]">{{ $pengaturan->alamat }}</p>
+        @if($pengaturan->telepon)
+            <p class="text-[11px]">Telp/WA: {{ $pengaturan->telepon }}</p>
+        @endif
     </div>
     <div class="border-t border-dashed border-black/40 my-2"></div>
     <div class="flex justify-between"><span>No Nota:</span><span class="font-bold">{{ $penjualan->nomor_nota }}</span></div>
@@ -75,7 +81,7 @@
     <div class="border-t border-dashed border-black/40 my-3"></div>
     <div class="text-center space-y-1">
         <p class="font-bold">Terima kasih atas kunjungan Anda!</p>
-        <p class="text-[10px] text-black/70 font-bold">Garansi Servis & Sparepart Original — Simpan Nota Ini</p>
+        <p class="text-[10px] text-black/70 font-bold leading-tight">{{ $pengaturan->footer_struk ?? 'Garansi Servis & Sparepart Original — Simpan Nota Ini' }}</p>
     </div>
 </div>
 @else

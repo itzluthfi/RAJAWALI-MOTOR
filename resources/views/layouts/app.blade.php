@@ -1,14 +1,17 @@
-@php $peranSaya = auth()->user()->peran; @endphp
+@php
+    $peranSaya = auth()->user()->peran;
+    $pengaturanApp = \App\Models\PengaturanToko::current();
+@endphp
 <!DOCTYPE html>
 <html lang="id" x-data="{ sidebarTerbuka: window.innerWidth >= 768 }" @resize.window="if (window.innerWidth >= 768) { sidebarTerbuka = true; }">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $title ?? 'Dashboard' }} — Rajawali Motor</title>
+    <title>{{ $title ?? 'Dashboard' }} — {{ $pengaturanApp->nama_toko }}</title>
 
     <!-- Favicon & Touch Icons -->
-    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/aida-public/AB6AXuAsYEm9KYYbuD248b0jN_sheEfynwQ6j7teJdvKA8edK8NYF0ndmkXVXlqw9SKIhago4iUYt5RmUV5kgkIuq0AjjoDKToRqxiuEM17EOurrulLi0qsUlk36AxIH4JObdUrym7rxUnRAwC9aLkxP4pUlSgGe9qLiTLXOV0I1-pYXxewRVi_zU2DtKVLzY0W20Ve5lzZD-FdFadE3YvJ_ozDGIJmgDt6aLfSKhBNi1YFqbLL-76iue9ykhTo7OsirOQuyfFH_HfkN0Dc">
-    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/aida-public/AB6AXuAsYEm9KYYbuD248b0jN_sheEfynwQ6j7teJdvKA8edK8NYF0ndmkXVXlqw9SKIhago4iUYt5RmUV5kgkIuq0AjjoDKToRqxiuEM17EOurrulLi0qsUlk36AxIH4JObdUrym7rxUnRAwC9aLkxP4pUlSgGe9qLiTLXOV0I1-pYXxewRVi_zU2DtKVLzY0W20Ve5lzZD-FdFadE3YvJ_ozDGIJmgDt6aLfSKhBNi1YFqbLL-76iue9ykhTo7OsirOQuyfFH_HfkN0Dc">
+    <link rel="icon" type="image/png" href="{{ $pengaturanApp->logo_url }}">
+    <link rel="apple-touch-icon" href="{{ $pengaturanApp->logo_url }}">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
@@ -46,9 +49,9 @@
         <div class="h-14 flex items-center justify-between px-4 border-b border-line shrink-0 overflow-x-hidden" :class="!sidebarTerbuka && 'justify-center px-0'">
             <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 min-w-0 group" :class="!sidebarTerbuka && 'justify-center'">
                 <div class="w-9 h-9 rounded-2xl bg-white p-1 shadow-sm border border-slate-200/80 shrink-0 flex items-center justify-center overflow-hidden group-hover:scale-105 group-hover:shadow-md transition-all duration-300">
-                    <img alt="Rajawali Motor Logo" class="w-full h-full object-contain rounded-xl" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsYEm9KYYbuD248b0jN_sheEfynwQ6j7teJdvKA8edK8NYF0ndmkXVXlqw9SKIhago4iUYt5RmUV5kgkIuq0AjjoDKToRqxiuEM17EOurrulLi0qsUlk36AxIH4JObdUrym7rxUnRAwC9aLkxP4pUlSgGe9qLiTLXOV0I1-pYXxewRVi_zU2DtKVLzY0W20Ve5lzZD-FdFadE3YvJ_ozDGIJmgDt6aLfSKhBNi1YFqbLL-76iue9ykhTo7OsirOQuyfFH_HfkN0Dc"/>
+                    <img alt="{{ $pengaturanApp->nama_toko }} Logo" class="w-full h-full object-contain rounded-xl" src="{{ $pengaturanApp->logo_url }}"/>
                 </div>
-                <span x-show="sidebarTerbuka" class="font-display font-bold text-sm tracking-tight truncate text-rajawali" x-cloak>RAJAWALI MOTOR</span>
+                <span x-show="sidebarTerbuka" class="font-display font-black text-sm tracking-tight truncate text-rajawali" x-cloak>{{ strtoupper($pengaturanApp->nama_toko) }}</span>
             </a>
             <!-- Close button on mobile drawer -->
             <button type="button" x-on:click="sidebarTerbuka = false" class="md:hidden p-1.5 text-steel hover:text-ink rounded-md">
@@ -120,7 +123,7 @@
 
             @if($peranSaya === 'owner')
                 <x-nav-group label="Pengaturan">
-                    <x-nav-item href="{{ route('pengaturan.toko') }}" icon="settings" :active="request()->routeIs('pengaturan.toko')">Profil Toko</x-nav-item>
+                    <x-nav-item href="{{ route('pengaturan.toko') }}" icon="settings" :active="request()->routeIs('pengaturan.toko')">Pengaturan Web &amp; Toko</x-nav-item>
                     <x-nav-item href="{{ route('pengaturan.user') }}" icon="user-cog" :active="request()->routeIs('pengaturan.user')">Pengguna System</x-nav-item>
                     <x-nav-item href="{{ route('pengaturan.audit') }}" icon="history" :active="request()->routeIs('pengaturan.audit')">Audit Log</x-nav-item>
                 </x-nav-group>
