@@ -10,13 +10,14 @@ use App\Models\Pembelian;
 use App\Models\Penjualan;
 use App\Models\PenjualanDetail;
 use App\Models\Service;
+use App\Services\StokService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function __invoke(Request $request): View
+    public function __invoke(Request $request, StokService $stokService): View
     {
         $user = $request->user();
         $peran = $user->peran;
@@ -30,14 +31,23 @@ class DashboardController extends Controller
         $omzetKemarin = (float) Penjualan::whereDate('created_at', $yesterday)->sum('total_akhir');
         $growth = $omzetKemarin > 0 ? round((($omzetHariIni - $omzetKemarin) / $omzetKemarin) * 100, 1) : 0;
 
-        $stokMenipisList = Barang::where('aktif', true)
-            ->whereColumn('stok', '<=', 'stok_minimum')
-            ->orderBy('stok', 'asc')
-            ->take(6)
+        // Ambil stok menipis secara dinamis via StokService (agregasi mutasi stok)
+        $barangs = Barang::where('aktif', true)
+            ->select('id', 'kode', 'nama', 'stok_minimum', 'lokasi_rak')
             ->get();
 
+        $stokMap = $stokService->stokBanyakBarang($barangs->pluck('id'));
+
+        $stokMenipisList = $barangs->filter(function (Barang $b) use ($stokMap) {
+            $stokAktual = $stokMap[$b->id] ?? 0.0;
+            return $stokAktual <= (float) $b->stok_minimum;
+        })->map(function (Barang $b) use ($stokMap) {
+            $b->stok = $stokMap[$b->id] ?? 0.0;
+            return $b;
+        })->sortBy('stok')->take(6)->values();
+
         $serviceAktif = Service::whereIn('status', ['masuk', 'dikerjakan'])
-            ->with(['customer', 'montirUser'])
+            ->with(['customer', 'montir'])
             ->latest()
             ->take(5)
             ->get();
@@ -58,7 +68,7 @@ class DashboardController extends Controller
                 ->sum(DB::raw('total_akhir - uang_muka'));
 
             $totalHutang = (float) Pembelian::where('status_bayar', 'tempo')
-                ->sum('total');
+                ->sum(DB::raw('total - terbayar'));
 
             // Chart data 30 hari terakhir (1 single grouped query instead of 30 queries)
             $startDate = now()->subDays(29)->toDateString();
