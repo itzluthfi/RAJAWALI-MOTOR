@@ -145,11 +145,12 @@ Route::prefix('admin')->group(function () {
             Route::patch('/{service}/status', [\App\Http\Controllers\ServiceController::class, 'updateStatus'])->name('status');
         });
 
-        Route::prefix('barang')->name('barang.')->middleware('peran:owner,admin')->group(function () {
+        Route::prefix('barang')->name('barang.')->middleware('peran:owner,admin,gudang,kasir')->group(function () {
             Route::get('/', [BarangController::class, 'index'])->name('index');
             Route::post('/', [BarangController::class, 'store'])->name('store');
             Route::put('/{barang}', [BarangController::class, 'update'])->name('update');
             Route::patch('/{barang}/toggle-aktif', [BarangController::class, 'toggleAktif'])->name('toggle-aktif');
+            Route::get('/{barang}/cetak-label', [BarangController::class, 'cetakLabel'])->name('cetak-label');
             Route::post('/{barang}/barcode', [BarangController::class, 'tambahBarcode'])->name('barcode.store');
             Route::patch('/{barang}/barcode/{barcodeId}/utama', [BarangController::class, 'jadikanBarcodeUtama'])->name('barcode.utama');
         });

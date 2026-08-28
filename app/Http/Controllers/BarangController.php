@@ -86,17 +86,27 @@ class BarangController extends Controller
                 'harga_grosir_2' => ['nullable', 'numeric', 'min:0'],
                 'stok_minimum' => ['required', 'numeric', 'min:0'],
                 'lokasi_rak' => ['nullable', 'string', 'max:50'],
+                'barcode' => ['nullable', 'string', 'max:50'],
             ]);
 
             if (in_array($request->user()->peran, ['owner', 'admin'], true)) {
                 $data['hpp'] = $request->validate(['hpp' => ['required', 'numeric', 'min:0']])['hpp'];
             }
 
-            DB::transaction(function () use ($data, $barang) {
+            $barcodeInput = $data['barcode'] ?? null;
+            unset($data['barcode']);
+
+            DB::transaction(function () use ($data, $barang, $barcodeInput) {
                 if ($barang) {
                     $barang->update($data);
+                    if ($barcodeInput && ! $barang->barcodes()->where('barcode', $barcodeInput)->exists()) {
+                        $barang->barcodes()->create(['barcode' => $barcodeInput, 'utama' => $barang->barcodes()->count() === 0]);
+                    }
                 } else {
-                    Barang::create($data + ['harga_beli_terakhir' => $data['hpp'] ?? 0]);
+                    $baru = Barang::create($data + ['harga_beli_terakhir' => $data['hpp'] ?? 0]);
+                    if ($barcodeInput) {
+                        $baru->barcodes()->create(['barcode' => $barcodeInput, 'utama' => true]);
+                    }
                 }
             }, attempts: 3);
 
@@ -158,5 +168,23 @@ class BarangController extends Controller
         }, attempts: 3);
 
         return back()->with('sukses', 'Barcode utama berhasil diubah.');
+    }
+
+    public function cetakLabel(Request $request, Barang $barang): View
+    {
+        $barang->load(['barcodes', 'group', 'satuan']);
+        $jumlah = max(1, min(100, (int) $request->input('jumlah', 1)));
+        $tipe = $request->input('tipe', 'barcode');
+        $barcodeUtama = $barang->barcodes->firstWhere('utama', true)?->barcode 
+            ?? $barang->barcodes->first()?->barcode 
+            ?? $barang->kode;
+
+        return view('print.label-barcode', [
+            'barang' => $barang,
+            'jumlah' => $jumlah,
+            'tipe' => $tipe,
+            'barcodeUtama' => $barcodeUtama,
+            'pengaturan' => \App\Models\PengaturanToko::current(),
+        ]);
     }
 }
