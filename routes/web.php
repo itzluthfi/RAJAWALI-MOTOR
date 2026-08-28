@@ -130,6 +130,7 @@ Route::prefix('admin')->group(function () {
         Route::prefix('retur')->name('retur.')->group(function () {
             Route::get('/', [\App\Http\Controllers\ReturController::class, 'index'])->middleware('peran:owner,admin,kasir')->name('index');
             Route::get('/penjualan/tambah', [\App\Http\Controllers\ReturController::class, 'createPenjualan'])->middleware('peran:owner,admin,kasir')->name('penjualan.create');
+            Route::post('/penjualan', [\App\Http\Controllers\ReturController::class, 'storePenjualan'])->middleware('peran:owner,admin,kasir')->name('penjualan.store');
             Route::get('/pembelian/tambah', [\App\Http\Controllers\ReturController::class, 'createPembelian'])->middleware('peran:owner,admin')->name('pembelian.create');
             Route::post('/pembelian', [\App\Http\Controllers\ReturController::class, 'storePembelian'])->middleware('peran:owner,admin')->name('pembelian.store');
             Route::get('/{id}', [\App\Http\Controllers\ReturController::class, 'show'])->middleware('peran:owner,admin,kasir')->name('show');
