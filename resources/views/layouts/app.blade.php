@@ -76,8 +76,11 @@
 
             @if(in_array($peranSaya, ['owner', 'admin', 'kasir']))
                 <x-nav-group label="Master Data">
-                    @if(in_array($peranSaya, ['owner', 'admin']))
+                    @if(in_array($peranSaya, ['owner', 'admin', 'gudang']))
                         <x-nav-item href="{{ route('barang.index') }}" icon="package" :active="request()->routeIs('barang.*')">Master Barang</x-nav-item>
+                    @endif
+                    @if(in_array($peranSaya, ['owner', 'admin']))
+                        <x-nav-item href="{{ route('jasa.index') }}" icon="wrench" :active="request()->routeIs('jasa.*')">Tarif Jasa Servis</x-nav-item>
                     @endif
                     @if(in_array($peranSaya, ['owner', 'admin', 'kasir']))
                         <x-nav-item href="{{ route('customer.index') }}" icon="users" :active="request()->routeIs('customer.*')">Master Customer</x-nav-item>

@@ -37,14 +37,12 @@ class KasirController extends Controller
         $stok = $stokService->stokBanyakBarang($barang->pluck('id'));
 
         $daftarBarang = $barang->map(function (Barang $b) use ($stok) {
-            $isJasa = $b->group && str_contains(strtolower($b->group->nama), 'jasa');
-
             return [
                 'id' => $b->id,
                 'kode' => $b->kode,
                 'barcode' => $b->barcodes->firstWhere('utama', true)?->barcode ?? $b->barcodes->first()?->barcode ?? $b->kode,
                 'nama' => $b->nama,
-                'is_jasa' => $isJasa,
+                'is_jasa' => false,
                 'harga' => (float) $b->harga_eceran,
                 'harga_grosir' => (float) ($b->harga_grosir > 0 ? $b->harga_grosir : $b->harga_eceran),
                 'min_qty_grosir_1' => (float) ($b->min_qty_grosir_1 ?? 3),
@@ -52,9 +50,32 @@ class KasirController extends Controller
                 'min_qty_grosir_2' => (float) ($b->min_qty_grosir_2 ?? 24),
                 'harga_grosir_2' => (float) ($b->harga_grosir_2 > 0 ? $b->harga_grosir_2 : ($b->harga_grosir_1 > 0 ? $b->harga_grosir_1 : $b->harga_eceran)),
                 'hpp' => (float) $b->hpp,
-                'stok' => $isJasa ? 9999 : ($stok[$b->id] ?? 0.0),
+                'stok' => (float) ($stok[$b->id] ?? 0.0),
             ];
-        })->values();
+        });
+
+        // Load standalone active Jasa & append to POS catalog
+        $jasas = \App\Models\Jasa::where('aktif', true)->orderBy('nama')->get();
+        $daftarJasa = $jasas->map(function (\App\Models\Jasa $j) {
+            return [
+                'id' => 'JSA-' . $j->id,
+                'kode' => $j->kode,
+                'barcode' => $j->kode,
+                'nama' => $j->nama,
+                'is_jasa' => true,
+                'kategori' => $j->kategori ?? 'Jasa Servis',
+                'harga' => (float) $j->tarif,
+                'harga_grosir' => (float) $j->tarif,
+                'min_qty_grosir_1' => 1,
+                'harga_grosir_1' => (float) $j->tarif,
+                'min_qty_grosir_2' => 1,
+                'harga_grosir_2' => (float) $j->tarif,
+                'hpp' => 0.0,
+                'stok' => 999999, // unlimited service
+            ];
+        });
+
+        $daftarKatalogLengkap = $daftarBarang->concat($daftarJasa)->values();
 
         $daftarCustomer = Customer::query()
             ->where('aktif', true)
@@ -106,7 +127,7 @@ class KasirController extends Controller
         $peran = $request->user()->peran;
 
         return view('kasir.index', [
-            'daftarBarangJson' => $daftarBarang,
+            'daftarBarangJson' => $daftarKatalogLengkap,
             'daftarCustomerJson' => $daftarCustomer,
             'montirsJson' => $montirs,
             'antreanServiceJson' => $antreanService,

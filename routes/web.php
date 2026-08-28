@@ -175,6 +175,14 @@ Route::prefix('admin')->group(function () {
             Route::patch('/{sales}/toggle-aktif', [SalesController::class, 'toggleAktif'])->name('toggle-aktif');
         });
 
+        Route::prefix('jasa')->name('jasa.')->middleware('peran:owner,admin')->group(function () {
+            Route::get('/', [\App\Http\Controllers\JasaController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\JasaController::class, 'store'])->name('store');
+            Route::put('/{jasa}', [\App\Http\Controllers\JasaController::class, 'update'])->name('update');
+            Route::patch('/{jasa}/toggle-aktif', [\App\Http\Controllers\JasaController::class, 'toggleAktif'])->name('toggle-aktif');
+            Route::delete('/{jasa}', [\App\Http\Controllers\JasaController::class, 'destroy'])->name('destroy');
+        });
+
         Route::prefix('stok')->name('stok.')->middleware('peran:owner,admin')->group(function () {
             Route::get('/kartu', [\App\Http\Controllers\StokController::class, 'kartu'])->name('kartu');
             Route::get('/rekap', [\App\Http\Controllers\StokController::class, 'rekap'])->name('rekap');

@@ -16,7 +16,7 @@
                     class="px-4 py-2 rounded-lg transition cursor-pointer flex items-center gap-2 text-sm font-black"
                 >
                     <x-icon name="shopping-cart" class="w-4 h-4" />
-                    <span>Penjualan Suku Cadang</span>
+                    <span>Penjualan Sparepart</span>
                 </button>
                 <button
                     type="button"
@@ -25,7 +25,7 @@
                     class="px-4 py-2 rounded-lg transition cursor-pointer flex items-center gap-2 text-sm font-black"
                 >
                     <x-icon name="wrench" class="w-4 h-4" />
-                    <span>Servis Bengkel Motor</span>
+                    <span>Servis Motor</span>
                 </button>
             </div>
         </div>
