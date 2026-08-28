@@ -169,7 +169,7 @@
                 <button type="button" x-on:click="openPelunasan = false" class="text-steel hover:text-ink"><x-icon name="x" class="w-5 h-5" /></button>
             </div>
 
-            <form :action="`/admin/pembelian/${pembelianId}/pelunasan`" method="POST" class="space-y-4">
+            <form :action="`{{ url('/admin/pembelian') }}/${pembelianId}/pelunasan`" method="POST" class="space-y-4">
                 @csrf
                 <div class="p-3.5 bg-canvas border border-line rounded-lg text-xs space-y-1.5 font-medium">
                     <div class="flex justify-between"><span class="text-steel">No Faktur Pembelian:</span> <strong class="font-mono text-rajawali" x-text="nomorDokumen"></strong></div>

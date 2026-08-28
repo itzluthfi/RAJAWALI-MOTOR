@@ -178,8 +178,14 @@ class PembelianController extends Controller
         return view('pembelian.show', compact('pembelian'));
     }
 
-    public function pelunasan(Request $request, Pembelian $pembelian): RedirectResponse
+    public function pelunasan(Request $request, string|int $pembelian): RedirectResponse
     {
+        $realId = is_numeric($pembelian) ? (int) $pembelian : \App\Services\IdHasher::decode((string) $pembelian);
+        $pembelian = Pembelian::where('id', $realId)
+            ->orWhere('id', $pembelian)
+            ->orWhere('nomor_pembelian', $pembelian)
+            ->firstOrFail();
+
         $sisaHutang = $pembelian->sisa_hutang;
 
         if ($pembelian->status_bayar === 'lunas' || $sisaHutang <= 0) {
