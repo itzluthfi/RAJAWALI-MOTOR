@@ -1,4 +1,5 @@
 <x-app-layout title="Master Barang">
+@php $peranSaya = auth()->user()?->peran ?? 'owner'; @endphp
 <div x-data="formBarang({{ in_array($peranSaya, ['owner', 'admin'], true) ? 'true' : 'false' }})" class="space-y-4 -m-3 p-3">
 
     <!-- Filter & Action Bar -->
