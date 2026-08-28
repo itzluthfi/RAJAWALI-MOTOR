@@ -31,20 +31,16 @@ class DashboardController extends Controller
         $omzetKemarin = (float) Penjualan::whereDate('created_at', $yesterday)->sum('total_akhir');
         $growth = $omzetKemarin > 0 ? round((($omzetHariIni - $omzetKemarin) / $omzetKemarin) * 100, 1) : 0;
 
-        // Ambil stok menipis secara dinamis via StokService (agregasi mutasi stok)
-        $barangs = Barang::where('aktif', true)
-            ->select('id', 'kode', 'nama', 'stok_minimum', 'lokasi_rak')
+        // Ambil 6 barang dengan stok paling menipis (Single Aggregated Query berkecepatan tinggi)
+        $stokMenipisList = Barang::query()
+            ->leftJoin('stok_mutasis', 'barangs.id', '=', 'stok_mutasis.barang_id')
+            ->where('barangs.aktif', true)
+            ->groupBy('barangs.id', 'barangs.kode', 'barangs.nama', 'barangs.stok_minimum', 'barangs.lokasi_rak')
+            ->selectRaw('barangs.id, barangs.kode, barangs.nama, barangs.stok_minimum, barangs.lokasi_rak, COALESCE(SUM(stok_mutasis.masuk) - SUM(stok_mutasis.keluar), 0) as stok')
+            ->havingRaw('stok <= barangs.stok_minimum')
+            ->orderBy('stok', 'asc')
+            ->take(6)
             ->get();
-
-        $stokMap = $stokService->stokBanyakBarang($barangs->pluck('id'));
-
-        $stokMenipisList = $barangs->filter(function (Barang $b) use ($stokMap) {
-            $stokAktual = $stokMap[$b->id] ?? 0.0;
-            return $stokAktual <= (float) $b->stok_minimum;
-        })->map(function (Barang $b) use ($stokMap) {
-            $b->stok = $stokMap[$b->id] ?? 0.0;
-            return $b;
-        })->sortBy('stok')->take(6)->values();
 
         $serviceAktif = Service::whereIn('status', ['masuk', 'dikerjakan'])
             ->with(['customer', 'montir'])
