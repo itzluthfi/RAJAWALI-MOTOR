@@ -65,7 +65,7 @@
                     @endphp
                     <tr class="border-b border-line last:border-0 hover:bg-canvas transition duration-150 font-bold {{ $isOverdue ? 'bg-red-50/40' : '' }}">
                         <td class="px-4 py-2.5 font-mono text-xs text-rajawali">
-                            <a href="{{ route('pembelian.show', $p->id) }}" class="hover:underline">{{ $p->nomor_pembelian }}</a>
+                            <a href="{{ route('pembelian.show', $p->hash_id) }}" class="hover:underline">{{ $p->nomor_pembelian }}</a>
                             @if($p->nomor_faktur_supplier)
                                 <span class="block text-[11px] text-steel font-mono">Faktur Ref: {{ $p->nomor_faktur_supplier }}</span>
                             @endif
@@ -94,7 +94,7 @@
                                 class="text-xs px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
                                 x-on:click="
                                     openPelunasan = true;
-                                    pembelianId = {{ $p->id }};
+                                    pembelianId = '{{ $p->hash_id }}';
                                     nomorDokumen = '{{ $p->nomor_pembelian }}';
                                     supplierNama = '{{ addslashes($p->supplier->nama ?? 'Supplier') }}';
                                     total = {{ $p->total }};

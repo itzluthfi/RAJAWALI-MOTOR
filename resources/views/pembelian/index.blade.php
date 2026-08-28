@@ -57,7 +57,7 @@
                         @endphp
                         <tr class="border-b border-line last:border-0 hover:bg-canvas transition duration-150 {{ $isOverdue ? 'bg-red-50/40' : '' }}">
                             <td class="px-4 py-3 font-mono text-xs font-bold text-rajawali">
-                                <a href="{{ route('pembelian.show', $p->id) }}" class="hover:underline">{{ $p->nomor_pembelian }}</a>
+                                <a href="{{ route('pembelian.show', $p->hash_id) }}" class="hover:underline">{{ $p->nomor_pembelian }}</a>
                                 @if($p->nomor_faktur_supplier)
                                     <span class="block text-[11px] text-steel font-mono">Ref: {{ $p->nomor_faktur_supplier }}</span>
                                 @endif
@@ -101,7 +101,7 @@
                             </td>
                             <td class="px-4 py-3 text-center no-print">
                                 <div class="flex items-center justify-center gap-1.5">
-                                    <x-button as="a" href="{{ route('pembelian.show', $p->id) }}" variant="secondary" size="xs" data-tooltip="Lihat Detail &amp; Riwayat Cicilan">
+                                    <x-button as="a" href="{{ route('pembelian.show', $p->hash_id) }}" variant="secondary" size="xs" data-tooltip="Lihat Detail &amp; Riwayat Cicilan">
                                         <x-icon name="eye" class="w-3.5 h-3.5" />
                                     </x-button>
 
@@ -112,7 +112,7 @@
                                             size="xs"
                                             x-data
                                             x-on:click="$dispatch('buka-modal-pelunasan-pembelian', {
-                                                id: {{ $p->id }},
+                                                id: '{{ $p->hash_id }}',
                                                 nomor: '{{ $p->nomor_pembelian }}',
                                                 supplier: '{{ addslashes($p->supplier->nama ?? 'Supplier') }}',
                                                 total: {{ $p->total }},

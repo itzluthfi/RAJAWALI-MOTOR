@@ -53,6 +53,11 @@ class Pembelian extends Model
         return $this->hasMany(PembelianPembayaran::class)->orderBy('tanggal_bayar', 'desc');
     }
 
+    public function getHashIdAttribute(): string
+    {
+        return \App\Services\IdHasher::encode($this->id);
+    }
+
     public function getSisaHutangAttribute(): float
     {
         return max(0.0, (float) $this->total - (float) ($this->terbayar ?? 0));
