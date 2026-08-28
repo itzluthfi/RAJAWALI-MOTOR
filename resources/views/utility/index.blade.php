@@ -172,7 +172,7 @@
     </x-card>
 
     {{-- MODAL PREVIEW HITUNG ULANG STOK --}}
-    <x-modal name="modal-recalculate-stok" title="Preview &amp; Cek Hitung Ulang Stok">
+    <x-modal name="modal-recalculate-stok" title="Preview & Cek Hitung Ulang Stok">
         <div class="space-y-4">
             <template x-if="loadingRecalculate">
                 <div class="p-8 text-center text-slate-500 space-y-2">
@@ -224,7 +224,7 @@
     </x-modal>
 
     {{-- MODAL PREVIEW MAINTENANCE HPP --}}
-    <x-modal name="modal-maintenance-hpp" title="Preview &amp; Cek Maintenance HPP (COGS)">
+    <x-modal name="modal-maintenance-hpp" title="Preview & Cek Maintenance HPP (COGS)">
         <div class="space-y-4">
             <template x-if="loadingHpp">
                 <div class="p-8 text-center text-slate-500 space-y-2">

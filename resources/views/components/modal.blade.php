@@ -51,7 +51,7 @@
     >
         @if($title)
             <div class="flex items-center justify-between px-5 py-3.5 border-b border-line shrink-0 bg-surface">
-                <h3 class="font-display font-semibold text-base text-ink">{{ $title }}</h3>
+                <h3 class="font-display font-semibold text-base text-ink">{!! $title !!}</h3>
                 <button type="button" x-on:click="open = false" aria-label="Tutup" class="text-steel hover:text-ink p-1 rounded-lg hover:bg-canvas transition">
                     <x-icon name="x" class="w-5 h-5" />
                 </button>

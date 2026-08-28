@@ -1,8 +1,8 @@
-<x-app-layout title="Pengaturan Web &amp; Profil Toko">
+<x-app-layout title="Pengaturan Web & Profil Toko">
 <div class="-m-3 p-3 max-w-4xl space-y-6">
     <div class="flex items-center justify-between pb-3 border-b border-line">
         <div>
-            <h2 class="font-display font-black text-xl text-ink">Pengaturan Web &amp; Profil Toko</h2>
+            <h2 class="font-display font-black text-xl text-ink">Pengaturan Web & Profil Toko</h2>
             <p class="text-xs text-steel mt-0.5 font-medium">Atur logo visual web, identitas kop nota, pesan struk kasir, hardware printer, dan kebijakan operasional.</p>
         </div>
     </div>
@@ -26,7 +26,7 @@
         <x-card class="shadow-sm border border-slate-200/80 p-5 rounded-2xl space-y-4">
             <div class="flex items-center gap-2.5 pb-2 border-b border-line text-rajawali">
                 <x-icon name="image" class="w-5 h-5" />
-                <h3 class="font-display font-black text-sm text-ink uppercase tracking-wide">1. Branding &amp; Tampilan Visual Web</h3>
+                <h3 class="font-display font-black text-sm text-ink uppercase tracking-wide">1. Branding & Tampilan Visual Web</h3>
             </div>
 
             {{-- UPLOAD LOGO TOKO --}}
@@ -35,7 +35,7 @@
                     <img :src="logoPreview" alt="Logo Toko" class="max-w-full max-h-full object-contain">
                 </div>
                 <div class="flex-1 space-y-2 text-center sm:text-left">
-                    <label class="block text-xs font-black text-slate-800 uppercase">Logo Toko &amp; Kop Dokumen</label>
+                    <label class="block text-xs font-black text-slate-800 uppercase">Logo Toko & Kop Dokumen</label>
                     <p class="text-xs text-steel font-medium leading-relaxed">
                         Logo ini akan ditampilkan pada navigasi sidebar web, kop faktur penjualan A5, dan lembar tanda terima servis. Format: PNG, JPG, WEBP, atau SVG (Maks. 2MB).
                     </p>
@@ -82,7 +82,7 @@
         <x-card class="shadow-sm border border-slate-200/80 p-5 rounded-2xl space-y-4">
             <div class="flex items-center gap-2.5 pb-2 border-b border-line text-rajawali">
                 <x-icon name="map-pin" class="w-5 h-5" />
-                <h3 class="font-display font-black text-sm text-ink uppercase tracking-wide">2. Kontak &amp; Alamat Operasional Dokumen</h3>
+                <h3 class="font-display font-black text-sm text-ink uppercase tracking-wide">2. Kontak & Alamat Operasional Dokumen</h3>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
