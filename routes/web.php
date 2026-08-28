@@ -145,7 +145,7 @@ Route::prefix('admin')->group(function () {
             Route::patch('/{service}/status', [\App\Http\Controllers\ServiceController::class, 'updateStatus'])->name('status');
         });
 
-        Route::prefix('barang')->name('barang.')->middleware('peran:owner,admin,gudang,kasir')->group(function () {
+        Route::prefix('barang')->name('barang.')->middleware('peran:owner,admin,gudang')->group(function () {
             Route::get('/', [BarangController::class, 'index'])->name('index');
             Route::post('/', [BarangController::class, 'store'])->name('store');
             Route::put('/{barang}', [BarangController::class, 'update'])->name('update');
