@@ -1,65 +1,50 @@
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-
 <x-app-layout title="Kasir POS Terpadu">
-
 <div
-    x-data="kasirApp(
-        @js($daftarBarangJson),
-        @js($daftarCustomerJson),
-        @js($montirsJson),
-        @js($antreanServiceJson),
-        @js($batasDiskonPersen),
-        @js($izinkanStokMinus),
-        @js($bolehJualDibawahHpp),
-        @js($printerStrukAktif),
-        @js($printerFakturAktif)
-    )"
-    x-init="initApp(); $nextTick(() => $refs.barcode.focus())"
+    x-data="kasirPosApp(@js($daftarBarang), @js($customers), @js($montirs))"
+    x-init="initApp()"
     x-on:keydown.window="tanganiShortcut($event)"
-    x-on:buka-modal.window="modalTerbuka++"
-    x-on:tutup-modal.window="modalTerbuka = Math.max(0, modalTerbuka - 1)"
-    class="flex flex-col gap-3 -m-5 p-5 min-h-[calc(100vh-3.5rem)]"
+    class="flex flex-col gap-3 -m-3 p-3 min-h-[calc(100vh-4.5rem)]"
 >
-    {{-- BARIS 1: MODE TRANSAKSI & STATUS CEPAT --}}
-    <div class="flex items-center justify-between gap-3 bg-surface p-2.5 rounded-xl border border-line flex-wrap">
-        {{-- TOGGLE MODE TRANSAKSI --}}
-        <div class="inline-flex rounded-lg border border-line bg-canvas p-1 text-xs font-bold shadow-xs">
-            <button
-                type="button"
-                x-on:click="gantiMode('penjualan')"
-                :class="modeTransaksi === 'penjualan' ? 'bg-rajawali text-white shadow-sm' : 'text-steel hover:text-ink'"
-                class="px-4 py-2 rounded-md transition flex items-center gap-1.5 cursor-pointer"
-            >
-                <x-icon name="shopping-cart" class="w-4 h-4" />
-                <span>Penjualan Suku Cadang</span>
-            </button>
-            <button
-                type="button"
-                x-on:click="gantiMode('service')"
-                :class="modeTransaksi === 'service' ? 'bg-blue-600 text-white shadow-sm' : 'text-steel hover:text-ink'"
-                class="px-4 py-2 rounded-md transition flex items-center gap-1.5 cursor-pointer"
-            >
-                <x-icon name="wrench" class="w-4 h-4" />
-                <span>Servis Bengkel Motor</span>
-            </button>
+    {{-- BARIS 1: MODE TRANSAKSI SWITCHER & ANTREAN SERVIS --}}
+    <div class="flex items-center justify-between flex-wrap gap-2.5 bg-surface p-2.5 rounded-2xl border border-line shadow-sm">
+        <div class="flex items-center gap-2">
+            <div class="inline-flex rounded-xl border-2 border-line bg-canvas p-1 text-sm font-bold shadow-xs">
+                <button
+                    type="button"
+                    x-on:click="gantiMode('penjualan')"
+                    :class="modeTransaksi === 'penjualan' ? 'bg-rajawali text-white shadow-md' : 'text-steel hover:text-ink'"
+                    class="px-4 py-2 rounded-lg transition cursor-pointer flex items-center gap-2 text-sm font-black"
+                >
+                    <x-icon name="shopping-cart" class="w-4 h-4" />
+                    <span>Penjualan Suku Cadang</span>
+                </button>
+                <button
+                    type="button"
+                    x-on:click="gantiMode('service')"
+                    :class="modeTransaksi === 'service' ? 'bg-blue-600 text-white shadow-md' : 'text-steel hover:text-ink'"
+                    class="px-4 py-2 rounded-lg transition cursor-pointer flex items-center gap-2 text-sm font-black"
+                >
+                    <x-icon name="wrench" class="w-4 h-4" />
+                    <span>Servis Bengkel Motor</span>
+                </button>
+            </div>
         </div>
 
-        {{-- TOMBOL PANGGIL ANTREAN SERVIS --}}
-        <div class="flex items-center gap-2 ml-auto">
+        <div class="flex items-center gap-2">
             <button
                 type="button"
                 x-on:click="bukaModalAntreanService()"
-                class="px-3.5 py-2 rounded-lg bg-white border border-slate-300 hover:border-blue-600 text-slate-800 text-xs font-bold flex items-center gap-2 shadow-xs transition hover:bg-blue-50"
+                class="px-4 py-2.5 rounded-xl bg-white border-2 border-slate-300 hover:border-blue-600 text-slate-800 text-sm font-bold flex items-center gap-2 shadow-xs transition hover:bg-blue-50 cursor-pointer"
             >
                 <x-icon name="clipboard-list" class="w-4 h-4 text-blue-600" />
                 <span>Antrean Servis</span>
                 <span
-                    class="px-1.5 py-0.5 rounded-full text-[10px] font-mono bg-blue-100 text-blue-800 border border-blue-200"
+                    class="px-2 py-0.5 rounded-full text-xs font-mono font-black bg-blue-100 text-blue-800 border border-blue-200"
                     x-text="antreanServiceList.length + ' Motor'"
                 ></span>
             </button>
 
-            <div class="text-xs text-steel font-mono font-bold px-2.5 py-1.5 bg-canvas rounded-lg border border-line" x-data="{ tgl: '' }" x-init="tgl = new Intl.DateTimeFormat('id-ID', {dateStyle:'medium', timeStyle:'short', timeZone:'Asia/Jakarta'}).format(new Date())">
+            <div class="text-xs text-steel font-mono font-bold px-3 py-2 bg-canvas rounded-xl border border-line hidden sm:block" x-data="{ tgl: '' }" x-init="tgl = new Intl.DateTimeFormat('id-ID', {dateStyle:'medium', timeStyle:'short', timeZone:'Asia/Jakarta'}).format(new Date())">
                 <span x-text="tgl"></span> WIB
             </div>
         </div>
@@ -72,15 +57,15 @@
         x-transition:enter-start="opacity-0 -translate-y-2"
         x-transition:enter-end="opacity-100 translate-y-0"
         x-cloak
-        class="p-3.5 bg-blue-50/60 border border-blue-200 rounded-xl space-y-3"
+        class="p-4 bg-blue-50/70 border-2 border-blue-200 rounded-2xl space-y-3 shadow-sm"
     >
-        <div class="flex justify-between items-center pb-2 border-b border-blue-200/60">
-            <h4 class="font-bold text-xs text-blue-900 flex items-center gap-1.5 uppercase tracking-wide">
+        <div class="flex justify-between items-center pb-2 border-b border-blue-200/80">
+            <h4 class="font-black text-xs text-blue-950 flex items-center gap-2 uppercase tracking-wider">
                 <x-icon name="bike" class="w-4 h-4 text-blue-700" />
                 <span>Informasi Kendaraan &amp; Montir Teknisi</span>
             </h4>
             <template x-if="serviceIdAktif">
-                <span class="text-xs font-mono font-bold bg-blue-600 text-white px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <span class="text-xs font-mono font-black bg-blue-600 text-white px-3 py-1 rounded-full flex items-center gap-1 shadow-xs">
                     <span>Pelunasan SPK:</span>
                     <span x-text="nomorSpkAktif"></span>
                 </span>
@@ -89,29 +74,29 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div>
-                <label class="block text-[11px] font-bold text-blue-900 uppercase tracking-wider mb-1">Nomor Plat Motor *</label>
+                <label class="block text-xs font-black text-blue-950 uppercase tracking-wider mb-1">Nomor Plat Motor *</label>
                 <input
                     type="text"
                     x-model="platNomor"
                     x-on:input="sinkronPlatKeCustomer()"
                     placeholder="Contoh: L 1234 ABC"
-                    class="w-full text-xs font-mono font-bold bg-white border border-blue-300 rounded-lg px-2.5 py-2 uppercase focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                    class="w-full text-sm font-mono font-black bg-white border-2 border-blue-300 rounded-xl px-3 py-2 uppercase focus:ring-2 focus:ring-blue-600 focus:outline-none"
                 >
             </div>
             <div>
-                <label class="block text-[11px] font-bold text-blue-900 uppercase tracking-wider mb-1">Merk / Tipe Motor</label>
+                <label class="block text-xs font-black text-blue-950 uppercase tracking-wider mb-1">Merk / Tipe Motor</label>
                 <input
                     type="text"
                     x-model="merkType"
                     placeholder="Contoh: Honda Vario 125"
-                    class="w-full text-xs font-bold bg-white border border-blue-300 rounded-lg px-2.5 py-2 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                    class="w-full text-sm font-bold bg-white border-2 border-blue-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-600 focus:outline-none"
                 >
             </div>
             <div>
-                <label class="block text-[11px] font-bold text-blue-900 uppercase tracking-wider mb-1">Montir / Teknisi *</label>
+                <label class="block text-xs font-black text-blue-950 uppercase tracking-wider mb-1">Montir / Teknisi *</label>
                 <select
                     x-model="montirId"
-                    class="w-full text-xs font-bold bg-white border border-blue-300 rounded-lg px-2.5 py-2 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                    class="w-full text-sm font-bold bg-white border-2 border-blue-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-600 focus:outline-none"
                 >
                     <option value="">-- Pilih Montir --</option>
                     <template x-for="m in montirs" :key="m.id">
@@ -120,12 +105,12 @@
                 </select>
             </div>
             <div>
-                <label class="block text-[11px] font-bold text-blue-900 uppercase tracking-wider mb-1">Keluhan / Diagnosa</label>
+                <label class="block text-xs font-black text-blue-950 uppercase tracking-wider mb-1">Keluhan / Diagnosa</label>
                 <input
                     type="text"
                     x-model="keluhan"
                     placeholder="Contoh: Ganti oli mesin &amp; kampas rem"
-                    class="w-full text-xs font-medium bg-white border border-blue-300 rounded-lg px-2.5 py-2 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                    class="w-full text-sm font-medium bg-white border-2 border-blue-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-600 focus:outline-none"
                 >
             </div>
         </div>
@@ -134,9 +119,9 @@
     {{-- BARIS 3: SEARCH BARCODE, SELECT CUSTOMER, & JENIS BAYAR --}}
     <div class="flex items-center gap-3 flex-wrap">
         {{-- INPUT BARCODE & LIVE SEARCH --}}
-        <div class="relative flex-1 min-w-64 flex items-center gap-2">
+        <div class="relative flex-1 min-w-72 flex items-center gap-2">
             <div class="relative flex-1" x-on:click.outside="fokusMainInput = false">
-                <x-icon name="scan-barcode" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-steel" />
+                <x-icon name="scan-barcode" class="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-steel" />
                 <input
                     x-ref="barcode"
                     x-model="barcode"
@@ -146,37 +131,37 @@
                     x-on:keydown.enter.prevent="pilihLiveAtauBarcode()"
                     type="text"
                     autocomplete="off"
-                    placeholder="Scan atau ketik nama barang / kode / barcode / jasa..."
-                    class="w-full rounded-lg border border-line bg-white pl-9 pr-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-rajawali focus:border-rajawali shadow-xs"
+                    placeholder="Scan barcode / ketik nama barang atau jasa..."
+                    class="w-full rounded-xl border-2 border-slate-300 bg-white pl-11 pr-4 py-2.5 text-base font-bold focus:outline-none focus:ring-2 focus:ring-rajawali focus:border-rajawali shadow-xs placeholder:text-sm placeholder:font-medium placeholder:text-steel"
                 >
 
                 <!-- Live Search Floating Dropdown Popup -->
                 <div
                     x-show="barcode.trim().length >= 1 && hasilLive.length > 0"
                     x-cloak
-                    class="absolute left-0 right-0 top-full mt-1 bg-white border-2 border-rajawali rounded-xl shadow-2xl z-50 max-h-80 overflow-y-auto divide-y divide-line"
+                    class="absolute left-0 right-0 top-full mt-1.5 bg-white border-2 border-rajawali rounded-2xl shadow-2xl z-50 max-h-80 overflow-y-auto divide-y divide-line"
                 >
                     <template x-for="(b, idx) in hasilLive" :key="b.id">
                         <div
                             x-on:click="pilihBarangLive(b)"
                             x-on:mouseenter="indeksLive = idx"
                             :class="indeksLive === idx ? 'bg-rajawali/10 font-bold border-l-4 border-rajawali' : 'hover:bg-canvas'"
-                            class="p-2.5 cursor-pointer flex justify-between items-center transition text-xs"
+                            class="p-3 cursor-pointer flex justify-between items-center transition"
                         >
                             <div>
                                 <div class="flex items-center gap-2">
-                                    <span class="font-mono text-xs font-bold text-rajawali" x-text="b.kode"></span>
-                                    <span class="font-bold text-sm text-ink" x-text="b.nama"></span>
+                                    <span class="font-mono text-xs font-bold text-rajawali bg-red-50 px-1.5 py-0.5 rounded border border-red-200" x-text="b.kode"></span>
+                                    <span class="font-black text-base text-ink" x-text="b.nama"></span>
                                     <template x-if="b.is_jasa">
-                                        <span class="px-1.5 py-0.2 rounded text-[9px] font-mono bg-blue-100 text-blue-800 border border-blue-300 font-bold">JASA</span>
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-blue-100 text-blue-800 border border-blue-300 font-bold">JASA</span>
                                     </template>
                                 </div>
-                                <p class="text-[11px] text-steel mt-0.5">Barcode: <span class="font-mono" x-text="b.barcode || '-'"></span></p>
+                                <p class="text-xs text-steel mt-0.5">Barcode: <span class="font-mono" x-text="b.barcode || '-'"></span></p>
                             </div>
                             <div class="text-right">
-                                <span class="font-mono font-bold text-sm text-ink block" x-text="formatRp(b.harga)"></span>
+                                <span class="font-mono font-black text-base text-ink block" x-text="formatRp(b.harga)"></span>
                                 <template x-if="!b.is_jasa">
-                                    <span class="text-[11px] font-mono text-steel">Stok: <strong :class="b.stok <= 0 ? 'text-rajawali' : 'text-lunas'" x-text="b.stok"></strong></span>
+                                    <span class="text-xs font-mono text-steel">Stok: <strong :class="b.stok <= 0 ? 'text-rajawali' : 'text-lunas'" class="text-sm" x-text="b.stok"></strong></span>
                                 </template>
                             </div>
                         </div>
@@ -184,32 +169,32 @@
                 </div>
             </div>
 
-            <button type="button" x-on:click="bukaScannerKamera()" class="px-3 py-2.5 bg-rajawali/10 text-rajawali rounded-lg hover:bg-rajawali/20 font-bold text-xs flex items-center gap-1.5 shrink-0 transition" data-tooltip="Scan Barcode via Kamera">
+            <button type="button" x-on:click="bukaScannerKamera()" class="px-3.5 py-2.5 bg-rajawali/10 text-rajawali rounded-xl hover:bg-rajawali/20 font-black text-xs flex items-center gap-1.5 shrink-0 transition border border-rajawali/20" data-tooltip="Scan Barcode via Kamera">
                 <x-icon name="camera" class="w-4 h-4" />
                 <span class="hidden sm:inline">Kamera</span>
             </button>
         </div>
 
         {{-- CUSTOMER SELECT SEARCHABLE (DENGAN TOMBOL TAMBAH CEPAT) --}}
-        <div class="flex items-center gap-1.5 min-w-56 max-w-sm">
+        <div class="flex items-center gap-2 min-w-64 max-w-sm">
             <div class="relative flex-1" x-data="{ terbuka: false, cari: '' }" x-on:click.outside="terbuka = false">
                 <button
                     type="button"
                     x-on:click="terbuka = !terbuka; if(terbuka) $nextTick(() => $refs.inputCariCust?.focus())"
-                    class="w-full flex items-center justify-between rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold shadow-xs focus:outline-none focus:ring-2 focus:ring-rajawali hover:bg-slate-50 transition"
+                    class="w-full flex items-center justify-between rounded-xl border-2 border-slate-300 bg-white px-3.5 py-2.5 text-sm font-bold shadow-xs focus:outline-none focus:ring-2 focus:ring-rajawali hover:bg-slate-50 transition"
                 >
-                    <div class="flex items-center gap-1.5 truncate">
+                    <div class="flex items-center gap-2 truncate">
                         <x-icon name="user" class="w-4 h-4 text-steel shrink-0" />
-                        <span class="truncate text-ink" x-text="customerTerpilih ? customerTerpilih.nama : 'Umum (Tunai)'"></span>
+                        <span class="truncate text-ink font-black" x-text="customerTerpilih ? customerTerpilih.nama : 'Umum (Tunai)'"></span>
                         <template x-if="customerTerpilih && customerTerpilih.kategori && customerTerpilih.kategori !== 'umum'">
                             <span
-                                :class="customerTerpilih.kategori === 'grosir' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'"
-                                class="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold uppercase shrink-0"
+                                :class="customerTerpilih.kategori === 'grosir' ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-blue-100 text-blue-800 border-blue-300'"
+                                class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase shrink-0 border"
                                 x-text="customerTerpilih.kategori"
                             ></span>
                         </template>
                     </div>
-                    <x-icon name="chevron-down" class="w-3.5 h-3.5 text-steel shrink-0 ml-1" />
+                    <x-icon name="chevron-down" class="w-4 h-4 text-steel shrink-0 ml-1" />
                 </button>
 
                 {{-- Dropdown Customer Popup --}}
@@ -222,44 +207,44 @@
                     x-transition:leave-start="opacity-100 scale-100"
                     x-transition:leave-end="opacity-0 scale-95"
                     x-cloak
-                    class="absolute left-0 top-full mt-1.5 w-80 rounded-xl border border-slate-200 bg-white shadow-2xl z-50 overflow-hidden"
+                    class="absolute left-0 top-full mt-1.5 w-84 rounded-2xl border-2 border-slate-300 bg-white shadow-2xl z-50 overflow-hidden"
                 >
-                    <div class="p-2 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
+                    <div class="p-2.5 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
                         <x-icon name="search" class="w-4 h-4 text-steel shrink-0 ml-1" />
                         <input
                             x-ref="inputCariCust"
                             type="text"
                             x-model="cari"
                             placeholder="Cari Nama / Plat / Motor / WA..."
-                            class="w-full bg-white border border-slate-200 rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-rajawali font-medium"
+                            class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-rajawali font-bold"
                         >
                         <button x-show="cari" type="button" x-on:click="cari = ''" class="text-steel hover:text-ink text-xs font-bold px-1">
-                            <x-icon name="x" class="w-3.5 h-3.5" />
+                            <x-icon name="x" class="w-4 h-4" />
                         </button>
                     </div>
 
-                    <div class="p-2 bg-slate-100/70 border-b border-slate-200/80 flex justify-between items-center">
-                        <span class="text-[11px] text-steel font-bold">Pilih Pelanggan Toko</span>
+                    <div class="p-2.5 bg-slate-100/70 border-b border-slate-200 flex justify-between items-center">
+                        <span class="text-xs text-steel font-bold">Pilih Pelanggan Toko</span>
                         <button
                             type="button"
                             x-on:click="terbuka = false; bukaModalCustomerCepat()"
-                            class="text-[11px] font-bold text-rajawali hover:underline flex items-center gap-1 cursor-pointer"
+                            class="text-xs font-black text-rajawali hover:underline flex items-center gap-1 cursor-pointer"
                         >
-                            <x-icon name="plus" class="w-3 h-3" />
+                            <x-icon name="plus" class="w-3.5 h-3.5" />
                             <span>+ Customer Baru</span>
                         </button>
                     </div>
 
                     {{-- Customer List --}}
-                    <div class="max-h-60 overflow-y-auto divide-y divide-slate-100">
+                    <div class="max-h-64 overflow-y-auto divide-y divide-slate-100">
                         <template x-for="c in filterCustomer(cari)" :key="c.id">
                             <div
                                 x-on:click="pilihCustomer(c); terbuka = false; cari = ''"
                                 :class="customerId == c.id ? 'bg-rajawali/10 font-bold text-rajawali' : 'hover:bg-slate-100 text-slate-800'"
-                                class="p-2.5 cursor-pointer text-xs transition flex justify-between items-center"
+                                class="p-3 cursor-pointer text-xs transition flex justify-between items-center"
                             >
                                 <div class="space-y-0.5">
-                                    <div class="flex items-center gap-1.5 font-bold">
+                                    <div class="flex items-center gap-2 font-black text-sm">
                                         <span x-text="c.nama"></span>
                                         <template x-if="c.kategori && c.kategori !== 'umum'">
                                             <span
@@ -270,10 +255,10 @@
                                         </template>
                                     </div>
                                     <template x-if="c.plat || c.motor || c.telepon">
-                                        <div class="text-[11px] text-steel font-mono">
+                                        <div class="text-xs text-steel font-mono">
                                             <span x-text="c.plat || ''" class="text-rajawali font-bold"></span>
                                             <span x-text="c.motor ? ' (' + c.motor + ')' : ''"></span>
-                                            <span x-text="c.telepon ? ' · ' + c.telepon : ''" class="text-slate-400"></span>
+                                            <span x-text="c.telepon ? ' · ' + c.telepon : ''" class="text-slate-500"></span>
                                         </div>
                                     </template>
                                 </div>
@@ -281,7 +266,7 @@
                             </div>
                         </template>
                         <template x-if="filterCustomer(cari).length === 0">
-                            <div class="p-4 text-center text-xs text-steel">Customer tidak ditemukan.</div>
+                            <div class="p-6 text-center text-xs text-steel italic">Customer tidak ditemukan.</div>
                         </template>
                     </div>
                 </div>
@@ -291,18 +276,18 @@
             <button
                 type="button"
                 x-on:click="bukaModalCustomerCepat()"
-                class="p-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 text-xs font-bold flex items-center gap-1 shrink-0 shadow-xs transition cursor-pointer"
+                class="px-3.5 py-2.5 rounded-xl bg-blue-50 text-blue-800 hover:bg-blue-100 border-2 border-blue-200 text-xs font-black flex items-center gap-1.5 shrink-0 shadow-xs transition cursor-pointer"
                 data-tooltip="Daftarkan Customer Baru Cepat (Nama & WA untuk garansi/retur)"
             >
-                <x-icon name="user-plus" class="w-4 h-4 text-blue-600" />
+                <x-icon name="user-plus" class="w-4 h-4 text-blue-700" />
                 <span class="hidden xl:inline">+ Baru</span>
             </button>
         </div>
 
         {{-- TOGGLE JENIS BAYAR (TUNAI / TEMPO) --}}
-        <div class="flex items-center rounded-lg border border-line overflow-hidden text-sm font-medium shadow-xs">
-            <button type="button" x-on:click="jenisBayar = 'tunai'" :class="jenisBayar === 'tunai' ? 'bg-rajawali text-white font-bold' : 'bg-white text-steel hover:bg-slate-50'" class="px-4 py-2 transition">Tunai</button>
-            <button type="button" x-on:click="jenisBayar = 'tempo'" :class="jenisBayar === 'tempo' ? 'bg-rajawali text-white font-bold' : 'bg-white text-steel hover:bg-slate-50'" class="px-4 py-2 transition">Tempo</button>
+        <div class="flex items-center rounded-xl border-2 border-slate-300 overflow-hidden text-sm font-black shadow-xs bg-white">
+            <button type="button" x-on:click="jenisBayar = 'tunai'" :class="jenisBayar === 'tunai' ? 'bg-rajawali text-white shadow-xs' : 'bg-white text-steel hover:bg-slate-50'" class="px-4 py-2 transition cursor-pointer">Tunai</button>
+            <button type="button" x-on:click="jenisBayar = 'tempo'" :class="jenisBayar === 'tempo' ? 'bg-rajawali text-white shadow-xs' : 'bg-white text-steel hover:bg-slate-50'" class="px-4 py-2 transition cursor-pointer">Tempo</button>
         </div>
     </div>
 
@@ -310,17 +295,17 @@
     <x-card :padded="false" class="flex-1 overflow-hidden flex flex-col shadow-lg border border-slate-200/80">
         <div class="overflow-y-auto flex-1">
             <table class="w-full text-sm">
-                <thead class="sticky top-0 bg-canvas text-steel text-xs uppercase tracking-wide border-b border-line font-bold">
+                <thead class="sticky top-0 bg-slate-100 text-slate-700 text-xs uppercase tracking-wide border-b-2 border-slate-300 font-black">
                     <tr>
-                        <th class="text-left px-3 py-2.5 w-10">No</th>
-                        <th class="text-left px-3 py-2.5">Kode</th>
-                        <th class="text-left px-3 py-2.5">Nama Barang / Jasa</th>
-                        <th class="text-right px-3 py-2.5 w-24">Qty</th>
-                        <th class="text-right px-3 py-2.5 w-32">Harga Satuan</th>
-                        <th class="text-right px-3 py-2.5 w-24">Disc (%)</th>
-                        <th class="text-right px-3 py-2.5 w-28">Disc (Rp)</th>
-                        <th class="text-right px-3 py-2.5 w-36">Total (Rp)</th>
-                        <th class="text-center px-2 py-2.5 w-12">Aksi</th>
+                        <th class="text-left px-3 py-3 w-10">No</th>
+                        <th class="text-left px-3 py-3 w-28">Kode</th>
+                        <th class="text-left px-3 py-3">Nama Barang / Jasa</th>
+                        <th class="text-center px-3 py-3 w-24">Qty</th>
+                        <th class="text-right px-3 py-3 w-36">Harga Satuan</th>
+                        <th class="text-center px-3 py-3 w-24">Disc (%)</th>
+                        <th class="text-right px-3 py-3 w-32">Disc (Rp)</th>
+                        <th class="text-right px-3 py-3 w-40">Total (Rp)</th>
+                        <th class="text-center px-2 py-3 w-12">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-line">
@@ -330,18 +315,20 @@
                             :class="barisAktif === idx ? 'bg-rajawali/5 font-medium' : 'hover:bg-canvas/60'"
                             class="transition duration-100"
                         >
-                            <td class="px-3 py-2 text-steel text-xs font-mono text-center" x-text="idx + 1"></td>
-                            <td class="px-3 py-2 font-mono text-xs font-bold text-rajawali" x-text="item.kode"></td>
-                            <td class="px-3 py-2">
-                                <div class="font-bold text-ink" x-text="item.nama"></div>
+                            <td class="px-3 py-2.5 text-steel text-sm font-mono font-bold text-center" x-text="idx + 1"></td>
+                            <td class="px-3 py-2.5">
+                                <span class="font-mono text-xs font-black text-rajawali bg-red-50 px-2 py-0.5 rounded border border-red-200 inline-block" x-text="item.kode"></span>
+                            </td>
+                            <td class="px-3 py-2.5">
+                                <div class="font-black text-base text-slate-900 leading-tight" x-text="item.nama"></div>
                                 <template x-if="item.labelTier">
-                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-mono bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">
-                                        <x-icon name="sparkles" class="w-3 h-3 text-emerald-600" />
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono bg-emerald-100 text-emerald-800 font-bold border border-emerald-300 mt-1">
+                                        <x-icon name="sparkles" class="w-3.5 h-3.5 text-emerald-600" />
                                         <span x-text="item.labelTier"></span>
                                     </span>
                                 </template>
                             </td>
-                            <td class="px-3 py-2 text-right">
+                            <td class="px-3 py-2.5 text-center">
                                 <input
                                     type="number"
                                     x-model.number="item.qty"
@@ -350,20 +337,20 @@
                                     x-on:blur="validasiQty(idx)"
                                     min="0.001"
                                     step="any"
-                                    class="w-16 text-right font-mono font-bold text-xs bg-white border border-line rounded px-1.5 py-1 focus:ring-2 focus:ring-rajawali focus:outline-none"
+                                    class="w-20 text-center font-mono font-black text-base bg-white border-2 border-slate-300 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-rajawali focus:border-rajawali focus:outline-none shadow-xs"
                                 >
                             </td>
-                            <td class="px-3 py-2 text-right font-mono font-bold text-ink">
+                            <td class="px-3 py-2.5 text-right font-mono font-bold text-ink">
                                 <input
                                     type="number"
                                     x-model.number="item.harga"
                                     x-on:focus="$event.target.select()"
                                     x-on:input="ubahHargaManual(idx, item.harga)"
                                     x-on:blur="validasiHarga(idx)"
-                                    class="w-24 text-right font-mono font-bold text-xs bg-white border border-line rounded px-1.5 py-1 focus:ring-2 focus:ring-rajawali focus:outline-none"
+                                    class="w-28 text-right font-mono font-black text-sm bg-white border-2 border-slate-300 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-rajawali focus:border-rajawali focus:outline-none shadow-xs"
                                 >
                             </td>
-                            <td class="px-3 py-2 text-right">
+                            <td class="px-3 py-2.5 text-center">
                                 <input
                                     type="number"
                                     x-model.number="item.diskonPersen"
@@ -371,25 +358,25 @@
                                     x-on:input="ubahDiskonPersen(idx, item.diskonPersen)"
                                     min="0"
                                     max="100"
-                                    class="w-14 text-right font-mono text-xs bg-white border border-line rounded px-1.5 py-1 focus:ring-2 focus:ring-rajawali focus:outline-none"
+                                    class="w-16 text-center font-mono font-bold text-sm bg-white border-2 border-slate-300 rounded-lg px-1.5 py-1.5 focus:ring-2 focus:ring-rajawali focus:border-rajawali focus:outline-none"
                                 >
                             </td>
-                            <td class="px-3 py-2 text-right font-mono text-xs">
+                            <td class="px-3 py-2.5 text-right font-mono text-xs">
                                 <input
                                     type="number"
                                     x-model.number="item.diskon"
                                     x-on:focus="$event.target.select()"
                                     x-on:input="ubahDiskonNominal(idx, item.diskon)"
                                     min="0"
-                                    class="w-20 text-right font-mono text-xs bg-white border border-line rounded px-1.5 py-1 focus:ring-2 focus:ring-rajawali focus:outline-none"
+                                    class="w-24 text-right font-mono font-bold text-sm bg-white border-2 border-slate-300 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-rajawali focus:border-rajawali focus:outline-none"
                                 >
                             </td>
-                            <td class="px-3 py-2 text-right font-mono font-bold text-ink text-sm" x-text="formatRp(hitungTotalItem(item))"></td>
-                            <td class="px-2 py-2 text-center">
+                            <td class="px-3 py-2.5 text-right font-mono font-black text-slate-900 text-base" x-text="formatRp(hitungTotalItem(item))"></td>
+                            <td class="px-2 py-2.5 text-center">
                                 <button
                                     type="button"
                                     x-on:click="hapusBaris(idx)"
-                                    class="p-1 rounded text-steel hover:text-rajawali hover:bg-red-50 transition"
+                                    class="p-2 rounded-lg text-slate-400 hover:text-rajawali hover:bg-red-50 transition cursor-pointer"
                                     data-tooltip="Hapus Baris"
                                 >
                                     <x-icon name="trash-2" class="w-4 h-4" />
@@ -400,10 +387,10 @@
                     <template x-if="keranjang.length === 0">
                         <tr>
                             <td colspan="9" class="py-16 text-center text-steel">
-                                <div class="max-w-sm mx-auto space-y-2">
-                                    <x-icon name="shopping-bag" class="w-12 h-12 mx-auto text-steel/40" />
-                                    <p class="font-bold text-sm text-ink">Keranjang Transaksi Masih Kosong</p>
-                                    <p class="text-xs text-steel">Ketik nama barang / scan barcode di atas, atau tekan <kbd class="px-1.5 py-0.5 bg-canvas border border-line rounded font-mono text-[10px]">F2</kbd> (Cari Barang).</p>
+                                <div class="max-w-md mx-auto space-y-2">
+                                    <x-icon name="shopping-bag" class="w-14 h-14 mx-auto text-steel/30" />
+                                    <p class="font-black text-base text-ink">Keranjang Transaksi Masih Kosong</p>
+                                    <p class="text-xs text-steel">Ketik nama barang / scan barcode di atas, atau tekan <kbd class="px-2 py-1 bg-canvas border-2 border-line rounded-lg font-mono text-xs font-black">F2</kbd> (Cari Barang).</p>
                                 </div>
                             </td>
                         </tr>
@@ -413,27 +400,27 @@
         </div>
 
         {{-- FOOTER KASIR: TOTAL & TOMBOL AKSI --}}
-        <div class="border-t border-line bg-surface p-4 grid grid-cols-1 lg:grid-cols-3 gap-4 items-center">
+        <div class="border-t-2 border-line bg-surface p-4 grid grid-cols-1 lg:grid-cols-3 gap-4 items-center">
             <div class="flex items-center gap-2 flex-wrap">
                 <x-button type="button" variant="secondary" size="sm" x-on:click="bukaModalCari()">
-                    <kbd class="text-[10px] bg-canvas border px-1 rounded">F2</kbd> Cari Barang
+                    <kbd class="text-xs font-black bg-canvas border px-1.5 py-0.5 rounded">F2</kbd> Cari Barang
                 </x-button>
                 <x-button type="button" variant="secondary" size="sm" x-on:click="$dispatch('buka-modal', { name: 'diskon-nota' })">
-                    <kbd class="text-[10px] bg-canvas border px-1 rounded">F6</kbd> Diskon Nota
+                    <kbd class="text-xs font-black bg-canvas border px-1.5 py-0.5 rounded">F6</kbd> Diskon Nota
                 </x-button>
                 <x-button type="button" variant="secondary" size="sm" x-on:click="kosongkanKeranjang()">
-                    <x-icon name="trash" class="w-3.5 h-3.5 text-steel" /> Kosongkan
+                    <x-icon name="trash" class="w-4 h-4 text-steel" /> Kosongkan
                 </x-button>
             </div>
 
-            <div class="p-3 bg-canvas rounded-xl border border-line text-xs space-y-1">
-                <div class="flex justify-between font-medium"><span class="text-steel">Subtotal Belanja:</span> <strong class="font-mono text-ink" x-text="formatRp(subtotal)"></strong></div>
+            <div class="p-3.5 bg-canvas rounded-2xl border-2 border-line text-xs space-y-1.5 shadow-inner">
+                <div class="flex justify-between font-medium text-sm"><span class="text-steel font-bold">Subtotal:</span> <strong class="font-mono font-black text-slate-800 text-base" x-text="formatRp(subtotal)"></strong></div>
                 <template x-if="diskonNotaNominal > 0">
-                    <div class="flex justify-between font-medium text-rajawali"><span>Diskon Nota:</span> <strong class="font-mono" x-text="'- ' + formatRp(diskonNotaNominal)"></strong></div>
+                    <div class="flex justify-between font-medium text-sm text-rajawali"><span>Diskon Nota:</span> <strong class="font-mono font-black text-base" x-text="'- ' + formatRp(diskonNotaNominal)"></strong></div>
                 </template>
-                <div class="flex justify-between items-center pt-1 border-t border-line">
-                    <span class="text-xs font-bold text-steel uppercase tracking-wider">GRAND TOTAL:</span>
-                    <strong class="font-mono font-black text-xl text-rajawali" x-text="formatRp(grandTotal)"></strong>
+                <div class="flex justify-between items-center pt-1.5 border-t-2 border-line">
+                    <span class="text-xs font-black text-slate-700 uppercase tracking-wider">GRAND TOTAL:</span>
+                    <strong class="font-mono font-black text-2xl lg:text-3xl text-rajawali tracking-tight" x-text="formatRp(grandTotal)"></strong>
                 </div>
             </div>
 
@@ -445,24 +432,24 @@
                             type="button"
                             x-on:click="simpanSpkService()"
                             x-bind:disabled="sedangMenyimpan"
-                            class="px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md transition active:scale-98 cursor-pointer"
+                            class="px-5 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs flex items-center gap-2 shadow-md transition active:scale-98 cursor-pointer"
                             data-tooltip="Simpan order antrean servis & terbitkan tanda terima tanpa pembayaran langsung"
                         >
                             <x-icon name="clipboard-check" class="w-4 h-4" />
-                            <span>Terima Motor Servis (Tanda Terima)</span>
-                            <kbd class="text-[10px] bg-white/20 px-1.5 rounded">F10</kbd>
+                            <span>Terima Servis (SPK)</span>
+                            <kbd class="text-[10px] bg-white/20 px-1.5 py-0.5 rounded font-mono">F10</kbd>
                         </button>
 
                         <button
                             type="button"
                             x-on:click="simpanNota()"
                             x-bind:disabled="sedangMenyimpan"
-                            class="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md transition active:scale-98 cursor-pointer"
+                            class="px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm flex items-center gap-2 shadow-lg shadow-emerald-900/20 transition active:scale-98 cursor-pointer"
                             data-tooltip="Servis selesai & langsung bayar lunas sekarang"
                         >
-                            <x-icon name="check-circle" class="w-4 h-4" />
-                            <span>Bayar Lunas (Cetak Nota)</span>
-                            <kbd class="text-[10px] bg-white/20 px-1.5 rounded">F12</kbd>
+                            <x-icon name="check-circle" class="w-5 h-5" />
+                            <span>Bayar Lunas</span>
+                            <kbd class="text-xs bg-white/20 px-1.5 py-0.5 rounded font-mono">F12</kbd>
                         </button>
                     </div>
                 </template>
@@ -473,11 +460,11 @@
                         type="button"
                         x-on:click="simpanNota()"
                         x-bind:disabled="sedangMenyimpan"
-                        class="px-8 py-3 rounded-xl bg-[#B0181C] hover:bg-[#8f1013] text-white font-bold text-sm flex items-center gap-2 shadow-xl shadow-red-900/20 transition active:scale-98 cursor-pointer"
+                        class="px-8 py-3.5 rounded-xl bg-[#B0181C] hover:bg-[#8f1013] text-white font-black text-base flex items-center gap-2.5 shadow-xl shadow-red-900/20 transition active:scale-98 cursor-pointer"
                     >
-                        <x-icon name="save" class="w-4 h-4" />
-                        <span>Simpan &amp; Cetak Struk</span>
-                        <kbd class="text-[10px] bg-white/20 px-1.5 rounded ml-1">F12</kbd>
+                        <x-icon name="save" class="w-5 h-5" />
+                        <span>Simpan &amp; Bayar Lunas</span>
+                        <kbd class="text-xs bg-white/25 px-2 py-0.5 rounded-lg ml-1 font-mono">F12</kbd>
                     </button>
                 </template>
             </div>
@@ -487,53 +474,51 @@
     {{-- MODAL SCANNER KAMERA --}}
     <x-modal name="scan-kamera" title="Scanner Kamera Barcode">
         <div class="space-y-4 text-center">
-            <div id="html5-qr-code-reader" class="w-full max-w-sm mx-auto overflow-hidden rounded-xl border border-line bg-black"></div>
-            <p class="text-xs text-steel">Arahkan kamera ke barcode produk.</p>
+            <div id="html5-qr-code-reader" class="w-full max-w-sm mx-auto overflow-hidden rounded-2xl border border-line bg-black"></div>
+            <p class="text-xs text-steel font-bold">Arahkan kamera ke barcode produk.</p>
             <x-button type="button" variant="secondary" x-on:click="$dispatch('tutup-modal', { name: 'scan-kamera' }); stopKamera()">Tutup Kamera</x-button>
         </div>
     </x-modal>
 
     {{-- MODAL CARI BARANG (F2) --}}
-    <x-modal name="cari-barang" title="Cari Barang &amp; Sparepart (F2)">
-        <div class="space-y-3" x-init="$nextTick(() => $refs.modalCariInput?.focus())">
+    <x-modal name="cari-barang" title="Katalog Cari Barang &amp; Sparepart (F2)">
+        <div class="space-y-3.5" x-init="$nextTick(() => $refs.modalCariInput?.focus())">
             <div class="relative">
-                <x-icon name="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-steel" />
+                <x-icon name="search" class="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-steel" />
                 <input
                     x-ref="modalCariInput"
                     x-model="cariQuery"
                     x-on:keydown.enter.prevent="pilihTopBarangModal()"
                     type="text"
-                    placeholder="Ketik nama barang, kode, barcode, atau jasa..."
-                    class="w-full rounded-lg border border-line bg-white pl-9 pr-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-rajawali"
+                    placeholder="Ketik nama sparepart / kode / barcode..."
+                    class="w-full rounded-xl border-2 border-slate-300 bg-white pl-11 pr-4 py-3 text-base font-bold focus:outline-none focus:ring-2 focus:ring-rajawali"
                 >
             </div>
-
-            <div class="max-h-72 overflow-y-auto border border-line rounded-xl divide-y divide-line">
+            <div class="max-h-80 overflow-y-auto border-2 border-line rounded-2xl divide-y divide-line">
                 <template x-for="b in daftarBarangFiltered" :key="b.id">
                     <div
                         x-on:click="pilihBarangDariModal(b)"
-                        class="p-3 hover:bg-canvas cursor-pointer flex justify-between items-center transition duration-150 group"
+                        class="p-3.5 hover:bg-canvas cursor-pointer flex justify-between items-center transition group"
                     >
                         <div>
                             <div class="flex items-center gap-2">
-                                <span class="font-mono text-xs font-bold text-rajawali" x-text="b.kode"></span>
-                                <span class="font-bold text-sm text-ink group-hover:text-rajawali" x-text="b.nama"></span>
-                                <template x-if="b.is_jasa">
-                                    <span class="px-1.5 py-0.2 rounded text-[9px] font-mono bg-blue-100 text-blue-800 border border-blue-300 font-bold">JASA</span>
-                                </template>
+                                <span class="font-mono text-xs font-black text-rajawali bg-red-50 px-2 py-0.5 rounded border border-red-200" x-text="b.kode"></span>
+                                <span class="font-black text-base text-ink group-hover:text-rajawali" x-text="b.nama"></span>
                             </div>
-                            <p class="text-xs text-steel mt-0.5">Barcode: <span class="font-mono" x-text="b.barcode"></span></p>
+                            <div class="text-xs text-steel font-mono mt-1">
+                                <span x-text="'Barcode: ' + (b.barcode || '-')"></span>
+                                <span class="mx-1">·</span>
+                                <span x-text="'Rak: ' + (b.lokasi_rak || '-')"></span>
+                            </div>
                         </div>
-                        <div class="text-right font-bold">
-                            <span class="font-mono font-bold text-sm text-ink block" x-text="formatRp(b.harga)"></span>
-                            <template x-if="!b.is_jasa">
-                                <span class="text-xs font-mono text-steel">Stok: <strong :class="b.stok <= 0 ? 'text-rajawali' : 'text-lunas'" x-text="b.stok"></strong></span>
-                            </template>
+                        <div class="text-right">
+                            <span class="font-mono font-black text-base text-ink block" x-text="formatRp(b.harga)"></span>
+                            <span class="text-xs font-mono text-steel">Stok: <strong :class="b.stok <= 0 ? 'text-rajawali' : 'text-lunas'" class="text-sm font-black" x-text="b.stok"></strong></span>
                         </div>
                     </div>
                 </template>
                 <template x-if="daftarBarangFiltered.length === 0">
-                    <div class="p-6 text-center text-steel text-sm">Barang tidak ditemukan.</div>
+                    <div class="p-8 text-center text-steel text-sm font-bold">Barang tidak ditemukan.</div>
                 </template>
             </div>
         </div>
@@ -543,32 +528,32 @@
     <x-modal name="diskon-nota" title="Diskon Nota (F6)">
         <div class="space-y-4">
             <div class="flex items-center justify-between">
-                <label class="text-sm font-bold text-steel">Mode Diskon</label>
-                <div class="inline-flex rounded-lg border border-line bg-canvas p-1 text-xs font-mono">
+                <label class="text-sm font-black text-slate-800">Pilih Mode Diskon</label>
+                <div class="inline-flex rounded-xl border-2 border-line bg-canvas p-1 text-xs font-mono">
                     <button
                         type="button"
                         x-on:click="diskonNotaMode = 'rp'; validasiDiskonNota()"
-                        :class="diskonNotaMode === 'rp' ? 'bg-rajawali text-white font-bold' : 'text-steel hover:text-ink'"
-                        class="px-3 py-1.5 rounded transition cursor-pointer"
+                        :class="diskonNotaMode === 'rp' ? 'bg-rajawali text-white font-black shadow-xs' : 'text-steel hover:text-ink'"
+                        class="px-4 py-2 rounded-lg transition cursor-pointer font-bold"
                     >Nominal (Rp)</button>
                     <button
                         type="button"
                         x-on:click="diskonNotaMode = 'persen'; validasiDiskonNota()"
-                        :class="diskonNotaMode === 'persen' ? 'bg-rajawali text-white font-bold' : 'text-steel hover:text-ink'"
-                        class="px-3 py-1.5 rounded transition cursor-pointer"
+                        :class="diskonNotaMode === 'persen' ? 'bg-rajawali text-white font-black shadow-xs' : 'text-steel hover:text-ink'"
+                        class="px-4 py-2 rounded-lg transition cursor-pointer font-bold"
                     >Persentase (%)</button>
                 </div>
             </div>
 
             <div>
-                <label class="text-xs font-bold text-steel block mb-1" x-text="diskonNotaMode === 'persen' ? 'Diskon Persentase (%)' : 'Diskon Nominal (Rp)'"></label>
+                <label class="text-xs font-black text-slate-800 uppercase block mb-1" x-text="diskonNotaMode === 'persen' ? 'Diskon Persentase (%)' : 'Diskon Nominal (Rp)'"></label>
                 <input
                     type="number"
                     x-model.number="diskonNotaValue"
                     x-on:input="validasiDiskonNota()"
                     min="0"
                     placeholder="Masukkan nilai diskon..."
-                    class="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm font-mono font-bold focus:ring-2 focus:ring-rajawali focus:outline-none"
+                    class="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-lg font-mono font-black focus:ring-2 focus:ring-rajawali focus:outline-none"
                 >
             </div>
 
@@ -583,48 +568,54 @@
     {{-- MODAL CUSTOMER BARU CEPAT (QUICK ADD) --}}
     <x-modal name="tambah-customer-cepat" title="Pendaftaran Customer Baru Cepat">
         <form x-on:submit.prevent="simpanCustomerCepat()" class="space-y-4">
+            <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900 font-bold">
+                💡 Cukup isi <strong>Nama</strong> (wajib) &amp; <strong>No WhatsApp</strong> agar struk digital bisa dikirim via WA &amp; klaim garansi/retur mudah dilacak.
+            </div>
+
             <div>
-                <label class="block text-xs font-bold text-steel uppercase mb-1">Nama Customer *</label>
-                <input type="text" x-model="formCustomer.nama" required placeholder="Nama lengkap pelanggan..." class="w-full text-xs font-bold rounded-lg border border-line px-3 py-2 focus:ring-2 focus:ring-rajawali focus:outline-none">
+                <label class="block text-xs font-black text-slate-800 uppercase mb-1">Nama Customer *</label>
+                <input type="text" x-model="formCustomer.nama" required placeholder="Nama lengkap pelanggan..." class="w-full text-sm font-bold rounded-xl border-2 border-slate-300 px-3.5 py-2.5 focus:ring-2 focus:ring-rajawali focus:outline-none">
             </div>
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-xs font-bold text-steel uppercase mb-1">No HP / WhatsApp</label>
-                    <input type="text" x-model="formCustomer.telepon" placeholder="08xxxxxxxxxx" class="w-full text-xs font-mono font-bold rounded-lg border border-line px-3 py-2 focus:ring-2 focus:ring-rajawali focus:outline-none">
+                    <label class="block text-xs font-black text-slate-800 uppercase mb-1">No WhatsApp / HP</label>
+                    <input type="text" x-model="formCustomer.telepon" placeholder="08xxxxxxxxxx" class="w-full text-sm font-mono font-bold rounded-xl border-2 border-slate-300 px-3.5 py-2.5 focus:ring-2 focus:ring-rajawali focus:outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-steel uppercase mb-1">Kategori</label>
-                    <select x-model="formCustomer.kategori" class="w-full text-xs font-bold rounded-lg border border-line px-3 py-2 focus:ring-2 focus:ring-rajawali focus:outline-none">
+                    <label class="block text-xs font-black text-slate-800 uppercase mb-1">Kategori Pelanggan</label>
+                    <select x-model="formCustomer.kategori" class="w-full text-sm font-bold rounded-xl border-2 border-slate-300 px-3.5 py-2.5 focus:ring-2 focus:ring-rajawali focus:outline-none bg-white">
                         <option value="umum">Umum (Eceran)</option>
-                        <option value="grosir">Grosir / Bengkel</option>
+                        <option value="grosir">Grosir / Bengkel Rekanan</option>
                         <option value="langganan">Langganan Tetap</option>
                     </select>
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-xs font-bold text-steel uppercase mb-1">Plat Nomor Motor</label>
-                    <input type="text" x-model="formCustomer.plat_nomor" placeholder="L 1234 ABC" class="w-full text-xs font-mono font-bold uppercase rounded-lg border border-line px-3 py-2 focus:ring-2 focus:ring-rajawali focus:outline-none">
+                    <label class="block text-xs font-black text-slate-800 uppercase mb-1">Plat Nomor Motor (Opsional)</label>
+                    <input type="text" x-model="formCustomer.plat_nomor" placeholder="L 1234 ABC" class="w-full text-sm font-mono font-bold uppercase rounded-xl border-2 border-slate-300 px-3.5 py-2.5 focus:ring-2 focus:ring-rajawali focus:outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-steel uppercase mb-1">Tipe Motor</label>
-                    <input type="text" x-model="formCustomer.jenis_kendaraan" placeholder="Honda Vario 125" class="w-full text-xs font-bold rounded-lg border border-line px-3 py-2 focus:ring-2 focus:ring-rajawali focus:outline-none">
+                    <label class="block text-xs font-black text-slate-800 uppercase mb-1">Tipe Motor (Opsional)</label>
+                    <input type="text" x-model="formCustomer.jenis_kendaraan" placeholder="Honda Vario 125" class="w-full text-sm font-bold rounded-xl border-2 border-slate-300 px-3.5 py-2.5 focus:ring-2 focus:ring-rajawali focus:outline-none">
                 </div>
             </div>
 
             <div class="flex justify-end gap-2 pt-3 border-t border-line">
                 <x-button type="button" variant="secondary" x-on:click="$dispatch('tutup-modal', { name: 'tambah-customer-cepat' })">Batal</x-button>
-                <x-button type="submit" variant="primary">Simpan Customer</x-button>
+                <x-button type="submit" variant="primary">
+                    <x-icon name="save" class="w-4 h-4" /> Simpan &amp; Pilih Customer
+                </x-button>
             </div>
         </form>
     </x-modal>
 
     {{-- MODAL DAFTAR ANTREAN SERVIS --}}
-    <x-modal name="antrean-service" title="Daftar Antrean &amp; Servis Bengkel Siap Ambil">
+    <x-modal name="antrean-service" title="Daftar Antrean Servis Motor">
         <div class="space-y-3">
-            <div class="overflow-x-auto max-h-80 border border-line rounded-xl">
+            <div class="overflow-x-auto max-h-80 border-2 border-line rounded-2xl">
                 <table class="w-full text-xs">
-                    <thead class="bg-canvas text-steel uppercase font-bold border-b border-line">
+                    <thead class="bg-canvas text-steel uppercase font-black border-b border-line">
                         <tr>
                             <th class="px-3 py-2.5 text-left">No Dokumen</th>
                             <th class="px-3 py-2.5 text-left">Customer &amp; Motor</th>
@@ -636,16 +627,15 @@
                     </thead>
                     <tbody class="divide-y divide-line">
                         <template x-for="s in antreanServiceList" :key="s.id">
-                            <tr class="hover:bg-canvas transition">
+                            <tr class="hover:bg-canvas transition font-medium">
                                 <td class="px-3 py-2.5 font-mono font-bold text-rajawali" x-text="s.nomor_dokumen"></td>
                                 <td class="px-3 py-2.5">
                                     <div class="font-bold text-ink" x-text="s.customer_nama"></div>
                                     <div class="text-[11px] text-steel font-mono">
-                                        <span class="font-bold text-blue-700" x-text="s.plat_nomor"></span>
-                                        <span x-text="' (' + s.merk_type + ')'"></span>
+                                        <span x-text="s.plat_nomor" class="font-bold text-rajawali"></span> · <span x-text="s.merk_type"></span>
                                     </div>
                                 </td>
-                                <td class="px-3 py-2.5 text-steel" x-text="s.montir_nama"></td>
+                                <td class="px-3 py-2.5 font-bold" x-text="s.montir_nama"></td>
                                 <td class="px-3 py-2.5 text-right font-mono font-bold text-ink" x-text="formatRp(s.total_biaya)"></td>
                                 <td class="px-3 py-2.5 text-center">
                                     <span
@@ -654,24 +644,27 @@
                                             'bg-blue-100 text-blue-800 border-blue-300': s.status === 'dikerjakan',
                                             'bg-emerald-100 text-emerald-800 border-emerald-300': s.status === 'selesai'
                                         }"
-                                        class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase border"
+                                        class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border"
                                         x-text="s.status"
                                     ></span>
                                 </td>
                                 <td class="px-3 py-2.5 text-right">
                                     <button
                                         type="button"
-                                        x-on:click="muatServiceKeKasir(s.id)"
-                                        class="px-2.5 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] transition shadow-xs"
+                                        x-on:click="muatServiceKeKasir(s.id); $dispatch('tutup-modal', { name: 'antrean-service' })"
+                                        class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 ml-auto cursor-pointer"
                                     >
-                                        Muat ke Kasir →
+                                        <x-icon name="arrow-down" class="w-3.5 h-3.5" />
+                                        <span>Muat ke Kasir</span>
                                     </button>
                                 </td>
                             </tr>
                         </template>
                         <template x-if="antreanServiceList.length === 0">
                             <tr>
-                                <td colspan="6" class="py-8 text-center text-steel italic">Tidak ada antrean servis motor yang aktif saat ini.</td>
+                                <td colspan="6" class="p-8 text-center text-steel italic font-bold">
+                                    Tidak ada antrean servis yang aktif saat ini.
+                                </td>
                             </tr>
                         </template>
                     </tbody>
@@ -682,20 +675,20 @@
 </div>
 
 <script>
-function kasirApp(dataBarang, dataCustomer, dataMontirs, dataAntrean, batasDiskonPersen, izinkanStokMinus, bolehJualDibawahHpp, printerStrukAktif, printerFakturAktif) {
+function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
     return {
-        daftarBarang: dataBarang,
+        // Master Data
+        daftarBarang: daftarBarang,
         customerList: dataCustomer,
-        montirs: dataMontirs || [],
-        antreanServiceList: dataAntrean || [],
-        batasDiskonPersen: batasDiskonPersen,
-        izinkanStokMinus: izinkanStokMinus,
-        bolehJualDibawahHpp: bolehJualDibawahHpp,
-        
-        // Mode Transaksi
-        modeTransaksi: 'penjualan', // 'penjualan' | 'service'
+        montirs: dataMontir,
+        antreanServiceList: [],
+
+        // Mode: 'penjualan' / 'service'
+        modeTransaksi: 'penjualan',
         serviceIdAktif: null,
         nomorSpkAktif: '',
+
+        // Service Form States
         platNomor: '',
         merkType: '',
         montirId: '',
@@ -732,6 +725,7 @@ function kasirApp(dataBarang, dataCustomer, dataMontirs, dataAntrean, batasDisko
         initApp() {
             this.$watch('customerId', () => this.dapatkanHargaTerakhir());
             this.$watch('barisAktif', () => this.dapatkanHargaTerakhir());
+            this.muatAntreanService();
         },
 
         gantiMode(mode) {
@@ -777,7 +771,18 @@ function kasirApp(dataBarang, dataCustomer, dataMontirs, dataAntrean, batasDisko
         },
 
         bukaModalAntreanService() {
+            this.muatAntreanService();
             this.$dispatch('buka-modal', { name: 'antrean-service' });
+        },
+
+        async muatAntreanService() {
+            try {
+                const res = await fetch('/admin/kasir/antrean-service');
+                const data = await res.json();
+                if (data.sukses) {
+                    this.antreanServiceList = data.antrean || [];
+                }
+            } catch {}
         },
 
         async muatServiceKeKasir(serviceId) {
@@ -813,19 +818,25 @@ function kasirApp(dataBarang, dataCustomer, dataMontirs, dataAntrean, batasDisko
                             labelTier: null
                         });
                     });
-
-                    this.$dispatch('tutup-modal', { name: 'antrean-service' });
-                    if (window.toastSukses) window.toastSukses(`SPK ${s.nomor_dokumen} berhasil dimuat ke kasir!`);
+                    if (window.toastSukses) window.toastSukses(`Antrean ${s.nomor_dokumen} (${s.customer_nama}) berhasil dimuat ke kasir.`);
                 }
             } catch (err) {
-                if (window.toastGagal) window.toastGagal('Gagal memuat antrean servis: ' + err.message);
+                if (window.toastGagal) window.toastGagal('Gagal memuat detail servis: ' + err.message);
             }
         },
 
         pilihCustomer(c) {
             this.customerId = c.id;
-            if (c.plat && !this.platNomor) this.platNomor = c.plat;
-            if (c.motor && !this.merkType) this.merkType = c.motor;
+            if (c.plat) this.platNomor = c.plat;
+            if (c.motor) this.merkType = c.motor;
+            this.keranjang.forEach((item, idx) => {
+                const barang = this.daftarBarang.find(b => b.kode === item.kode);
+                if (barang) {
+                    const tier = this.hitungHargaTier(barang, item.qty);
+                    item.harga = tier.harga;
+                    item.labelTier = tier.label;
+                }
+            });
         },
 
         sinkronPlatKeCustomer() {
@@ -947,8 +958,10 @@ function kasirApp(dataBarang, dataCustomer, dataMontirs, dataAntrean, batasDisko
         },
 
         hitungTotalItem(item) {
-            const hargaBersih = Math.max(0, (item.qty * item.harga) - (item.diskon || 0));
-            return hargaBersih;
+            const qty = Number(item.qty) || 0;
+            const harga = Number(item.harga) || 0;
+            const diskon = Number(item.diskon) || 0;
+            return Math.max(0, (qty * harga) - diskon);
         },
 
         tambahBarangKeKeranjang(b) {
@@ -978,27 +991,14 @@ function kasirApp(dataBarang, dataCustomer, dataMontirs, dataAntrean, batasDisko
         },
 
         tambahDariBarcode() {
-            const query = this.barcode.trim().toUpperCase();
-            if (!query) return;
+            const q = this.barcode.trim();
+            if (!q) return;
 
-            let barang = this.daftarBarang.find(b => b.kode.toUpperCase() === query || (b.barcode && b.barcode.toUpperCase() === query));
-
-            if (!barang) {
-                const matches = this.daftarBarang.filter(b => 
-                    b.nama.toUpperCase().includes(query) || 
-                    b.kode.toUpperCase().includes(query) ||
-                    (b.barcode && b.barcode.toUpperCase().includes(query))
-                );
-
-                if (matches.length === 1) {
-                    barang = matches[0];
-                } else if (matches.length > 1) {
-                    this.cariQuery = this.barcode;
-                    this.$dispatch('buka-modal', { name: 'cari-barang' });
-                    this.barcode = '';
-                    return;
-                }
-            }
+            const barang = this.daftarBarang.find(b => 
+                (b.barcode && b.barcode.toLowerCase() === q.toLowerCase()) || 
+                b.kode.toLowerCase() === q.toLowerCase() ||
+                b.nama.toLowerCase() === q.toLowerCase()
+            );
 
             if (!barang) {
                 if (window.toastGagal) window.toastGagal(`Barang "${this.barcode}" tidak ditemukan.`);
