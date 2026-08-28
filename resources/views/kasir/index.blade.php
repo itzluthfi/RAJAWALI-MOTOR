@@ -568,8 +568,9 @@
     {{-- MODAL CUSTOMER BARU CEPAT (QUICK ADD) --}}
     <x-modal name="tambah-customer-cepat" title="Pendaftaran Customer Baru Cepat">
         <form x-on:submit.prevent="simpanCustomerCepat()" class="space-y-4">
-            <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900 font-bold">
-                💡 Cukup isi <strong>Nama</strong> (wajib) &amp; <strong>No WhatsApp</strong> agar struk digital bisa dikirim via WA &amp; klaim garansi/retur mudah dilacak.
+            <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900 font-bold flex items-start gap-2.5">
+                <x-icon name="info" class="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                <span>Cukup isi <strong>Nama Customer</strong> (wajib) &amp; <strong>No WhatsApp</strong> agar struk digital bisa dikirim via WA dan memudahkan pelacakan klaim garansi/retur.</span>
             </div>
 
             <div>
@@ -582,11 +583,11 @@
                     <input type="text" x-model="formCustomer.telepon" placeholder="08xxxxxxxxxx" class="w-full text-sm font-mono font-bold rounded-xl border-2 border-slate-300 px-3.5 py-2.5 focus:ring-2 focus:ring-rajawali focus:outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-black text-slate-800 uppercase mb-1">Kategori Pelanggan</label>
+                    <label class="block text-xs font-black text-slate-800 uppercase mb-1">Kategori Pelanggan (Tingkat Harga)</label>
                     <select x-model="formCustomer.kategori" class="w-full text-sm font-bold rounded-xl border-2 border-slate-300 px-3.5 py-2.5 focus:ring-2 focus:ring-rajawali focus:outline-none bg-white">
-                        <option value="umum">Umum (Eceran)</option>
-                        <option value="grosir">Grosir / Bengkel Rekanan</option>
-                        <option value="langganan">Langganan Tetap</option>
+                        <option value="umum">Umum (Harga Eceran Standar)</option>
+                        <option value="mitra">Bengkel Rekanan / Mitra (Harga Khusus)</option>
+                        <option value="grosir">Toko Grosir / Reseller (Harga Partai)</option>
                     </select>
                 </div>
             </div>

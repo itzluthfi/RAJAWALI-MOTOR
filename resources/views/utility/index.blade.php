@@ -198,15 +198,17 @@
                         </div>
                     </div>
 
-                    <div class="p-3.5 rounded-xl text-xs font-medium leading-relaxed" :class="dataRecalculate.orphan_count > 0 ? 'bg-amber-50 text-amber-900 border border-amber-200' : 'bg-emerald-50 text-emerald-900 border border-emerald-200'">
+                    <div class="p-3.5 rounded-xl text-xs font-medium leading-relaxed flex items-start gap-2.5" :class="dataRecalculate.orphan_count > 0 ? 'bg-amber-50 text-amber-900 border border-amber-200' : 'bg-emerald-50 text-emerald-900 border border-emerald-200'">
                         <template x-if="dataRecalculate.orphan_count > 0">
-                            <div>
-                                ⚠️ Ditemukan <strong><span x-text="dataRecalculate.orphan_count"></span> log mutasi stok yatim</strong> (transaksi tanpa referensi barang master). Proses hitung ulang akan otomatis membersihkan log tidak valid ini dan menyinkronkan saldo kartu stok.
+                            <div class="flex items-start gap-2">
+                                <x-icon name="alert-triangle" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                                <span>Ditemukan <strong><span x-text="dataRecalculate.orphan_count"></span> log mutasi stok yatim</strong> (transaksi tanpa referensi barang master). Proses hitung ulang akan otomatis membersihkan log tidak valid ini dan menyinkronkan saldo kartu stok.</span>
                             </div>
                         </template>
                         <template x-if="dataRecalculate.orphan_count === 0">
-                            <div>
-                                ✅ Seluruh data mutasi stok barang terhubung valid ke master barang. Proses hitung ulang akan menyegarkan kalkulasi pergerakan saldo stok.
+                            <div class="flex items-start gap-2">
+                                <x-icon name="check-circle" class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                                <span>Seluruh data mutasi stok barang terhubung valid ke master barang. Proses hitung ulang akan menyegarkan kalkulasi pergerakan saldo stok.</span>
                             </div>
                         </template>
                     </div>
@@ -235,15 +237,19 @@
 
             <template x-if="!loadingHpp && dataHpp">
                 <div class="space-y-4">
-                    <div class="flex items-center justify-between p-3.5 rounded-xl border" :class="dataHpp.total_perubahan > 0 ? 'bg-amber-50 border-amber-200 text-amber-900' : 'bg-emerald-50 border-emerald-200 text-emerald-900'">
-                        <div class="text-xs font-bold">
-                            <template x-if="dataHpp.total_perubahan > 0">
-                                <span>⚠️ Ditemukan <strong><span x-text="dataHpp.total_perubahan"></span> barang</strong> dengan nilai HPP yang berbeda dari harga kulakan supplier terakhir.</span>
-                            </template>
-                            <template x-if="dataHpp.total_perubahan === 0">
-                                <span>✅ Seluruh HPP master barang sudah 100% selaras dengan harga pembelian supplier terakhir. Tidak ada selisih.</span>
-                            </template>
-                        </div>
+                    <div class="p-3.5 rounded-xl border flex items-start gap-2.5" :class="dataHpp.total_perubahan > 0 ? 'bg-amber-50 border-amber-200 text-amber-900' : 'bg-emerald-50 border-emerald-200 text-emerald-900'">
+                        <template x-if="dataHpp.total_perubahan > 0">
+                            <div class="flex items-start gap-2 text-xs font-bold">
+                                <x-icon name="alert-triangle" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                                <span>Ditemukan <strong><span x-text="dataHpp.total_perubahan"></span> barang</strong> dengan nilai HPP yang berbeda dari harga kulakan supplier terakhir.</span>
+                            </div>
+                        </template>
+                        <template x-if="dataHpp.total_perubahan === 0">
+                            <div class="flex items-start gap-2 text-xs font-bold">
+                                <x-icon name="check-circle" class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                                <span>Seluruh HPP master barang sudah 100% selaras dengan harga pembelian supplier terakhir. Tidak ada selisih.</span>
+                            </div>
+                        </template>
                     </div>
 
                     <template x-if="dataHpp.items && dataHpp.items.length > 0">
