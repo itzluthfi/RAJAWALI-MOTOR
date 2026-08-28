@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\PengaturanToko;
 use App\Models\Penjualan;
 use App\Models\Service;
 
@@ -11,24 +12,35 @@ class WhatsAppReceiptService
 {
     public static function buatTeksNota(Penjualan $penjualan): string
     {
-        $namaToko = "🏁 *RAJAWALI MOTOR SIDOARJO*";
-        $alamat = "Jl. Samanhudi No.102, Jasem, Sidoarjo\nWA/Telp: +62 856-4888-8441";
+        $pengaturan = PengaturanToko::current();
+
+        $namaToko = "*" . strtoupper($pengaturan->nama_toko) . "*";
+        $alamat = $pengaturan->alamat ?? 'Sidoarjo';
+        $telepon = $pengaturan->telepon ? "WA/Telp: " . $pengaturan->telepon : '';
         $garis = "----------------------------------------";
 
-        $pesan = "{$namaToko}\n{$alamat}\n{$garis}\n";
-        $pesan .= "📋 No Nota: *{$penjualan->nomor_nota}*\n";
-        $pesan .= "📅 Tanggal: " . $penjualan->created_at->format('d M Y, H:i') . " WIB\n";
+        $pesan = "{$namaToko}\n{$alamat}\n";
+        if ($telepon) {
+            $pesan .= "{$telepon}\n";
+        }
+        $pesan .= "{$garis}\n";
+        $pesan .= "No Nota: *{$penjualan->nomor_nota}*\n";
+        $pesan .= "Tanggal: " . $penjualan->created_at->setTimezone('Asia/Jakarta')->format('d M Y, H:i') . " WIB\n";
 
         if ($penjualan->customer) {
-            $pesan .= "👤 Pelanggan: *{$penjualan->customer->nama}*\n";
+            $pesan .= "Pelanggan: *{$penjualan->customer->nama}*\n";
             if ($penjualan->customer->plat_nomor) {
-                $pesan .= "🛵 Kendaraan: {$penjualan->customer->plat_nomor} (" . ($penjualan->customer->jenis_kendaraan ?? '-') . ")\n";
+                $kendaraan = $penjualan->customer->plat_nomor;
+                if ($penjualan->customer->jenis_kendaraan) {
+                    $kendaraan .= " (" . $penjualan->customer->jenis_kendaraan . ")";
+                }
+                $pesan .= "Kendaraan: {$kendaraan}\n";
             }
         } else {
-            $pesan .= "👤 Pelanggan: *Pelanggan Umum*\n";
+            $pesan .= "Pelanggan: *Pelanggan Umum*\n";
         }
 
-        $pesan .= "{$garis}\n🛒 *RINCIAN PEMBELIAN:*\n";
+        $pesan .= "{$garis}\n*RINCIAN PEMBELIAN:*\n";
 
         foreach ($penjualan->details as $d) {
             $qtyFormatted = rtrim(rtrim(number_format((float) $d->qty, 3, ',', ''), '0'), ',');
@@ -49,7 +61,7 @@ class WhatsAppReceiptService
         $statusBayar = strtoupper($penjualan->status_bayar);
         $metode = strtoupper($penjualan->metode_pembayaran);
 
-        $pesan .= "💰 *TOTAL AKHIR:* *Rp " . number_format((float) $penjualan->total_akhir, 0, ',', '.') . "*\n";
+        $pesan .= "*TOTAL AKHIR:* *Rp " . number_format((float) $penjualan->total_akhir, 0, ',', '.') . "*\n";
         $pesan .= "Status: *{$statusBayar}* ({$metode})\n";
 
         if ($penjualan->status_bayar === 'piutang') {
@@ -59,27 +71,34 @@ class WhatsAppReceiptService
         }
 
         $pesan .= "{$garis}\n";
-        $pesan .= "Terima kasih telah mempercayakan kendaraan Anda kepada Rajawali Motor!\n";
-        $pesan .= "_Garansi resmi suku cadang & servis terpercaya._ 🙏✨";
+        $pesan .= "Terima kasih telah berbelanja di " . $pengaturan->nama_toko . "!\n";
+        $pesan .= "_" . ($pengaturan->footer_struk ?? 'Garansi resmi suku cadang & servis terpercaya.') . "_";
 
         return $pesan;
     }
 
     public static function buatTeksServis(Service $service): string
     {
-        $namaToko = "🏁 *RAJAWALI MOTOR SIDOARJO*";
-        $alamat = "Jl. Samanhudi No.102, Jasem, Sidoarjo\nWA/Telp: +62 856-4888-8441";
+        $pengaturan = PengaturanToko::current();
+
+        $namaToko = "*" . strtoupper($pengaturan->nama_toko) . "*";
+        $alamat = $pengaturan->alamat ?? 'Sidoarjo';
+        $telepon = $pengaturan->telepon ? "WA/Telp: " . $pengaturan->telepon : '';
         $garis = "----------------------------------------";
 
-        $pesan = "{$namaToko}\n{$alamat}\n{$garis}\n";
-        $pesan .= "🛠️ No Servis: *{$service->nomor_dokumen}*\n";
-        $pesan .= "📅 Tanggal: " . $service->tanggal_masuk->format('d M Y, H:i') . " WIB\n";
-        $pesan .= "👤 Pelanggan: *" . ($service->customer->nama ?? 'Pelanggan') . "*\n";
-        $pesan .= "🛵 Kendaraan: *" . ($service->merk_type ?? '-') . "* (" . ($service->customer->plat_nomor ?? '-') . ")\n";
-        $pesan .= "👨‍🔧 Montir: *" . ($service->montirUser->name ?? '-') . "*\n";
-        $pesan .= "📊 Status: *" . strtoupper($service->status) . "*\n";
+        $pesan = "{$namaToko}\n{$alamat}\n";
+        if ($telepon) {
+            $pesan .= "{$telepon}\n";
+        }
+        $pesan .= "{$garis}\n";
+        $pesan .= "No Servis: *{$service->nomor_dokumen}*\n";
+        $pesan .= "Tanggal: " . $service->tanggal_masuk->setTimezone('Asia/Jakarta')->format('d M Y, H:i') . " WIB\n";
+        $pesan .= "Pelanggan: *" . ($service->customer->nama ?? 'Pelanggan') . "*\n";
+        $pesan .= "Kendaraan: *" . ($service->merk_type ?? '-') . "* (" . ($service->customer->plat_nomor ?? '-') . ")\n";
+        $pesan .= "Montir: *" . ($service->montir->name ?? '-') . "*\n";
+        $pesan .= "Status: *" . strtoupper($service->status) . "*\n";
 
-        $pesan .= "{$garis}\n📋 *RINCIAN BIAYA SERVIS:*\n";
+        $pesan .= "{$garis}\n*RINCIAN BIAYA SERVIS:*\n";
         $pesan .= "• Biaya Jasa: Rp " . number_format((float) $service->biaya_jasa, 0, ',', '.') . "\n";
         $pesan .= "• Biaya Sparepart: Rp " . number_format((float) $service->biaya_part, 0, ',', '.') . "\n";
         
@@ -88,23 +107,22 @@ class WhatsAppReceiptService
         }
 
         $pesan .= "{$garis}\n";
-        $pesan .= "💰 *TOTAL BIAYA:* *Rp " . number_format((float) $service->grand_total, 0, ',', '.') . "*\n";
+        $pesan .= "*TOTAL BIAYA:* *Rp " . number_format((float) ($service->grand_total_nett ?? $service->grand_total), 0, ',', '.') . "*\n";
         $pesan .= "{$garis}\n";
-        $pesan .= "Terima kasih telah mempercayakan servis motor Anda kepada Rajawali Motor!\n";
-        $pesan .= "_Garansi servis terjamin & sparepart original._ 🙏✨";
+        $pesan .= "Terima kasih telah mempercayakan servis motor Anda kepada " . $pengaturan->nama_toko . "!\n";
+        $pesan .= "_" . ($pengaturan->footer_struk ?? 'Garansi servis terjamin & sparepart original.') . "_";
 
         return $pesan;
     }
 
     public static function buatUrlWhatsApp(string $telepon, string $teks): string
     {
-        $nomor = preg_replace('/[^0-9]/', '', $telepon);
-        if (str_starts_with($nomor, '0')) {
-            $nomor = '62' . substr($nomor, 1);
-        } elseif (str_starts_with($nomor, '8')) {
-            $nomor = '62' . $nomor;
+        $bersih = preg_replace('/[^0-9]/', '', $telepon);
+
+        if (str_starts_with($bersih, '0')) {
+            $bersih = '62' . substr($bersih, 1);
         }
 
-        return 'https://wa.me/' . $nomor . '?text=' . rawurlencode($teks);
+        return "https://wa.me/{$bersih}?text=" . rawurlencode($teks);
     }
 }
