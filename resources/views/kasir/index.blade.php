@@ -473,9 +473,43 @@
 
     {{-- MODAL SCANNER KAMERA --}}
     <x-modal name="scan-kamera" title="Scanner Kamera (Barcode &amp; QR Code)">
-        <div class="space-y-4 text-center">
-            <div id="html5-qr-code-reader" class="w-full max-w-sm mx-auto overflow-hidden rounded-2xl border border-line bg-black"></div>
-            <p class="text-xs text-steel font-bold">Arahkan kamera ke Barcode (Garis) atau QR Code produk.</p>
+        <div class="space-y-3.5 text-center">
+            <div class="relative w-full max-w-sm mx-auto overflow-hidden rounded-2xl border-2 transition-all duration-300 bg-black min-h-56 flex items-center justify-center"
+                 :class="statusScanKamera === 'sukses' ? 'border-emerald-500 ring-4 ring-emerald-500/30' : 'border-slate-700'">
+                
+                <div id="html5-qr-code-reader" class="w-full"></div>
+
+                <!-- Laser scanning animation overlay -->
+                <div x-show="kameraAktif && statusScanKamera === 'scanning'" class="absolute inset-0 pointer-events-none flex flex-col justify-center items-center">
+                    <div class="w-52 h-36 border-2 border-red-500/70 rounded-xl relative overflow-hidden shadow-inner">
+                        <div class="absolute inset-x-0 h-0.5 bg-red-500 shadow-[0_0_10px_#ef4444] animate-bounce"></div>
+                    </div>
+                </div>
+
+                <!-- Success Overlay -->
+                <div x-show="statusScanKamera === 'sukses'" class="absolute inset-0 bg-emerald-950/90 backdrop-blur-xs flex flex-col items-center justify-center text-white p-4 transition-all">
+                    <div class="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center text-white mb-2 shadow-lg animate-pulse">
+                        <x-icon name="check" class="w-6 h-6 stroke-[3]" />
+                    </div>
+                    <span class="text-xs font-bold text-emerald-200 uppercase tracking-wide">BERHASIL TERDETEKSI!</span>
+                    <p class="font-mono text-xs font-black text-white mt-1 break-all line-clamp-2" x-text="hasilScanTerakhir"></p>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-center gap-2 text-xs font-bold min-h-6" :class="statusScanKamera === 'sukses' ? 'text-emerald-600' : 'text-slate-600'">
+                <template x-if="statusScanKamera === 'scanning'">
+                    <span class="flex items-center gap-1.5 animate-pulse text-slate-700">
+                        <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                        Arahkan kamera ke Barcode (Garis) atau QR Code produk...
+                    </span>
+                </template>
+                <template x-if="statusScanKamera === 'sukses'">
+                    <span class="flex items-center gap-1.5 text-emerald-700">
+                        <x-icon name="check" class="w-4 h-4 text-emerald-600" /> Memasukkan ke keranjang kasir...
+                    </span>
+                </template>
+            </div>
+
             <x-button type="button" variant="secondary" x-on:click="$dispatch('tutup-modal', { name: 'scan-kamera' }); stopKamera()">Tutup Kamera</x-button>
         </div>
     </x-modal>
@@ -715,6 +749,8 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
         hargaTerakhirInfo: null,
         html5QrCode: null,
         kameraAktif: false,
+        statusScanKamera: 'idle',
+        hasilScanTerakhir: '',
 
         formCustomer: {
             nama: '',
@@ -1264,6 +1300,8 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
         },
 
         bukaScannerKamera() {
+            this.statusScanKamera = 'idle';
+            this.hasilScanTerakhir = '';
             this.$dispatch('buka-modal', { name: 'scan-kamera' });
             setTimeout(() => this.mulaiKamera(), 300);
         },
@@ -1278,22 +1316,31 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
             }
             if (this.html5QrCode) this.stopKamera();
             try {
+                this.statusScanKamera = 'scanning';
                 this.html5QrCode = new Html5Qrcode("html5-qr-code-reader");
-                const config = { fps: 10, qrbox: { width: 250, height: 160 } };
+                const config = { fps: 15, qrbox: { width: 250, height: 160 } };
                 this.html5QrCode.start(
                     { facingMode: "environment" },
                     config,
                     (decodedText) => {
+                        if (this.statusScanKamera === 'sukses') return;
+                        this.statusScanKamera = 'sukses';
+                        this.hasilScanTerakhir = decodedText;
+                        bunyikanBeepSukses();
                         this.barcode = decodedText;
                         this.tambahDariBarcode();
-                        this.stopKamera();
-                        this.$dispatch('tutup-modal', { name: 'scan-kamera' });
+                        setTimeout(() => {
+                            this.stopKamera();
+                            this.$dispatch('tutup-modal', { name: 'scan-kamera' });
+                            this.statusScanKamera = 'idle';
+                        }, 500);
                     },
                     () => {}
                 ).then(() => {
                     this.kameraAktif = true;
                 }).catch((err) => {
                     this.kameraAktif = false;
+                    this.statusScanKamera = 'idle';
                     const el = document.getElementById('html5-qr-code-reader');
                     if (el) {
                         el.innerHTML = '<div class="p-4 text-xs text-red-600 bg-red-50 rounded-xl font-bold">Kamera tidak dapat diakses. Pastikan Anda mengizinkan akses kamera (Camera Permission) pada browser.</div>';
@@ -1309,7 +1356,11 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
                 this.html5QrCode.stop().then(() => {
                     this.html5QrCode.clear();
                     this.kameraAktif = false;
-                }).catch(() => { this.kameraAktif = false; });
+                    this.statusScanKamera = 'idle';
+                }).catch(() => {
+                    this.kameraAktif = false;
+                    this.statusScanKamera = 'idle';
+                });
             }
         },
 
@@ -1354,6 +1405,24 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
             }
         }
     };
+}
+
+function bunyikanBeepSukses() {
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(950, ctx.currentTime);
+        gain.gain.setValueAtTime(0.25, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.12);
+    } catch(e) {}
 }
 </script>
 </x-app-layout>
