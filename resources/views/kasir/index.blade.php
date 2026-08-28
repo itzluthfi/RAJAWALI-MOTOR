@@ -675,6 +675,7 @@
     </x-modal>
 </div>
 
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
 function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
     return {
@@ -1245,25 +1246,43 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
 
         bukaScannerKamera() {
             this.$dispatch('buka-modal', { name: 'scan-kamera' });
-            this.$nextTick(() => this.mulaiKamera());
+            setTimeout(() => this.mulaiKamera(), 300);
         },
 
         mulaiKamera() {
-            if (typeof Html5Qrcode === 'undefined') return;
+            if (typeof Html5Qrcode === 'undefined') {
+                const el = document.getElementById('html5-qr-code-reader');
+                if (el) {
+                    el.innerHTML = '<div class="p-4 text-xs text-amber-600 bg-amber-50 rounded-xl font-bold">Pustaka kamera sedang diunduh, silakan coba klik lagi.</div>';
+                }
+                return;
+            }
             if (this.html5QrCode) this.stopKamera();
-            this.html5QrCode = new Html5Qrcode("html5-qr-code-reader");
-            const config = { fps: 15, qrbox: { width: 250, height: 180 } };
-            this.html5QrCode.start(
-                { facingMode: "environment" },
-                config,
-                (decodedText) => {
-                    this.barcode = decodedText;
-                    this.tambahDariBarcode();
-                    this.stopKamera();
-                    this.$dispatch('tutup-modal', { name: 'scan-kamera' });
-                },
-                () => {}
-            ).then(() => { this.kameraAktif = true; }).catch(() => {});
+            try {
+                this.html5QrCode = new Html5Qrcode("html5-qr-code-reader");
+                const config = { fps: 10, qrbox: { width: 250, height: 160 } };
+                this.html5QrCode.start(
+                    { facingMode: "environment" },
+                    config,
+                    (decodedText) => {
+                        this.barcode = decodedText;
+                        this.tambahDariBarcode();
+                        this.stopKamera();
+                        this.$dispatch('tutup-modal', { name: 'scan-kamera' });
+                    },
+                    () => {}
+                ).then(() => {
+                    this.kameraAktif = true;
+                }).catch((err) => {
+                    this.kameraAktif = false;
+                    const el = document.getElementById('html5-qr-code-reader');
+                    if (el) {
+                        el.innerHTML = '<div class="p-4 text-xs text-red-600 bg-red-50 rounded-xl font-bold">Kamera tidak dapat diakses. Pastikan Anda mengizinkan akses kamera (Camera Permission) pada browser.</div>';
+                    }
+                });
+            } catch (e) {
+                console.error(e);
+            }
         },
 
         stopKamera() {
