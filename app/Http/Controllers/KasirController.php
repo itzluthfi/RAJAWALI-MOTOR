@@ -130,6 +130,7 @@ class KasirController extends Controller
             'keluhan' => ['nullable', 'string', 'max:500'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.kode' => ['required', 'string'],
+            'items.*.nama' => ['nullable', 'string'],
             'items.*.qty' => ['required', 'numeric', 'min:0.001'],
             'items.*.harga' => ['required', 'numeric', 'min:0'],
             'items.*.diskon' => ['nullable', 'numeric', 'min:0'],
@@ -178,21 +179,25 @@ class KasirController extends Controller
                     ]);
 
                     foreach ($validated['items'] as $item) {
-                        $barang = Barang::where('kode', $item['kode'])->firstOrFail();
+                        $barang = Barang::where('kode', $item['kode'])->first();
                         $qty = (float) $item['qty'];
                         $harga = (float) $item['harga'];
-                        $isJasa = $barang->group && str_contains(strtolower($barang->group->nama), 'jasa');
+                        $namaItem = $item['nama'] ?? ($barang?->nama ?? $item['kode']);
+                        $isJasa = ($item['kode'] === 'JASA') || ($barang && $barang->group && str_contains(strtolower($barang->group->nama), 'jasa'));
 
                         if ($isJasa) {
                             ServiceJasa::create([
                                 'service_id' => $service->id,
-                                'nama_jasa' => $barang->nama,
-                                'harga_supplier' => (float) $barang->hpp,
+                                'nama_jasa' => $namaItem,
+                                'harga_supplier' => (float) ($barang?->hpp ?? 0),
                                 'harga_nett' => $harga,
                             ]);
-                            $totalSupplier += (float) $barang->hpp;
+                            $totalSupplier += (float) ($barang?->hpp ?? 0);
                             $totalNett += $harga;
                         } else {
+                            if (!$barang) {
+                                throw new \RuntimeException("Barang dengan kode '{$item['kode']}' tidak ditemukan.");
+                            }
                             $subtotal = $qty * $harga;
                             ServiceDetail::create([
                                 'service_id' => $service->id,
@@ -219,7 +224,7 @@ class KasirController extends Controller
 
                     return [
                         'sukses' => true,
-                        'pesan' => "SPK Tanda Terima Servis {$nomorDokumen} berhasil diterbitkan!",
+                        'pesan' => "Tanda Terima Servis {$nomorDokumen} berhasil diterbitkan!",
                         'nomor_dokumen' => $nomorDokumen,
                         'tipe' => 'service_spk',
                         'cetak_url' => route('cetak.tanda-terima-service', $nomorDokumen),
@@ -234,20 +239,52 @@ class KasirController extends Controller
                 $dataItems = [];
 
                 foreach ($validated['items'] as $item) {
-                    $barang = Barang::query()->where('kode', $item['kode'])->firstOrFail();
+                    $barang = Barang::query()->where('kode', $item['kode'])->first();
                     $qty = (float) $item['qty'];
                     $harga = (float) $item['harga'];
                     $diskonBaris = (float) ($item['diskon'] ?? 0);
+                    $namaItem = $item['nama'] ?? ($barang?->nama ?? $item['kode']);
+                    $isJasa = ($item['kode'] === 'JASA') || ($barang && $barang->group && str_contains(strtolower($barang->group->nama), 'jasa'));
+
+                    if (!$barang && $isJasa) {
+                        $groupJasa = \App\Models\Group::firstOrCreate(['nama' => 'Jasa Bengkel'], ['aktif' => true]);
+                        $satuanJasa = \App\Models\Satuan::firstOrCreate(['nama' => 'Jasa'], ['aktif' => true]);
+                        $barang = Barang::firstOrCreate(
+                            ['kode' => 'JASA'],
+                            [
+                                'nama' => $namaItem,
+                                'group_id' => $groupJasa->id,
+                                'satuan_id' => $satuanJasa->id,
+                                'hpp' => 0,
+                                'harga_eceran' => $harga,
+                                'aktif' => true,
+                            ]
+                        );
+                    }
+
+                    if (!$barang) {
+                        throw new \RuntimeException("Barang dengan kode '{$item['kode']}' tidak ditemukan.");
+                    }
 
                     // Cek ketersediaan stok fisik (kecuali Jasa)
                     $stokSekarang = $stokService->stokSaatIni($barang);
-                    $isJasa = $barang->group && str_contains(strtolower($barang->group->nama), 'jasa');
                     if (! $pengaturan->izinkan_stok_minus && ! $isJasa && $stokSekarang < $qty) {
                         throw new \RuntimeException("Stok barang '{$barang->nama}' (Kode: {$barang->kode}) tidak mencukupi. Sisa stok: {$stokSekarang}, diminta: {$qty}.");
                     }
 
                     $itemSubtotal = ($qty * $harga) - $diskonBaris;
                     $subtotal += $itemSubtotal;
+
+                    $dataItems[] = [
+                        'barang' => $barang,
+                        'is_jasa' => $isJasa,
+                        'qty' => $qty,
+                        'harga' => $harga,
+                        'diskon' => $diskonBaris,
+                        'hpp' => (float) $barang->hpp,
+                        'subtotal' => $itemSubtotal,
+                    ];
+                }
 
                     $dataItems[] = [
                         'barang' => $barang,

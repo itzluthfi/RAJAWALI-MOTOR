@@ -425,10 +425,11 @@
                             type="button"
                             x-on:click="simpanSpkService()"
                             x-bind:disabled="sedangMenyimpan"
-                            class="px-4 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md transition active:scale-98"
+                            class="px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md transition active:scale-98 cursor-pointer"
+                            data-tooltip="Simpan order antrean servis & terbitkan tanda terima tanpa pembayaran langsung"
                         >
                             <x-icon name="clipboard-check" class="w-4 h-4" />
-                            <span>Simpan SPK Servis</span>
+                            <span>Terima Motor Servis (Tanda Terima)</span>
                             <kbd class="text-[10px] bg-white/20 px-1.5 rounded">F10</kbd>
                         </button>
 
@@ -436,10 +437,11 @@
                             type="button"
                             x-on:click="simpanNota()"
                             x-bind:disabled="sedangMenyimpan"
-                            class="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md transition active:scale-98"
+                            class="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md transition active:scale-98 cursor-pointer"
+                            data-tooltip="Servis selesai & langsung bayar lunas sekarang"
                         >
                             <x-icon name="check-circle" class="w-4 h-4" />
-                            <span>Bayar Lunas</span>
+                            <span>Bayar Lunas (Cetak Nota)</span>
                             <kbd class="text-[10px] bg-white/20 px-1.5 rounded">F12</kbd>
                         </button>
                     </div>
@@ -1093,6 +1095,7 @@ function kasirApp(dataBarang, dataCustomer, dataMontirs, dataAntrean, batasDisko
                     keluhan: this.keluhan,
                     items: this.keranjang.map(i => ({
                         kode: i.kode,
+                        nama: i.nama,
                         qty: i.qty,
                         harga: i.harga,
                         diskon: i.diskon || 0
@@ -1154,6 +1157,7 @@ function kasirApp(dataBarang, dataCustomer, dataMontirs, dataAntrean, batasDisko
                 keluhan: this.keluhan,
                 items: this.keranjang.map(i => ({
                     kode: i.kode,
+                    nama: i.nama,
                     qty: i.qty,
                     harga: i.harga,
                     diskon: i.diskon || 0
