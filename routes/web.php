@@ -103,7 +103,8 @@ Route::prefix('admin')->group(function () {
                     $query->where('status_bayar', $request->status);
                 }
 
-                $penjualans = $query->paginate(15)->withQueryString();
+                $perPage = max(5, min(100, (int) $request->input('per_page', 15)));
+                $penjualans = $query->paginate($perPage)->withQueryString();
 
                 return view('penjualan.index', compact('penjualans'));
             })->name('index');

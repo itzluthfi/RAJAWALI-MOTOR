@@ -26,7 +26,7 @@ class LaporanController extends Controller
         return view('laporan.index');
     }
 
-    public function tampil(Request $request, string $jenis): View|Response
+    public function tampil(Request $request, string $jenis): View|Response|\Illuminate\Http\RedirectResponse
     {
         $dariTanggal = $request->input('dari_tanggal', now()->startOfMonth()->toDateString());
         $sampaiTanggal = $request->input('sampai_tanggal', now()->toDateString());
@@ -341,6 +341,8 @@ class LaporanController extends Controller
                 break;
 
             case 'kas-bank':
+            case 'arus-kas':
+            case 'kas':
                 $query = KasFlow::query()
                     ->whereDate('tanggal', '>=', $dariTanggal)
                     ->whereDate('tanggal', '<=', $sampaiTanggal)
@@ -353,17 +355,17 @@ class LaporanController extends Controller
                 $saldoBersih = $totalMasuk - $totalKeluar;
 
                 $ringkasan = [
-                    ['label' => 'Total Kas/Bank Masuk', 'nilai' => 'Rp ' . number_format($totalMasuk, 0, ',', '.'), 'warna' => 'text-emerald-700'],
-                    ['label' => 'Total Kas/Bank Keluar', 'nilai' => 'Rp ' . number_format($totalKeluar, 0, ',', '.'), 'warna' => 'text-rajawali'],
+                    ['label' => 'Total Kas Masuk', 'nilai' => 'Rp ' . number_format($totalMasuk, 0, ',', '.'), 'warna' => 'text-emerald-700'],
+                    ['label' => 'Total Kas Keluar', 'nilai' => 'Rp ' . number_format($totalKeluar, 0, ',', '.'), 'warna' => 'text-rajawali'],
                     ['label' => 'Arus Kas Bersih (Net)', 'nilai' => 'Rp ' . number_format($saldoBersih, 0, ',', '.'), 'warna' => $saldoBersih >= 0 ? 'text-emerald-800' : 'text-rajawali'],
                 ];
 
                 $rows = $query->map(fn ($k) => [
                     'kolom1' => $k->tanggal->format('d M Y'),
-                    'kolom2' => strtoupper($k->sumber),
-                    'kolom3' => ucfirst($k->kategori),
-                    'kolom4' => $k->no_referensi ?? '-',
-                    'kolom5' => $k->keterangan ?? '-',
+                    'kolom2' => ucfirst($k->kategori),
+                    'kolom3' => $k->no_referensi ?? '-',
+                    'kolom4' => $k->keterangan ?? '-',
+                    'kolom5' => ($k->tipe === 'masuk' ? 'Kas Masuk' : 'Kas Keluar'),
                     'kolom6' => ($k->tipe === 'masuk' ? '+Rp ' : '-Rp ') . number_format((float)$k->nominal, 0, ',', '.'),
                 ]);
                 break;
@@ -372,26 +374,26 @@ class LaporanController extends Controller
                 $query = Service::query()
                     ->whereDate('tanggal_masuk', '>=', $dariTanggal)
                     ->whereDate('tanggal_masuk', '<=', $sampaiTanggal)
-                    ->with(['customer', 'montirUser'])
+                    ->with(['customer', 'montir'])
                     ->latest('tanggal_masuk')
                     ->get();
 
                 $totalServis = $query->count();
-                $totalOmzet = (float) $query->sum('grand_total');
+                $totalOmzet = (float) $query->sum('grand_total_nett');
 
                 $ringkasan = [
                     ['label' => 'Total Unit Diservis', 'nilai' => $totalServis . ' Motor', 'warna' => 'text-ink'],
                     ['label' => 'Total Omzet Servis', 'nilai' => 'Rp ' . number_format($totalOmzet, 0, ',', '.'), 'warna' => 'text-emerald-700'],
-                    ['label' => 'Servis Selesai / Lunas', 'nilai' => $query->where('status', 'lunas')->count() . ' Unit', 'warna' => 'text-blue-700'],
+                    ['label' => 'Servis Selesai / Lunas', 'nilai' => $query->where('status_lunas', true)->count() . ' Unit', 'warna' => 'text-blue-700'],
                 ];
 
                 $rows = $query->map(fn ($s) => [
                     'kolom1' => $s->nomor_dokumen,
                     'kolom2' => $s->tanggal_masuk->format('d M Y'),
                     'kolom3' => ($s->customer->nama ?? '-') . ' (' . ($s->merk_type ?? '-') . ')',
-                    'kolom4' => $s->montirUser->name ?? '-',
+                    'kolom4' => $s->montir->name ?? '-',
                     'kolom5' => strtoupper($s->status),
-                    'kolom6' => 'Rp ' . number_format((float)$s->grand_total, 0, ',', '.'),
+                    'kolom6' => 'Rp ' . number_format((float)($s->grand_total_nett ?? 0), 0, ',', '.'),
                 ]);
                 break;
 
@@ -420,7 +422,7 @@ class LaporanController extends Controller
             'laba-rugi-kotor' => ['Tanggal Penjualan', 'Jumlah Nota', 'Pendapatan Omzet', 'Beban Pokok (HPP)', 'Laba Kotor', 'Margin Laba'],
             'piutang' => ['No Nota', 'Nama Customer', 'Tanggal Transaksi', 'Jatuh Tempo', 'Uang Muka (DP)', 'Sisa Piutang'],
             'hutang' => ['No Dokumen', 'Nama Supplier / Rekanan', 'Tanggal Transaksi', 'Jatuh Tempo', 'Ref / Kategori', 'Total Hutang'],
-            'kas-bank' => ['Tanggal', 'Kas / Bank', 'Kategori', 'No Referensi', 'Keterangan', 'Nominal Arus Kas'],
+            'kas-bank', 'arus-kas', 'kas' => ['Tanggal', 'Kategori', 'No Referensi', 'Keterangan', 'Jenis Arus', 'Nominal Kas'],
             'service-bengkel' => ['No Servis', 'Tanggal Masuk', 'Customer & Motor', 'Montir / Teknisi', 'Status Servis', 'Grand Total'],
             default => ['Kolom 1', 'Kolom 2', 'Kolom 3', 'Kolom 4', 'Kolom 5', 'Total'],
         };

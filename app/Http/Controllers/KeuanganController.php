@@ -49,7 +49,8 @@ class KeuanganController extends Controller
         $totalKeluarPeriode = (float) (clone $query)->where('tipe', 'keluar')->sum('nominal');
 
         // Data terbaru paling atas (descending)
-        $mutasi = $query->orderBy('tanggal', 'desc')->orderBy('id', 'desc')->paginate(25)->withQueryString();
+        $perPage = max(5, min(100, (int) $request->input('per_page', 25)));
+        $mutasi = $query->orderBy('tanggal', 'desc')->orderBy('id', 'desc')->paginate($perPage)->withQueryString();
 
         // Saldo total kas berjalan toko
         $saldoKas = (float) KasFlow::where('sumber', 'kas')
@@ -93,7 +94,8 @@ class KeuanganController extends Controller
             });
         }
 
-        $mutasi = $query->orderBy('tanggal', 'desc')->orderBy('id', 'desc')->paginate(25)->withQueryString();
+        $perPage = max(5, min(100, (int) $request->input('per_page', 25)));
+        $mutasi = $query->orderBy('tanggal', 'desc')->orderBy('id', 'desc')->paginate($perPage)->withQueryString();
 
         // Calculate running saldo bank
         $saldoBank = (float) KasFlow::where('sumber', 'bank')
@@ -127,7 +129,8 @@ class KeuanganController extends Controller
             $query->where('tanggal', '<=', $sampai);
         }
 
-        $mutasi = $query->orderBy('tanggal', 'desc')->orderBy('id', 'desc')->paginate(20)->withQueryString();
+        $perPage = max(5, min(100, (int) $request->input('per_page', 25)));
+        $mutasi = $query->orderBy('tanggal', 'desc')->orderBy('id', 'desc')->paginate($perPage)->withQueryString();
 
         $totalMasuk = (float) KasFlow::where('tipe', 'masuk')->sum('nominal');
         $totalKeluar = (float) KasFlow::where('tipe', 'keluar')->sum('nominal');

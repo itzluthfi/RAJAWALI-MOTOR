@@ -13,11 +13,14 @@ use Illuminate\View\View;
 
 class UserController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $perPage = max(5, min(100, (int) $request->input('per_page', 25)));
+
         $users = User::query()
             ->orderBy('name')
-            ->paginate(15);
+            ->paginate($perPage)
+            ->withQueryString();
 
         return view('pengaturan.user', compact('users'));
     }

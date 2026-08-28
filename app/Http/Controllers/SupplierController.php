@@ -26,8 +26,10 @@ class SupplierController extends Controller
             });
         }
 
+        $perPage = max(5, min(100, (int) $request->input('per_page', 25)));
+
         return view('supplier.index', [
-            'supplier' => $query->orderBy('nama')->paginate(15)->withQueryString(),
+            'supplier' => $query->orderBy('nama')->paginate($perPage)->withQueryString(),
             'filter' => $request->only('cari'),
         ]);
     }

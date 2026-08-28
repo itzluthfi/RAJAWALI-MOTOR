@@ -27,7 +27,8 @@ class AuditLogController extends Controller
             $query->whereDate('created_at', $request->tanggal);
         }
 
-        $auditLogs = $query->paginate(20)->withQueryString();
+        $perPage = max(5, min(100, (int) $request->input('per_page', 25)));
+        $auditLogs = $query->paginate($perPage)->withQueryString();
         $users = User::select('id', 'name')->get();
 
         return view('pengaturan.audit', compact('auditLogs', 'users'));

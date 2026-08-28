@@ -36,7 +36,8 @@ class BarangController extends Controller
             $query->where('group_id', $groupId);
         }
 
-        $barang = $query->orderBy('nama')->paginate(15)->withQueryString();
+        $perPage = max(5, min(100, (int) $request->input('per_page', 25)));
+        $barang = $query->orderBy('nama')->paginate($perPage)->withQueryString();
 
         $stok = $stokService->stokBanyakBarang($barang->pluck('id'));
 

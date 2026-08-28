@@ -36,7 +36,8 @@ class ReturController extends Controller
             $query->whereDate('tanggal', '<=', $request->sampai_tanggal);
         }
 
-        $returs = $query->paginate(15)->withQueryString();
+        $perPage = max(5, min(100, (int) $request->input('per_page', 15)));
+        $returs = $query->paginate($perPage)->withQueryString();
 
         return view('retur.index', compact('returs'));
     }

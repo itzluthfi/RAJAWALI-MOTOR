@@ -6,18 +6,25 @@
         'Keuangan' => ['laba-rugi-kotor', 'piutang', 'hutang', 'kas-bank'],
         'Service' => ['service-bengkel'],
     ];
+
+    $labelMap = [
+        'kas-bank' => 'Arus Kas Toko',
+        'service-bengkel' => 'Laporan Servis Bengkel',
+    ];
 @endphp
 <x-app-layout title="Laporan">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         @foreach($laporan as $kelompok => $items)
-            <x-card>
-                <h3 class="font-display font-semibold text-sm mb-3">{{ $kelompok }}</h3>
-                <ul class="space-y-1">
+            <x-card class="shadow-sm border border-slate-200/80">
+                <div class="flex items-center gap-2 mb-3 pb-2 border-b border-line">
+                    <h3 class="font-display font-black text-sm text-ink uppercase tracking-wide">{{ $kelompok }}</h3>
+                </div>
+                <ul class="space-y-1.5">
                     @foreach($items as $jenis)
                         <li>
-                            <a href="{{ route('laporan.tampil', $jenis) }}" class="flex items-center justify-between text-sm text-steel hover:text-rajawali px-2 py-1.5 rounded-md hover:bg-canvas transition duration-150">
-                                {{ ucwords(str_replace('-', ' ', $jenis)) }}
-                                <x-icon name="chevron-right" class="w-3.5 h-3.5" />
+                            <a href="{{ route('laporan.tampil', $jenis) }}" class="flex items-center justify-between text-sm font-bold text-slate-700 hover:text-rajawali px-3 py-2 rounded-xl hover:bg-slate-100/80 transition duration-150 group">
+                                <span>{{ $labelMap[$jenis] ?? ucwords(str_replace('-', ' ', $jenis)) }}</span>
+                                <x-icon name="chevron-right" class="w-4 h-4 text-steel group-hover:text-rajawali transition transform group-hover:translate-x-0.5" />
                             </a>
                         </li>
                     @endforeach

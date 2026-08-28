@@ -47,7 +47,8 @@ class ServiceController extends Controller
             });
         }
 
-        $services = $query->latest('id')->paginate(15)->withQueryString();
+        $perPage = max(5, min(100, (int) $request->input('per_page', 15)));
+        $services = $query->latest('id')->paginate($perPage)->withQueryString();
 
         return view('service.index', [
             'services' => $services,

@@ -29,8 +29,10 @@ class CustomerController extends Controller
             });
         }
 
+        $perPage = max(5, min(100, (int) $request->input('per_page', 25)));
+
         return view('customer.index', [
-            'customer' => $query->orderBy('nama')->paginate(15)->withQueryString(),
+            'customer' => $query->orderBy('nama')->paginate($perPage)->withQueryString(),
             'filter' => $request->only('cari'),
         ]);
     }

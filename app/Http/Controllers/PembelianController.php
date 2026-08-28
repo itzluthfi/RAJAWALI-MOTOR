@@ -51,7 +51,8 @@ class PembelianController extends Controller
             $query->whereDate('tanggal', '<=', $request->sampai_tanggal);
         }
 
-        $pembelians = $query->paginate(15)->withQueryString();
+        $perPage = max(5, min(100, (int) $request->input('per_page', 15)));
+        $pembelians = $query->paginate($perPage)->withQueryString();
 
         return view('pembelian.index', compact('pembelians'));
     }
