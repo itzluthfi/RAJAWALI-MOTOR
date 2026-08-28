@@ -56,7 +56,7 @@ class KasirAllInOneTest extends TestCase
         StokMutasi::create([
             'barang_id' => $this->barangOli->id,
             'tanggal' => now()->toDateString(),
-            'jenis_mutasi' => 'saldo_awal',
+            'jenis_mutasi' => 'penyesuaian',
             'no_dokumen' => 'INIT01',
             'masuk' => 20,
             'keluar' => 0,
