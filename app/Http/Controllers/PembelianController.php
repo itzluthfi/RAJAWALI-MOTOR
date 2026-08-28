@@ -56,10 +56,19 @@ class PembelianController extends Controller
         return view('pembelian.index', compact('pembelians'));
     }
 
-    public function create(): View
+    public function create(\App\Services\StokService $stokService): View
     {
-        $suppliers = Supplier::where('aktif', true)->get();
-        $barangs = Barang::where('aktif', true)->select('id', 'kode', 'nama', 'hpp', 'stok')->get();
+        $suppliers = Supplier::where('aktif', true)->orderBy('nama')->get();
+        $barangList = Barang::where('aktif', true)->orderBy('nama')->get();
+        $stokMap = $stokService->stokBanyakBarang($barangList->pluck('id'));
+
+        $barangs = $barangList->map(fn (Barang $b) => [
+            'id' => $b->id,
+            'kode' => $b->kode,
+            'nama' => $b->nama,
+            'hpp' => (float) $b->hpp,
+            'stok' => $stokMap[$b->id] ?? 0.0,
+        ]);
 
         return view('pembelian.form', compact('suppliers', 'barangs'));
     }
