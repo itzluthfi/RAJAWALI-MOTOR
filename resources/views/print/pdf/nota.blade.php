@@ -63,8 +63,8 @@
             <td class="text-right font-bold" style="font-size: 11px;">Rp {{ number_format($penjualan->total_akhir, 0, ',', '.') }}</td>
         </tr>
         <tr>
-            <td>Metode:</td>
-            <td class="text-right font-bold">{{ strtoupper($penjualan->metode_pembayaran) }}</td>
+            <td>Status:</td>
+            <td class="text-right font-bold">{{ $penjualan->status_bayar === 'lunas' ? 'LUNAS' : 'TEMPO / PIUTANG' }}</td>
         </tr>
     </table>
     <div class="line"></div>

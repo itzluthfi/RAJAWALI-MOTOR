@@ -58,11 +58,10 @@ class WhatsAppReceiptService
             $pesan .= "Diskon: -Rp " . number_format((float) $penjualan->diskon, 0, ',', '.') . "\n";
         }
 
-        $statusBayar = strtoupper($penjualan->status_bayar);
-        $metode = strtoupper($penjualan->metode_pembayaran);
+        $statusBayar = $penjualan->status_bayar === 'lunas' ? 'LUNAS' : 'TEMPO / PIUTANG';
 
         $pesan .= "*TOTAL AKHIR:* *Rp " . number_format((float) $penjualan->total_akhir, 0, ',', '.') . "*\n";
-        $pesan .= "Status: *{$statusBayar}* ({$metode})\n";
+        $pesan .= "Status: *{$statusBayar}*\n";
 
         if ($penjualan->status_bayar === 'piutang') {
             $sisa = max(0, $penjualan->total_akhir - $penjualan->uang_muka);

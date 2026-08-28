@@ -110,7 +110,7 @@
                     <div style="font-size: 10px; color: #475569;">{{ $penjualan->customer->alamat ?? 'Sidoarjo / Surabaya' }}</div>
                 </td>
                 <td class="text-right" style="width: 50%; font-size: 10px;">
-                    <div>Metode Pembayaran: <strong>{{ strtoupper($penjualan->metode_pembayaran) }}</strong> (<strong class="{{ $penjualan->status_bayar === 'lunas' ? 'text-green' : 'text-red' }}">{{ strtoupper($penjualan->status_bayar) }}</strong>)</div>
+                    <div>Status Pembayaran: <strong class="{{ $penjualan->status_bayar === 'lunas' ? 'text-green' : 'text-red' }}">{{ $penjualan->status_bayar === 'lunas' ? 'LUNAS' : 'TEMPO / PIUTANG' }}</strong></div>
                     <div>Kasir / Staf: <strong>{{ $penjualan->user->name ?? 'Staff' }}</strong></div>
                 </td>
             </tr>

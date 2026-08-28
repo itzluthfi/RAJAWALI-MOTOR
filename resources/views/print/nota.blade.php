@@ -73,10 +73,17 @@
     <div class="flex justify-between font-bold text-sm text-[#B0181C]"><span>GRAND TOTAL:</span><span>Rp {{ number_format($penjualan->total_akhir, 0, ',', '.') }}</span></div>
     
     <div class="border-t border-dashed border-black/40 my-2"></div>
-    <div class="flex justify-between"><span>Metode:</span><span>{{ strtoupper($penjualan->metode_pembayaran) }}</span></div>
-    @if($penjualan->metode_pembayaran === 'tempo')
-        <div class="flex justify-between"><span>Uang Muka (DP):</span><span>Rp {{ number_format($penjualan->uang_muka, 0, ',', '.') }}</span></div>
+    @if($penjualan->status_bayar === 'lunas')
+        <div class="flex justify-between font-black text-xs"><span>Status:</span><span class="text-emerald-700 font-bold">LUNAS</span></div>
+    @else
+        <div class="flex justify-between font-black text-xs"><span>Status:</span><span class="text-rajawali font-bold">TEMPO / PIUTANG</span></div>
+        @if($penjualan->uang_muka > 0)
+            <div class="flex justify-between text-[11px]"><span>Uang Muka (DP):</span><span>Rp {{ number_format($penjualan->uang_muka, 0, ',', '.') }}</span></div>
+        @endif
         <div class="flex justify-between font-bold text-rajawali"><span>Sisa Piutang:</span><span>Rp {{ number_format(max(0, $penjualan->total_akhir - $penjualan->uang_muka), 0, ',', '.') }}</span></div>
+        @if($penjualan->jatuh_tempo)
+            <div class="flex justify-between text-[11px] text-slate-600"><span>Jatuh Tempo:</span><span>{{ $penjualan->jatuh_tempo->format('d/m/Y') }}</span></div>
+        @endif
     @endif
     <div class="border-t border-dashed border-black/40 my-3"></div>
     <div class="text-center space-y-1">

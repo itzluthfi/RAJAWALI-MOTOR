@@ -61,7 +61,7 @@
             <p class="text-[11px] text-slate-600 font-medium">{{ $penjualan->customer->alamat ?? 'Sidoarjo / Surabaya' }}</p>
         </div>
         <div class="text-right space-y-0.5 text-[11px]">
-            <p><span class="text-slate-500">Pembayaran:</span> <span class="font-bold uppercase text-slate-900">{{ $penjualan->metode_pembayaran }}</span> (<span class="font-bold {{ $penjualan->status_bayar === 'lunas' ? 'text-emerald-600' : 'text-rajawali' }}">{{ strtoupper($penjualan->status_bayar) }}</span>)</p>
+            <p><span class="text-slate-500">Status Pembayaran:</span> <span class="font-bold {{ $penjualan->status_bayar === 'lunas' ? 'text-emerald-600' : 'text-rajawali' }}">{{ $penjualan->status_bayar === 'lunas' ? 'LUNAS' : 'TEMPO / PIUTANG' }}</span></p>
             <p><span class="text-slate-500">Kasir / Staf:</span> <span class="font-bold text-slate-900">{{ $penjualan->user->name ?? 'Staff' }}</span></p>
         </div>
     </div>
