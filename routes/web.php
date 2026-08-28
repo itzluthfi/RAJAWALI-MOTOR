@@ -202,7 +202,9 @@ Route::prefix('admin')->group(function () {
 
         Route::prefix('utility')->name('utility.')->middleware('peran:owner,admin')->group(function () {
             Route::get('/', [\App\Http\Controllers\UtilityController::class, 'index'])->name('index');
+            Route::get('/preview-recalculate-stok', [\App\Http\Controllers\UtilityController::class, 'previewRecalculateStok'])->name('preview-recalculate-stok');
             Route::post('/hitung-ulang-stok', [\App\Http\Controllers\UtilityController::class, 'recalculateStok'])->name('recalculate-stok');
+            Route::get('/preview-maintenance-hpp', [\App\Http\Controllers\UtilityController::class, 'previewMaintenanceHpp'])->name('preview-maintenance-hpp');
             Route::post('/maintenance-hpp', [\App\Http\Controllers\UtilityController::class, 'maintenanceHpp'])->name('maintenance-hpp');
             Route::post('/backup', [\App\Http\Controllers\UtilityController::class, 'backupDatabase'])->name('backup');
             Route::get('/backup/{filename}/download', [\App\Http\Controllers\UtilityController::class, 'downloadBackup'])->name('backup.download');

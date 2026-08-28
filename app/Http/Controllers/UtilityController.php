@@ -86,19 +86,93 @@ class UtilityController extends Controller
         }
     }
 
+    public function previewRecalculateStok(): \Illuminate\Http\JsonResponse
+    {
+        $orphanCount = StokMutasi::whereNotExists(function ($query) {
+            $query->select(DB::raw(1))
+                  ->from('barangs')
+                  ->whereColumn('barangs.id', 'stok_mutasis.barang_id');
+        })->count();
+
+        $totalBarang = Barang::where('aktif', true)->count();
+        $totalMutasi = StokMutasi::count();
+
+        return response()->json([
+            'sukses' => true,
+            'orphan_count' => $orphanCount,
+            'total_barang' => $totalBarang,
+            'total_mutasi' => $totalMutasi,
+        ]);
+    }
+
+    public function previewMaintenanceHpp(): \Illuminate\Http\JsonResponse
+    {
+        $barangs = Barang::where('aktif', true)->select('id', 'kode', 'nama', 'hpp')->get();
+        $perubahan = [];
+
+        foreach ($barangs as $b) {
+            $latestHpp = 0.0;
+
+            // 1. Cek dari PembelianDetail
+            $pembelianTerakhir = PembelianDetail::where('barang_id', $b->id)
+                ->where('harga_beli', '>', 0)
+                ->latest('id')
+                ->first();
+
+            if ($pembelianTerakhir && $pembelianTerakhir->harga_beli > 0) {
+                $latestHpp = (float) $pembelianTerakhir->harga_beli;
+            } else {
+                // 2. Cek dari StokMutasi
+                $mutasiTerakhir = StokMutasi::where('barang_id', $b->id)
+                    ->where('hpp', '>', 0)
+                    ->latest('tanggal')
+                    ->latest('id')
+                    ->first();
+
+                if ($mutasiTerakhir && $mutasiTerakhir->hpp > 0) {
+                    $latestHpp = (float) $mutasiTerakhir->hpp;
+                }
+            }
+
+            if ($latestHpp > 0 && abs((float)$b->hpp - $latestHpp) >= 1) {
+                $perubahan[] = [
+                    'kode' => $b->kode,
+                    'nama' => $b->nama,
+                    'hpp_lama' => (float) $b->hpp,
+                    'hpp_baru' => $latestHpp,
+                    'selisih' => $latestHpp - (float)$b->hpp,
+                ];
+            }
+        }
+
+        return response()->json([
+            'sukses' => true,
+            'total_perubahan' => count($perubahan),
+            'items' => $perubahan,
+        ]);
+    }
+
     public function recalculateStok(): RedirectResponse
     {
         try {
-            DB::transaction(function () {
+            $deletedCount = 0;
+            DB::transaction(function () use (&$deletedCount) {
                 // Hapus mutasi stok yatim (tanpa barang)
-                StokMutasi::whereNotExists(function ($query) {
+                $deletedCount = StokMutasi::whereNotExists(function ($query) {
                     $query->select(DB::raw(1))
                           ->from('barangs')
                           ->whereColumn('barangs.id', 'stok_mutasis.barang_id');
                 })->delete();
             });
 
-            return back()->with('sukses', 'Proses hitung ulang stok selesai. Seluruh saldo barang telah sinkron dengan kartu stok.');
+            AuditLog::catat(
+                'Hitung Ulang Stok',
+                'Utility',
+                'Recalculate',
+                "Hitung ulang stok berhasil diproses. Membersihkan {$deletedCount} log mutasi tidak valid."
+            );
+
+            return back()->with('sukses', "Proses hitung ulang stok selesai. Seluruh saldo barang telah sinkron dengan kartu stok ({$deletedCount} log mutasi yatim dibersihkan).");
         } catch (Throwable $e) {
             Log::error('Gagal hitung ulang stok', ['pesan' => $e->getMessage()]);
             return back()->withErrors(['error' => 'Gagal hitung ulang stok: ' . $e->getMessage()]);
@@ -108,34 +182,48 @@ class UtilityController extends Controller
     public function maintenanceHpp(): RedirectResponse
     {
         try {
-            DB::transaction(function () {
+            $diubahCount = 0;
+            DB::transaction(function () use (&$diubahCount) {
                 $barangs = Barang::all();
                 foreach ($barangs as $b) {
-                    // 1. Cari dari PembelianDetail (Riwayat Kulakan Pembelian dari Supplier)
+                    $latestHpp = 0.0;
+
+                    // 1. Cari dari PembelianDetail
                     $pembelianTerakhir = PembelianDetail::where('barang_id', $b->id)
                         ->where('harga_beli', '>', 0)
                         ->latest('id')
                         ->first();
 
                     if ($pembelianTerakhir && $pembelianTerakhir->harga_beli > 0) {
-                        $b->update(['hpp' => $pembelianTerakhir->harga_beli]);
-                        continue;
+                        $latestHpp = (float) $pembelianTerakhir->harga_beli;
+                    } else {
+                        // 2. Jika tidak ada di PembelianDetail, cari dari StokMutasi
+                        $mutasiTerakhir = StokMutasi::where('barang_id', $b->id)
+                            ->where('hpp', '>', 0)
+                            ->latest('tanggal')
+                            ->latest('id')
+                            ->first();
+
+                        if ($mutasiTerakhir && $mutasiTerakhir->hpp > 0) {
+                            $latestHpp = (float) $mutasiTerakhir->hpp;
+                        }
                     }
 
-                    // 2. Jika tidak ada di PembelianDetail, cari dari StokMutasi (Kartu Stok Masuk)
-                    $mutasiTerakhir = StokMutasi::where('barang_id', $b->id)
-                        ->where('hpp', '>', 0)
-                        ->latest('tanggal')
-                        ->latest('id')
-                        ->first();
-
-                    if ($mutasiTerakhir && $mutasiTerakhir->hpp > 0) {
-                        $b->update(['hpp' => $mutasiTerakhir->hpp]);
+                    if ($latestHpp > 0 && abs((float)$b->hpp - $latestHpp) >= 1) {
+                        $b->update(['hpp' => $latestHpp]);
+                        $diubahCount++;
                     }
                 }
             });
 
-            return back()->with('sukses', 'Proses maintenance HPP selesai. Seluruh HPP barang telah otomatis diselaraskan dengan harga beli/kulakan terakhir.');
+            AuditLog::catat(
+                'Maintenance HPP',
+                'Utility',
+                'HPP',
+                "Menyelaraskan HPP untuk {$diubahCount} master barang berdasarkan pembelian terakhir."
+            );
+
+            return back()->with('sukses', "Proses maintenance HPP selesai. Sebanyak {$diubahCount} barang telah otomatis diselaraskan dengan harga pembelian supplier terakhir.");
         } catch (Throwable $e) {
             Log::error('Gagal maintenance HPP', ['pesan' => $e->getMessage()]);
             return back()->withErrors(['error' => 'Gagal maintenance HPP: ' . $e->getMessage()]);
