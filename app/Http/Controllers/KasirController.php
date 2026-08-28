@@ -410,15 +410,17 @@ class KasirController extends Controller
             'telepon' => ['nullable', 'string', 'max:25'],
             'plat_nomor' => ['nullable', 'string', 'max:20'],
             'jenis_kendaraan' => ['nullable', 'string', 'max:100'],
-            'kategori' => ['nullable', 'in:umum,grosir,langganan'],
+            'kategori' => ['nullable', 'in:umum,grosir,langganan,mitra,eceran'],
         ]);
 
+        $telepon = !empty($validated['telepon']) ? trim($validated['telepon']) : null;
+
         $customer = Customer::create([
-            'nama' => $validated['nama'],
-            'telepon' => $validated['telepon'] ?? null,
-            'no_wa' => $validated['telepon'] ?? null,
-            'plat_nomor' => $validated['plat_nomor'] ?? null,
-            'jenis_kendaraan' => $validated['jenis_kendaraan'] ?? null,
+            'nama' => trim($validated['nama']),
+            'telepon' => $telepon,
+            'no_wa' => $telepon,
+            'plat_nomor' => !empty($validated['plat_nomor']) ? strtoupper(trim($validated['plat_nomor'])) : null,
+            'jenis_kendaraan' => !empty($validated['jenis_kendaraan']) ? trim($validated['jenis_kendaraan']) : null,
             'kategori' => $validated['kategori'] ?? 'umum',
             'aktif' => true,
         ]);
@@ -427,7 +429,7 @@ class KasirController extends Controller
 
         return response()->json([
             'sukses' => true,
-            'pesan' => 'Customer baru berhasil ditambahkan.',
+            'pesan' => "Customer '{$customer->nama}' berhasil ditambahkan dan langsung aktif!",
             'customer' => [
                 'id' => $customer->id,
                 'nama' => $customer->nama,
