@@ -6,7 +6,7 @@
     <form method="GET" action="{{ route('barang.index') }}">
         <x-filter-bar>
             <x-input name="cari" value="{{ $filter['cari'] ?? '' }}" label="Cari" placeholder="Kode / nama / barcode" class="min-w-56" />
-            <x-select name="group_id" label="Group (Opsional)">
+            <x-select name="group_id" label="Group">
                 <option value="">Semua Group</option>
                 @foreach($groupList as $g)
                     <option value="{{ $g->id }}" @selected(($filter['group_id'] ?? '') == $g->id)>{{ $g->nama }}</option>
@@ -152,49 +152,72 @@
                 </div>
             </template>
 
-            <x-input label="Kode Barang (Unik) *" name="kode" x-model="form.kode" placeholder="cth. DISVCBSTK" required />
-            <x-input label="Nama Barang / Sparepart *" name="nama" x-model="form.nama" placeholder="cth. DISC PAD VARIO CBS" required />
+            <x-input label="Kode Barang (Unik)" name="kode" x-model="form.kode" placeholder="cth. DISVCBSTK" required />
+            <x-input label="Nama Barang / Sparepart" name="nama" x-model="form.nama" placeholder="cth. DISC PAD VARIO CBS" required />
 
-            {{-- FIELD BARCODE LANGSUNG DI FORM --}}
+            {{-- FIELD BARCODE DENGAN SCANNER KAMERA & SAMAKAN KODE / TIMPA --}}
             <div class="col-span-2 bg-amber-50/70 p-3 rounded-2xl border border-amber-200/80">
-                <label class="text-xs font-bold text-amber-900 block mb-1">Barcode / QR Code Kemasan (Opsional / Scan Langsung)</label>
-                <div class="flex gap-2">
+                <div class="flex items-center justify-between mb-1.5">
+                    <label class="text-xs font-bold text-amber-950">Barcode / QR Code Kemasan (Opsional)</label>
+                    <template x-if="modeEdit && form.barcode">
+                        <span class="text-[11px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-md">Bisa di-scan ulang untuk menimpa</span>
+                    </template>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                     <input
                         type="text"
                         name="barcode"
                         x-model="form.barcode"
-                        placeholder="Arahkan scanner laser ke kemasan produk atau ketik barcode..."
+                        placeholder="Scan scanner tembak ke kemasan, ketik, atau klik Scan Kamera..."
                         class="w-full text-xs font-mono font-bold rounded-xl border border-slate-300 px-3.5 py-2.5 bg-white focus:ring-2 focus:ring-rajawali focus:outline-none"
                     >
                     <button
                         type="button"
-                        class="px-3.5 py-2 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 text-xs font-bold rounded-xl whitespace-nowrap transition cursor-pointer shadow-xs"
-                        x-on:click="form.barcode = form.kode"
+                        class="px-3.5 py-2.5 bg-rajawali hover:bg-rajawali-dark text-white text-xs font-bold rounded-xl whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 shadow-xs shrink-0"
+                        x-on:click="bukaScannerKameraForm()"
                     >
-                        Samakan dgn Kode
+                        <x-icon name="camera" class="w-4 h-4" />
+                        <span>Scan Kamera</span>
+                    </button>
+                    <button
+                        type="button"
+                        class="px-3 py-2.5 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 text-xs font-bold rounded-xl whitespace-nowrap transition cursor-pointer shadow-xs shrink-0"
+                        x-on:click="form.barcode = form.kode"
+                        title="Samakan Barcode dengan Kode Barang"
+                    >
+                        Samakan Kode
+                    </button>
+                    <button
+                        type="button"
+                        x-show="form.barcode"
+                        class="px-2.5 py-2.5 bg-white hover:bg-red-50 border border-red-200 text-red-600 text-xs font-bold rounded-xl whitespace-nowrap transition cursor-pointer shrink-0"
+                        x-on:click="form.barcode = ''"
+                        title="Kosongkan Barcode"
+                    >
+                        <x-icon name="x" class="w-4 h-4" />
                     </button>
                 </div>
                 <p class="text-[11px] text-amber-800 font-medium mt-1.5 flex items-center gap-1">
                     <x-icon name="info" class="w-3.5 h-3.5 shrink-0" />
-                    <span>Jika produk memiliki barcode di kardus/botol, cukup tembak barcode tersebut saat kursor berada di kotak ini.</span>
+                    <span>Jika produk memiliki barcode di kardus/botol, cukup tembak barcode tersebut atau klik tombol Scan Kamera di atas. Form ini opsional.</span>
                 </p>
             </div>
 
-            <x-select label="Group Kategori *" name="group_id" x-model="form.group_id" required>
+            <x-select label="Group Kategori" name="group_id" x-model="form.group_id" required>
                 <option value="">Pilih Group</option>
                 @foreach($groupList as $g)
                     <option value="{{ $g->id }}">{{ $g->nama }}</option>
                 @endforeach
             </x-select>
 
-            <x-select label="Sub Group (Opsional)" name="sub_group_id" x-model="form.sub_group_id">
+            <x-select label="Sub Group" name="sub_group_id" x-model="form.sub_group_id">
                 <option value="">Tanpa Sub Group</option>
                 @foreach($subGroupList as $sg)
                     <option value="{{ $sg->id }}">{{ $sg->nama }}</option>
                 @endforeach
             </x-select>
 
-            <x-select label="Satuan Unit *" name="satuan_id" x-model="form.satuan_id" required>
+            <x-select label="Satuan Unit" name="satuan_id" x-model="form.satuan_id" required>
                 <option value="">Pilih Satuan</option>
                 @foreach($satuanList as $st)
                     <option value="{{ $st->id }}">{{ $st->nama }}</option>
@@ -202,11 +225,11 @@
             </x-select>
 
             @if(in_array($peranSaya, ['owner', 'admin'], true))
-                <x-input label="HPP (Modal Kulakan Beli) *" name="hpp" type="number" mono x-model="form.hpp" required />
+                <x-input label="HPP (Modal Kulakan Beli)" name="hpp" type="number" mono x-model="form.hpp" required />
             @endif
 
-            <x-input label="Harga Eceran Standar (Rp) *" name="harga_eceran" type="number" mono x-model="form.harga_eceran" required />
-            <x-input label="Harga Grosir Default (Rp) *" name="harga_grosir" type="number" mono x-model="form.harga_grosir" required />
+            <x-input label="Harga Eceran Standar (Rp)" name="harga_eceran" type="number" mono x-model="form.harga_eceran" required />
+            <x-input label="Harga Grosir Default (Rp)" name="harga_grosir" type="number" mono x-model="form.harga_grosir" required />
 
             <div class="col-span-2 border-t border-slate-200 pt-3 mt-1">
                 <h4 class="font-bold text-xs text-steel uppercase tracking-wider mb-2 flex items-center gap-1">
@@ -230,7 +253,7 @@
                 </div>
             </div>
 
-            <x-input label="Stok Minimum Toko *" name="stok_minimum" type="number" step="0.001" mono x-model="form.stok_minimum" required />
+            <x-input label="Stok Minimum Toko" name="stok_minimum" type="number" step="0.001" mono x-model="form.stok_minimum" required />
             <x-input label="Lokasi Rak Gudang" name="lokasi_rak" x-model="form.lokasi_rak" placeholder="cth. A-12" />
 
             <div class="col-span-2 flex justify-end gap-2 mt-2 pt-3 border-t border-slate-200">
@@ -240,6 +263,15 @@
                 </x-button>
             </div>
         </form>
+    </x-modal>
+
+    {{-- MODAL SCANNER KAMERA UNTUK FORM BARANG --}}
+    <x-modal name="scan-kamera-barang" title="Scanner Kamera (Barcode &amp; QR Code)">
+        <div class="space-y-4 text-center">
+            <div id="html5-qr-code-reader-barang" class="w-full max-w-sm mx-auto overflow-hidden rounded-2xl border border-line bg-black"></div>
+            <p class="text-xs text-steel font-bold">Arahkan kamera ke Barcode (Garis) atau QR Code pada kemasan produk.</p>
+            <x-button type="button" variant="secondary" x-on:click="$dispatch('tutup-modal', { name: 'scan-kamera-barang' }); stopKameraForm()">Tutup Kamera</x-button>
+        </div>
     </x-modal>
 
     {{-- MODAL LIHAT & CETAK BARCODE / QR CODE --}}
@@ -363,6 +395,7 @@
     </x-modal>
 </div>
 
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 
@@ -386,6 +419,9 @@ function formBarang(adalahOwner) {
         tipePratinjau: 'barcode',
         tipeLabelCetak: 'barcode',
         jumlahLabelCetak: 1,
+
+        html5QrCodeForm: null,
+        kameraFormAktif: false,
 
         formatRp(val) {
             return 'Rp ' + Number(val || 0).toLocaleString('id-ID');
@@ -418,7 +454,7 @@ function formBarang(adalahOwner) {
             this.form = {
                 kode: data.kode,
                 nama: data.nama,
-                barcode: barcodePertama || data.kode,
+                barcode: barcodePertama || '',
                 group_id: data.group_id ?? '',
                 sub_group_id: data.sub_group_id ?? '',
                 satuan_id: data.satuan_id ?? '',
@@ -435,6 +471,52 @@ function formBarang(adalahOwner) {
             this.idSedangDiubah = data.id;
             this.urlUpdate = `{{ url('/admin/barang') }}/${data.id}`;
             this.$dispatch('buka-modal', { name: 'form-barang' });
+        },
+
+        bukaScannerKameraForm() {
+            this.$dispatch('buka-modal', { name: 'scan-kamera-barang' });
+            setTimeout(() => this.mulaiKameraForm(), 300);
+        },
+
+        mulaiKameraForm() {
+            if (typeof Html5Qrcode === 'undefined') {
+                const el = document.getElementById('html5-qr-code-reader-barang');
+                if (el) el.innerHTML = '<div class="p-4 text-xs text-amber-600 bg-amber-50 rounded-xl font-bold">Pustaka scanner kamera sedang dimuat...</div>';
+                return;
+            }
+            if (this.html5QrCodeForm) this.stopKameraForm();
+            try {
+                this.html5QrCodeForm = new Html5Qrcode("html5-qr-code-reader-barang");
+                const config = { fps: 15, qrbox: { width: 250, height: 160 } };
+                this.html5QrCodeForm.start(
+                    { facingMode: "environment" },
+                    config,
+                    (decodedText) => {
+                        this.form.barcode = decodedText.trim();
+                        this.stopKameraForm();
+                        this.$dispatch('tutup-modal', { name: 'scan-kamera-barang' });
+                        if (window.toastSukses) window.toastSukses('Barcode berhasil terbaca: ' + decodedText);
+                    },
+                    () => {}
+                ).then(() => {
+                    this.kameraFormAktif = true;
+                }).catch((err) => {
+                    this.kameraFormAktif = false;
+                    const el = document.getElementById('html5-qr-code-reader-barang');
+                    if (el) el.innerHTML = '<div class="p-4 text-xs text-red-600 bg-red-50 rounded-xl font-bold">Kamera tidak dapat diakses. Pastikan izin kamera telah diizinkan pada browser.</div>';
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        },
+
+        stopKameraForm() {
+            if (this.html5QrCodeForm && this.kameraFormAktif) {
+                this.html5QrCodeForm.stop().then(() => {
+                    this.html5QrCodeForm.clear();
+                    this.kameraFormAktif = false;
+                }).catch(() => { this.kameraFormAktif = false; });
+            }
         },
 
         kelolaBarcode(id, kode, nama, harga, barcodes) {
