@@ -21,10 +21,7 @@
                 <a href="{{ route('barang.index') }}" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs inline-flex items-center gap-1 transition">Reset</a>
             </div>
             <div class="ml-auto self-end flex gap-2">
-                <a href="{{ route('laporan.ekspor-excel', ['jenis' => 'daftar-barang']) }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-bold transition">
-                    <x-icon name="file-spreadsheet" class="w-4 h-4 text-emerald-600" /> Export Excel
-                </a>
-                <a href="{{ route('laporan.cetak-pdf', ['jenis' => 'daftar-barang']) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 text-xs font-bold transition">
+                <a href="{{ route('laporan.pdf', 'daftar-barang') }}" target="_blank" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 text-xs font-bold transition">
                     <x-icon name="printer" class="w-4 h-4 text-red-600" /> Cetak PDF
                 </a>
                 <x-button type="button" variant="primary" x-on:click="tambah()"><x-icon name="plus" class="w-4 h-4" /> Tambah Barang</x-button>
