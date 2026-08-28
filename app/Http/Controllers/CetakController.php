@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Penjualan;
 use App\Models\Service;
+use App\Services\IdHasher;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
@@ -19,10 +20,11 @@ class CetakController extends Controller
 
     public function notaPdf(string|int $id): Response
     {
-        $realId = \App\Services\IdHasher::decode($id);
+        $realId = IdHasher::decode($id);
         $penjualan = Penjualan::with(['customer', 'user', 'details.barang'])
             ->where('nomor_nota', $id)
             ->orWhere('id', $realId)
+            ->orWhere('id', is_numeric($id) ? (int)$id : 0)
             ->firstOrFail();
 
         $pdf = Pdf::loadView('print.pdf.nota', ['penjualan' => $penjualan])
@@ -38,10 +40,11 @@ class CetakController extends Controller
 
     public function fakturPdf(string|int $id): Response
     {
-        $realId = \App\Services\IdHasher::decode($id);
+        $realId = IdHasher::decode($id);
         $penjualan = Penjualan::with(['customer', 'user', 'details.barang'])
             ->where('nomor_nota', $id)
             ->orWhere('id', $realId)
+            ->orWhere('id', is_numeric($id) ? (int)$id : 0)
             ->firstOrFail();
 
         $pdf = Pdf::loadView('print.pdf.faktur', ['penjualan' => $penjualan])
@@ -57,16 +60,17 @@ class CetakController extends Controller
 
     public function tandaTerimaServicePdf(string|int $id): Response
     {
-        $realId = \App\Services\IdHasher::decode($id);
-        $service = Service::with(['customer', 'montirUser', 'details.barang'])
-            ->where('nomor_service', $id)
+        $realId = IdHasher::decode($id);
+        $service = Service::with(['customer', 'montir', 'details.barang'])
+            ->where('nomor_dokumen', $id)
             ->orWhere('id', $realId)
+            ->orWhere('id', is_numeric($id) ? (int)$id : 0)
             ->firstOrFail();
 
         $pdf = Pdf::loadView('print.pdf.tanda-terima-service', ['service' => $service])
             ->setPaper('a5', 'landscape');
 
-        return $pdf->download("TandaTerimaService_{$service->nomor_service}.pdf");
+        return $pdf->download("TandaTerimaService_{$service->nomor_dokumen}.pdf");
     }
 
     public function suratJalan(string|int $id): View
@@ -76,10 +80,11 @@ class CetakController extends Controller
 
     public function suratJalanPdf(string|int $id): Response
     {
-        $realId = \App\Services\IdHasher::decode($id);
+        $realId = IdHasher::decode($id);
         $penjualan = Penjualan::with(['customer', 'user', 'details.barang'])
             ->where('nomor_nota', $id)
             ->orWhere('id', $realId)
+            ->orWhere('id', is_numeric($id) ? (int)$id : 0)
             ->firstOrFail();
 
         $pdf = Pdf::loadView('print.pdf.faktur', ['penjualan' => $penjualan])

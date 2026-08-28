@@ -1,7 +1,9 @@
 @php
+    $realId = \App\Services\IdHasher::decode($id);
     $service = \App\Models\Service::with(['customer', 'montir'])
         ->where('nomor_dokumen', $id)
-        ->orWhere('id', $id)
+        ->orWhere('id', $realId)
+        ->orWhere('id', is_numeric($id) ? (int)$id : 0)
         ->first();
 @endphp
 <x-print-layout title="Tanda Terima Service {{ $id }}">

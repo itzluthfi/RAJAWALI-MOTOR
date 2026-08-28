@@ -1,7 +1,9 @@
 @php
+    $realId = \App\Services\IdHasher::decode($id);
     $penjualan = \App\Models\Penjualan::with(['customer', 'user', 'details.barang'])
         ->where('nomor_nota', $id)
-        ->orWhere('id', $id)
+        ->orWhere('id', $realId)
+        ->orWhere('id', is_numeric($id) ? (int)$id : 0)
         ->first();
 @endphp
 <x-print-layout title="Surat Jalan {{ $id }}">
