@@ -331,7 +331,9 @@
                                 <input
                                     type="number"
                                     x-model.number="item.qty"
+                                    x-on:focus="$event.target.select()"
                                     x-on:input="ubahQty(idx, item.qty)"
+                                    x-on:blur="validasiQty(idx)"
                                     min="0.001"
                                     step="any"
                                     class="w-16 text-right font-mono font-bold text-xs bg-white border border-line rounded px-1.5 py-1 focus:ring-2 focus:ring-rajawali focus:outline-none"
@@ -341,7 +343,9 @@
                                 <input
                                     type="number"
                                     x-model.number="item.harga"
+                                    x-on:focus="$event.target.select()"
                                     x-on:input="ubahHargaManual(idx, item.harga)"
+                                    x-on:blur="validasiHarga(idx)"
                                     class="w-24 text-right font-mono font-bold text-xs bg-white border border-line rounded px-1.5 py-1 focus:ring-2 focus:ring-rajawali focus:outline-none"
                                 >
                             </td>
@@ -349,6 +353,7 @@
                                 <input
                                     type="number"
                                     x-model.number="item.diskonPersen"
+                                    x-on:focus="$event.target.select()"
                                     x-on:input="ubahDiskonPersen(idx, item.diskonPersen)"
                                     min="0"
                                     max="100"
@@ -359,6 +364,7 @@
                                 <input
                                     type="number"
                                     x-model.number="item.diskon"
+                                    x-on:focus="$event.target.select()"
                                     x-on:input="ubahDiskonNominal(idx, item.diskon)"
                                     min="0"
                                     class="w-20 text-right font-mono text-xs bg-white border border-line rounded px-1.5 py-1 focus:ring-2 focus:ring-rajawali focus:outline-none"
@@ -1017,9 +1023,11 @@ function kasirApp(dataBarang, dataCustomer, dataMontirs, dataAntrean, batasDisko
             const item = this.keranjang[idx];
             if (!item) return;
 
-            const qty = Math.max(0.001, Number(qtyBaru) || 1);
-            item.qty = qty;
+            if (qtyBaru === '' || qtyBaru === null || isNaN(qtyBaru)) {
+                return;
+            }
 
+            const qty = Math.max(0.001, Number(qtyBaru));
             const barang = this.daftarBarang.find(b => b.kode === item.kode);
             if (barang) {
                 const tier = this.hitungHargaTier(barang, qty);
@@ -1028,10 +1036,28 @@ function kasirApp(dataBarang, dataCustomer, dataMontirs, dataAntrean, batasDisko
             }
         },
 
+        validasiQty(idx) {
+            const item = this.keranjang[idx];
+            if (!item) return;
+            if (!item.qty || Number(item.qty) <= 0 || isNaN(item.qty)) {
+                item.qty = 1;
+                this.ubahQty(idx, 1);
+            }
+        },
+
         ubahHargaManual(idx, hargaBaru) {
             const item = this.keranjang[idx];
             if (!item) return;
-            item.harga = Math.max(0, Number(hargaBaru) || 0);
+            if (hargaBaru === '' || hargaBaru === null || isNaN(hargaBaru)) return;
+            item.harga = Math.max(0, Number(hargaBaru));
+        },
+
+        validasiHarga(idx) {
+            const item = this.keranjang[idx];
+            if (!item) return;
+            if (item.harga === '' || item.harga === null || isNaN(item.harga)) {
+                item.harga = 0;
+            }
         },
 
         ubahDiskonPersen(idx, persen) {
@@ -1039,13 +1065,13 @@ function kasirApp(dataBarang, dataCustomer, dataMontirs, dataAntrean, batasDisko
             if (!item) return;
             const p = Math.min(100, Math.max(0, Number(persen) || 0));
             item.diskonPersen = p;
-            item.diskon = Math.round(((item.qty * item.harga) * p) / 100);
+            item.diskon = Math.round(((Number(item.qty || 0) * Number(item.harga || 0)) * p) / 100);
         },
 
         ubahDiskonNominal(idx, nominal) {
             const item = this.keranjang[idx];
             if (!item) return;
-            const sub = item.qty * item.harga;
+            const sub = Number(item.qty || 0) * Number(item.harga || 0);
             const disc = Math.min(sub, Math.max(0, Number(nominal) || 0));
             item.diskon = disc;
             item.diskonPersen = sub > 0 ? Math.round((disc / sub) * 100) : 0;
