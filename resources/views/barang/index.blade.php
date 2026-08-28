@@ -258,19 +258,19 @@
                 <div>
                     <template x-if="!modeEdit">
                         <div>
-                            <x-input label="Stok Awal Fisik (Saat Ini)" name="stok_awal" type="number" step="0.001" min="0" mono x-model="form.stok_awal" placeholder="0" />
+                            <x-input label="Stok Awal Fisik (Saat Ini)" name="stok_awal" type="number" step="1" min="0" mono x-model="form.stok_awal" placeholder="0" />
                             <p class="text-[10px] text-slate-500 mt-1">Jumlah unit fisik yang sudah tersedia di toko/rak saat ini.</p>
                         </div>
                     </template>
                     <template x-if="modeEdit">
                         <div>
-                            <x-input label="Penyesuaian Stok Fisik" name="stok_saat_ini" type="number" step="0.001" min="0" mono x-model="form.stok_saat_ini" />
+                            <x-input label="Penyesuaian Stok Fisik" name="stok_saat_ini" type="number" step="1" min="0" mono x-model="form.stok_saat_ini" />
                             <p class="text-[10px] text-amber-700 font-semibold mt-1">Stok fisik saat ini. Ubah nilai ini jika ada selisih stok.</p>
                         </div>
                     </template>
                 </div>
                 <div>
-                    <x-input label="Batas Stok Minimum (Peringatan)" name="stok_minimum" type="number" step="0.001" min="0" mono x-model="form.stok_minimum" required />
+                    <x-input label="Batas Stok Minimum (Peringatan)" name="stok_minimum" type="number" step="1" min="0" mono x-model="form.stok_minimum" required />
                     <p class="text-[10px] text-slate-500 mt-1">Jika sisa stok &le; angka ini, sistem menandai <b>Stok Menipis</b> (merah).</p>
                 </div>
             </div>
@@ -517,16 +517,16 @@ function formBarang(adalahOwner) {
                 group_id: data.group_id ?? '',
                 sub_group_id: data.sub_group_id ?? '',
                 satuan_id: data.satuan_id ?? '',
-                hpp: data.hpp ?? 0,
-                harga_eceran: data.harga_eceran,
-                harga_grosir: data.harga_grosir,
-                min_qty_grosir_1: data.min_qty_grosir_1 ?? 3,
-                harga_grosir_1: data.harga_grosir_1 ?? 0,
-                min_qty_grosir_2: data.min_qty_grosir_2 ?? 24,
-                harga_grosir_2: data.harga_grosir_2 ?? 0,
+                hpp: Number(data.hpp || 0),
+                harga_eceran: Number(data.harga_eceran || 0),
+                harga_grosir: Number(data.harga_grosir || 0),
+                min_qty_grosir_1: Number(data.min_qty_grosir_1 || 3),
+                harga_grosir_1: Number(data.harga_grosir_1 || 0),
+                min_qty_grosir_2: Number(data.min_qty_grosir_2 || 24),
+                harga_grosir_2: Number(data.harga_grosir_2 || 0),
                 stok_awal: 0,
-                stok_saat_ini: stokFisik ?? 0,
-                stok_minimum: data.stok_minimum,
+                stok_saat_ini: Number(stokFisik || 0),
+                stok_minimum: Number(data.stok_minimum || 0),
                 lokasi_rak: data.lokasi_rak ?? '',
             };
             this.idSedangDiubah = data.id;
