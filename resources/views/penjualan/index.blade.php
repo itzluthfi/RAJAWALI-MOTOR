@@ -1,4 +1,20 @@
-<x-app-layout title="Nota Penjualan">
+<x-app-layout title="Riwayat Transaksi - Nota Penjualan">
+
+    {{-- SUB-NAV TABS ARSIP RIWAYAT TRANSAKSI --}}
+    <div class="flex items-center gap-2 mb-3 bg-surface p-1.5 rounded-xl border border-line no-print">
+        <a href="{{ route('penjualan.index') }}" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-rajawali text-white shadow-xs">
+            <x-icon name="receipt" class="w-4 h-4" />
+            <span>Nota Penjualan</span>
+        </a>
+        <a href="{{ route('service.index') }}" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 text-steel hover:text-ink hover:bg-canvas">
+            <x-icon name="wrench" class="w-4 h-4" />
+            <span>Antrean &amp; Servis Bengkel</span>
+        </a>
+        <a href="{{ route('retur.index') }}" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 text-steel hover:text-ink hover:bg-canvas">
+            <x-icon name="undo-2" class="w-4 h-4" />
+            <span>Retur Barang</span>
+        </a>
+    </div>
 
     <x-filter-bar class="no-print" action="{{ route('penjualan.index') }}" method="GET">
         <x-input label="Cari No Nota / Customer" name="search" value="{{ request('search') }}" placeholder="PJ2026... atau nama customer" class="w-full sm:min-w-64" />

@@ -1,23 +1,38 @@
-<x-app-layout title="Service / Bengkel">
-    <form method="GET" action="{{ route('service.index') }}">
-        <x-filter-bar class="no-print">
-            <x-input type="date" name="dari_tanggal" label="Dari Tanggal" value="{{ $filter['dari_tanggal'] }}" />
-            <x-input type="date" name="sampai_tanggal" label="Sampai Tanggal" value="{{ $filter['sampai_tanggal'] }}" />
-            <x-select name="status" label="Status">
-                <option value="semua" {{ $filter['status'] === 'semua' ? 'selected' : '' }}>Semua Status</option>
-                <option value="masuk" {{ $filter['status'] === 'masuk' ? 'selected' : '' }}>Masuk</option>
-                <option value="dikerjakan" {{ $filter['status'] === 'dikerjakan' ? 'selected' : '' }}>Dikerjakan</option>
-                <option value="selesai" {{ $filter['status'] === 'selesai' ? 'selected' : '' }}>Selesai</option>
-                <option value="diambil" {{ $filter['status'] === 'diambil' ? 'selected' : '' }}>Diambil</option>
-                <option value="lunas" {{ $filter['status'] === 'lunas' ? 'selected' : '' }}>Lunas</option>
-            </x-select>
-            <x-input name="cari" value="{{ $filter['cari'] }}" label="Cari" placeholder="No. Dokumen / Customer" class="min-w-64" />
-            <x-button type="submit" variant="secondary"><x-icon name="search" class="w-4 h-4" /> Filter</x-button>
-            <div class="ml-auto">
-                <x-button as="a" href="{{ route('service.create') }}" variant="primary"><x-icon name="plus" class="w-4 h-4" /> Terima Service Baru</x-button>
-            </div>
-        </x-filter-bar>
-    </form>
+<x-app-layout title="Riwayat Transaksi - Antrean & Servis">
+
+    {{-- SUB-NAV TABS ARSIP RIWAYAT TRANSAKSI --}}
+    <div class="flex items-center gap-2 mb-3 bg-surface p-1.5 rounded-xl border border-line no-print">
+        <a href="{{ route('penjualan.index') }}" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 text-steel hover:text-ink hover:bg-canvas">
+            <x-icon name="receipt" class="w-4 h-4" />
+            <span>Nota Penjualan</span>
+        </a>
+        <a href="{{ route('service.index') }}" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-rajawali text-white shadow-xs">
+            <x-icon name="wrench" class="w-4 h-4" />
+            <span>Antrean &amp; Servis Bengkel</span>
+        </a>
+        <a href="{{ route('retur.index') }}" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 text-steel hover:text-ink hover:bg-canvas">
+            <x-icon name="undo-2" class="w-4 h-4" />
+            <span>Retur Barang</span>
+        </a>
+    </div>
+
+    <x-filter-bar class="no-print" action="{{ route('service.index') }}" method="GET">
+        <x-input type="date" name="dari_tanggal" label="Dari Tanggal" value="{{ $filter['dari_tanggal'] }}" />
+        <x-input type="date" name="sampai_tanggal" label="Sampai Tanggal" value="{{ $filter['sampai_tanggal'] }}" />
+        <x-select name="status" label="Status">
+            <option value="semua" {{ $filter['status'] === 'semua' ? 'selected' : '' }}>Semua Status</option>
+            <option value="masuk" {{ $filter['status'] === 'masuk' ? 'selected' : '' }}>Masuk</option>
+            <option value="dikerjakan" {{ $filter['status'] === 'dikerjakan' ? 'selected' : '' }}>Dikerjakan</option>
+            <option value="selesai" {{ $filter['status'] === 'selesai' ? 'selected' : '' }}>Selesai</option>
+            <option value="diambil" {{ $filter['status'] === 'diambil' ? 'selected' : '' }}>Diambil</option>
+            <option value="lunas" {{ $filter['status'] === 'lunas' ? 'selected' : '' }}>Lunas</option>
+        </x-select>
+        <x-input name="cari" value="{{ $filter['cari'] }}" label="Cari" placeholder="No. Dokumen / Customer" class="min-w-64" />
+        <x-button type="submit" variant="primary"><x-icon name="search" class="w-4 h-4" /> Filter</x-button>
+        <div class="ml-auto">
+            <x-button as="a" href="{{ route('service.create') }}" variant="primary"><x-icon name="plus" class="w-4 h-4" /> Terima Service Baru</x-button>
+        </div>
+    </x-filter-bar>
 
     <x-card :padded="false">
         <table class="w-full text-sm">

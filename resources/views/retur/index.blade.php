@@ -1,4 +1,21 @@
-<x-app-layout title="Retur Barang">
+<x-app-layout title="Riwayat Transaksi - Retur Barang">
+
+    {{-- SUB-NAV TABS ARSIP RIWAYAT TRANSAKSI --}}
+    <div class="flex items-center gap-2 mb-3 bg-surface p-1.5 rounded-xl border border-line no-print">
+        <a href="{{ route('penjualan.index') }}" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 text-steel hover:text-ink hover:bg-canvas">
+            <x-icon name="receipt" class="w-4 h-4" />
+            <span>Nota Penjualan</span>
+        </a>
+        <a href="{{ route('service.index') }}" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 text-steel hover:text-ink hover:bg-canvas">
+            <x-icon name="wrench" class="w-4 h-4" />
+            <span>Antrean &amp; Servis Bengkel</span>
+        </a>
+        <a href="{{ route('retur.index') }}" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-rajawali text-white shadow-xs">
+            <x-icon name="undo-2" class="w-4 h-4" />
+            <span>Retur Barang</span>
+        </a>
+    </div>
+
     <x-filter-bar class="no-print" action="{{ route('retur.index') }}" method="GET">
         <x-input type="date" name="dari_tanggal" label="Dari Tanggal" value="{{ request('dari_tanggal') }}" />
         <x-input type="date" name="sampai_tanggal" label="Sampai Tanggal" value="{{ request('sampai_tanggal') }}" />

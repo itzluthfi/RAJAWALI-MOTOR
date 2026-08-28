@@ -79,11 +79,20 @@ class ServiceController extends Controller
             'stok' => $stok[$b->id] ?? 0.0,
         ])->values();
 
+        $daftarCustomerJson = $customers->map(fn (Customer $c) => [
+            'id' => $c->id,
+            'nama' => $c->nama,
+            'telepon' => $c->telepon ?? $c->no_wa ?? '',
+            'plat' => $c->plat_nomor ?? '',
+            'motor' => $c->jenis_kendaraan ?? '',
+        ])->values();
+
         return view('service.form', [
             'customers' => $customers,
             'montirs' => $montirs,
             'suppliers' => $suppliers,
             'sales' => $sales,
+            'daftarCustomerJson' => $daftarCustomerJson,
             'daftarBarangJson' => $daftarBarang,
             'nomorDokumenBaru' => Service::buatNomorDokumen(),
         ]);
@@ -95,6 +104,7 @@ class ServiceController extends Controller
             $validated = $request->validate([
                 'tanggal_masuk' => ['required', 'date'],
                 'customer_id' => ['required', 'exists:customers,id'],
+                'telepon' => ['nullable', 'string', 'max:25'],
                 'montir_id' => ['nullable', 'exists:users,id'],
                 'sales_id' => ['nullable', 'exists:sales,id'],
                 'merk_type' => ['nullable', 'string', 'max:100'],
@@ -117,9 +127,20 @@ class ServiceController extends Controller
                 // Jasas
                 'jasas' => ['nullable', 'array'],
                 'jasas.*.nama_jasa' => ['required', 'string', 'max:150'],
-                'jasas.*.harga_supplier' => ['required', 'numeric', 'min:0'],
+                'jasas.*.harga_supplier' => ['nullable', 'numeric', 'min:0'],
                 'jasas.*.harga_nett' => ['required', 'numeric', 'min:0'],
             ]);
+
+            // Update nomor WA/telepon customer jika diisi
+            if (!empty($validated['telepon'])) {
+                $cust = Customer::find($validated['customer_id']);
+                if ($cust && (empty($cust->telepon) || $cust->telepon !== $validated['telepon'])) {
+                    $cust->update([
+                        'telepon' => $validated['telepon'],
+                        'no_wa' => $validated['telepon'],
+                    ]);
+                }
+            }
 
             DB::transaction(function () use ($validated) {
                 $nomorDokumen = Service::buatNomorDokumen();
