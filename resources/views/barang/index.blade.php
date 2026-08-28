@@ -143,7 +143,7 @@
 
     {{-- MODAL TAMBAH & EDIT BARANG --}}
     <x-modal name="form-barang" title="Master Data Barang &amp; Sparepart" wide>
-        <form method="POST" x-bind:action="modeEdit ? urlUpdate : '{{ route('barang.store') }}'" class="grid grid-cols-2 gap-4">
+        <form method="POST" x-bind:action="modeEdit ? urlUpdate : '{{ route('barang.store') }}'" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             @csrf
             <template x-if="modeEdit">
                 <div>
@@ -156,7 +156,7 @@
             <x-input label="Nama Barang / Sparepart" name="nama" x-model="form.nama" placeholder="cth. DISC PAD VARIO CBS" required />
 
             {{-- FIELD BARCODE DENGAN SCANNER KAMERA & SAMAKAN KODE / TIMPA --}}
-            <div class="col-span-2 bg-amber-50/70 p-3 rounded-2xl border border-amber-200/80">
+            <div class="col-span-1 sm:col-span-2 bg-amber-50/70 p-3 rounded-2xl border border-amber-200/80">
                 <div class="flex items-center justify-between mb-1.5">
                     <label class="text-xs font-bold text-amber-950">Barcode / QR Code Kemasan (Opsional)</label>
                     <template x-if="modeEdit && form.barcode">
@@ -231,11 +231,11 @@
             <x-input label="Harga Eceran Standar (Rp)" name="harga_eceran" type="number" min="0" mono x-model="form.harga_eceran" required />
             <x-input label="Harga Grosir Default (Rp)" name="harga_grosir" type="number" min="0" mono x-model="form.harga_grosir" required />
 
-            <div class="col-span-2 border-t border-slate-200 pt-3 mt-1">
+            <div class="col-span-1 sm:col-span-2 border-t border-slate-200 pt-3 mt-1">
                 <h4 class="font-bold text-xs text-steel uppercase tracking-wider mb-2 flex items-center gap-1">
                     <x-icon name="tags" class="w-3.5 h-3.5 text-rajawali" /> Setting Grosir Bertingkat (Otomatis Sesuai Qty Pembelian)
                 </h4>
-                <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
                     <div class="space-y-1.5">
                         <span class="text-xs font-bold text-slate-700 block">Tier 1: Semi-Grosir (Pembelian Sedang)</span>
                         <div class="grid grid-cols-2 gap-2">
@@ -254,7 +254,7 @@
             </div>
 
             {{-- PENGATURAN STOK AWAL / PENYESUAIAN & STOK MINIMUM --}}
-            <div class="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
+            <div class="col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
                 <div>
                     <template x-if="!modeEdit">
                         <div>
@@ -275,9 +275,9 @@
                 </div>
             </div>
 
-            <x-input label="Lokasi Rak Gudang" name="lokasi_rak" x-model="form.lokasi_rak" placeholder="cth. A-12" class="col-span-2" />
+            <x-input label="Lokasi Rak Gudang" name="lokasi_rak" x-model="form.lokasi_rak" placeholder="cth. A-12" class="col-span-1 sm:col-span-2" />
 
-            <div class="col-span-2 flex justify-end gap-2 mt-2 pt-3 border-t border-slate-200">
+            <div class="col-span-1 sm:col-span-2 flex justify-end gap-2 mt-2 pt-3 border-t border-slate-200">
                 <x-button type="button" variant="secondary" x-on:click="$dispatch('tutup-modal', { name: 'form-barang' })">Batal</x-button>
                 <x-button type="submit" variant="primary">
                     <x-icon name="check" class="w-4 h-4" /> Simpan Data Barang
