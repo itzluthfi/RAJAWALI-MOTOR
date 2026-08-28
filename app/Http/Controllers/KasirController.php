@@ -41,6 +41,7 @@ class KasirController extends Controller
                 'id' => $b->id,
                 'kode' => $b->kode,
                 'barcode' => $b->barcodes->firstWhere('utama', true)?->barcode ?? $b->barcodes->first()?->barcode ?? $b->kode,
+                'all_barcodes' => $b->barcodes->pluck('barcode')->toArray(),
                 'nama' => $b->nama,
                 'is_jasa' => false,
                 'harga' => (float) $b->harga_eceran,

@@ -1013,8 +1013,10 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
             }
 
             const qLower = q.toLowerCase();
+            const rawLower = this.barcode.trim().toLowerCase();
             const barang = this.daftarBarang.find(b => 
-                (b.barcode && b.barcode.toLowerCase() === qLower) || 
+                (b.barcode && (b.barcode.toLowerCase() === qLower || b.barcode.toLowerCase() === rawLower)) || 
+                (b.all_barcodes && b.all_barcodes.some(bc => bc.toLowerCase() === qLower || bc.toLowerCase() === rawLower)) ||
                 b.kode.toLowerCase() === qLower ||
                 b.nama.toLowerCase() === qLower
             );
