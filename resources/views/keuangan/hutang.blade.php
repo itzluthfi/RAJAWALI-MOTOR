@@ -5,6 +5,10 @@
     nomorDokumen: '',
     supplierNama: '',
     total: 0,
+    terbayar: 0,
+    sisa: 0,
+    nominalBayar: 0,
+    tanggalBayar: '{{ now()->format('Y-m-d\TH:i') }}',
     sumber: 'kas',
     keterangan: ''
 }">
@@ -46,14 +50,20 @@
                 <tr>
                     <th class="text-left font-bold px-4 py-2.5">No Faktur Pembelian</th>
                     <th class="text-left font-bold px-4 py-2.5">Supplier / Vendor</th>
-                    <th class="text-left font-bold px-4 py-2.5">Tanggal & Jatuh Tempo</th>
+                    <th class="text-left font-bold px-4 py-2.5">Tanggal &amp; Jatuh Tempo</th>
                     <th class="text-right font-bold px-4 py-2.5">Total Tagihan</th>
+                    <th class="text-right font-bold px-4 py-2.5">Terbayar</th>
+                    <th class="text-right font-bold px-4 py-2.5">Sisa Hutang</th>
                     <th class="text-right font-bold px-4 py-2.5">Aksi</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($pembelianHutangs as $p)
-                    <tr class="border-b border-line last:border-0 hover:bg-canvas transition duration-150 font-bold">
+                    @php
+                        $sisaHutang = $p->sisa_hutang;
+                        $isOverdue = $p->is_overdue;
+                    @endphp
+                    <tr class="border-b border-line last:border-0 hover:bg-canvas transition duration-150 font-bold {{ $isOverdue ? 'bg-red-50/40' : '' }}">
                         <td class="px-4 py-2.5 font-mono text-xs text-rajawali">
                             <a href="{{ route('pembelian.show', $p->id) }}" class="hover:underline">{{ $p->nomor_pembelian }}</a>
                             @if($p->nomor_faktur_supplier)
@@ -64,30 +74,44 @@
                         <td class="px-4 py-2.5 text-steel font-medium text-xs">
                             <div>Trans: {{ $p->tanggal->format('d M Y') }}</div>
                             @if($p->jatuh_tempo)
-                                <div class="text-rajawali font-bold">Jatuh Tempo: {{ $p->jatuh_tempo->format('d M Y') }}</div>
+                                <div class="font-mono mt-0.5 {{ $isOverdue ? 'text-red-700 font-bold' : 'text-rajawali' }}">
+                                    Jatuh Tempo: {{ $p->jatuh_tempo->format('d M Y') }}
+                                    @if($isOverdue)
+                                        <span class="block text-[10px] text-red-600 font-black">LEWAT TEMPO ({{ $p->hari_terlambat }} HARI)</span>
+                                    @else
+                                        <span class="block text-[10px] text-amber-700">Sisa {{ $p->sisa_hari_jatuh_tempo }} hari lagi</span>
+                                    @endif
+                                </div>
                             @endif
                         </td>
-                        <td class="px-4 py-2.5 text-right font-mono text-rajawali">Rp {{ number_format($p->total, 0, ',', '.') }}</td>
+                        <td class="px-4 py-2.5 text-right font-mono text-ink">Rp {{ number_format($p->total, 0, ',', '.') }}</td>
+                        <td class="px-4 py-2.5 text-right font-mono text-emerald-700">Rp {{ number_format($p->terbayar ?? 0, 0, ',', '.') }}</td>
+                        <td class="px-4 py-2.5 text-right font-mono text-rajawali">Rp {{ number_format($sisaHutang, 0, ',', '.') }}</td>
                         <td class="px-4 py-2.5 text-right">
                             <x-button
                                 type="button"
                                 variant="primary"
-                                class="text-xs px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                                class="text-xs px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
                                 x-on:click="
                                     openPelunasan = true;
                                     pembelianId = {{ $p->id }};
                                     nomorDokumen = '{{ $p->nomor_pembelian }}';
                                     supplierNama = '{{ addslashes($p->supplier->nama ?? 'Supplier') }}';
                                     total = {{ $p->total }};
+                                    terbayar = {{ $p->terbayar ?? 0 }};
+                                    sisa = {{ $sisaHutang }};
+                                    nominalBayar = {{ $sisaHutang }};
+                                    tanggalBayar = '{{ now()->format('Y-m-d\TH:i') }}';
+                                    keterangan = '';
                                 "
                             >
-                                <x-icon name="check-circle" class="w-3.5 h-3.5" /> Bayar Lunas
+                                <x-icon name="credit-card" class="w-3.5 h-3.5" /> Bayar / Cicil
                             </x-button>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="text-center py-6 text-steel font-medium italic">Tidak ada hutang pembelian stok supplier yang belum lunas.</td>
+                        <td colspan="7" class="text-center py-6 text-steel font-medium italic">Tidak ada hutang pembelian stok supplier yang belum lunas.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -133,24 +157,58 @@
         </x-card>
     @endif
 
-    <!-- Modal Pelunasan Hutang Pembelian -->
+    <!-- Modal Pelunasan / Cicilan Hutang Pembelian -->
     <div x-show="openPelunasan" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
         <div x-show="openPelunasan" x-transition.opacity class="absolute inset-0 bg-ink/40 backdrop-blur-xs" x-on:click="openPelunasan = false"></div>
         <div x-show="openPelunasan" x-transition.scale.95 class="relative bg-surface rounded-xl shadow-2xl border border-line w-full max-w-md p-6 z-10">
             <div class="flex justify-between items-center pb-3 mb-4 border-b border-line">
                 <h3 class="font-display font-bold text-base text-ink flex items-center gap-2">
                     <x-icon name="credit-card" class="w-5 h-5 text-emerald-600" />
-                    <span>Pelunasan Hutang Pembelian</span>
+                    <span>Pembayaran / Cicilan Hutang Pembelian</span>
                 </h3>
                 <button type="button" x-on:click="openPelunasan = false" class="text-steel hover:text-ink"><x-icon name="x" class="w-5 h-5" /></button>
             </div>
 
             <form :action="`/admin/pembelian/${pembelianId}/pelunasan`" method="POST" class="space-y-4">
                 @csrf
-                <div class="p-3 bg-canvas border border-line rounded-lg text-xs space-y-1.5">
+                <div class="p-3.5 bg-canvas border border-line rounded-lg text-xs space-y-1.5 font-medium">
                     <div class="flex justify-between"><span class="text-steel">No Faktur Pembelian:</span> <strong class="font-mono text-rajawali" x-text="nomorDokumen"></strong></div>
-                    <div class="flex justify-between"><span class="text-steel">Supplier / Vendor:</span> <strong class="text-ink" x-text="supplierNama"></strong></div>
-                    <div class="flex justify-between pt-1 border-t border-line"><span class="text-steel font-bold">Total Pelunasan:</span> <strong class="font-mono text-sm text-emerald-600" x-text="'Rp ' + Number(total).toLocaleString('id-ID')"></strong></div>
+                    <div class="flex justify-between"><span class="text-steel">Supplier / Vendor:</span> <strong class="text-ink font-bold" x-text="supplierNama"></strong></div>
+                    <div class="flex justify-between"><span class="text-steel">Total Tagihan Awal:</span> <strong class="font-mono text-ink" x-text="'Rp ' + Number(total).toLocaleString('id-ID')"></strong></div>
+                    <div class="flex justify-between"><span class="text-steel">Telah Dicicil:</span> <strong class="font-mono text-emerald-700" x-text="'Rp ' + Number(terbayar).toLocaleString('id-ID')"></strong></div>
+                    <div class="flex justify-between pt-1.5 border-t border-line"><span class="text-steel font-bold">Sisa Hutang Saat Ini:</span> <strong class="font-mono text-sm text-rajawali font-black" x-text="'Rp ' + Number(sisa).toLocaleString('id-ID')"></strong></div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="text-xs font-bold text-steel">Nominal Pembayaran / Cicilan (Rp)</label>
+                        <button type="button" x-on:click="nominalBayar = sisa" class="text-[11px] font-bold text-emerald-700 hover:underline">
+                            Bayar Lunas Penuh (Rp <span x-text="Number(sisa).toLocaleString('id-ID')"></span>)
+                        </button>
+                    </div>
+                    <input
+                        type="number"
+                        name="nominal_bayar"
+                        x-model.number="nominalBayar"
+                        min="1"
+                        :max="sisa"
+                        required
+                        class="w-full text-sm font-mono font-bold rounded-lg border border-line bg-white px-3 py-2.5 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                    >
+                    <p class="text-[11px] text-steel mt-1" x-show="nominalBayar < sisa">
+                        Sisa hutang setelah pembayaran ini: <strong class="text-rajawali font-mono font-bold">Rp <span x-text="Number(Math.max(0, sisa - nominalBayar)).toLocaleString('id-ID')"></span></strong>
+                    </p>
+                </div>
+
+                <div>
+                    <x-label>Tanggal &amp; Jam Pembayaran</x-label>
+                    <input
+                        type="datetime-local"
+                        name="tanggal_bayar"
+                        x-model="tanggalBayar"
+                        required
+                        class="w-full text-xs font-mono font-bold rounded-lg border border-line bg-white px-3 py-2 focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                    >
                 </div>
 
                 <div>
@@ -162,13 +220,13 @@
                 </div>
 
                 <div>
-                    <x-input name="keterangan" label="Catatan / Keterangan (Opsional)" placeholder="Contoh: Lunas via transfer BCA" />
+                    <x-input name="keterangan" label="Catatan / Keterangan (Opsional)" placeholder="Contoh: Cicilan ke-1 via transfer BCA" />
                 </div>
 
                 <div class="flex justify-end gap-2 pt-3 border-t border-line">
                     <x-button type="button" variant="secondary" x-on:click="openPelunasan = false">Batal</x-button>
                     <x-button type="submit" variant="primary" class="bg-emerald-600 hover:bg-emerald-700 text-white">
-                        <x-icon name="check-circle" class="w-4 h-4" /> Simpan Pelunasan
+                        <x-icon name="check-circle" class="w-4 h-4" /> Simpan Pembayaran
                     </x-button>
                 </div>
             </form>

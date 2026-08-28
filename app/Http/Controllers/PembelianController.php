@@ -9,8 +9,10 @@ use App\Models\Barang;
 use App\Models\KasFlow;
 use App\Models\Pembelian;
 use App\Models\PembelianDetail;
+use App\Models\PembelianPembayaran;
 use App\Models\StokMutasi;
 use App\Models\Supplier;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +22,7 @@ class PembelianController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = Pembelian::with(['supplier', 'user'])->latest();
+        $query = Pembelian::with(['supplier', 'user', 'pembayarans'])->latest();
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -32,7 +34,13 @@ class PembelianController extends Controller
         }
 
         if ($request->filled('status') && $request->status !== 'semua') {
-            $query->where('status_bayar', $request->status);
+            if ($request->status === 'overdue') {
+                $query->where('status_bayar', 'tempo')
+                      ->whereNotNull('jatuh_tempo')
+                      ->whereDate('jatuh_tempo', '<', now());
+            } else {
+                $query->where('status_bayar', $request->status);
+            }
         }
 
         if ($request->filled('dari_tanggal')) {
@@ -75,6 +83,9 @@ class PembelianController extends Controller
                 $total += $item['jumlah'] * $item['harga_beli'];
             }
 
+            $isLunas = $request->status_bayar === 'lunas';
+            $tanggalFaktur = Carbon::parse($request->tanggal);
+
             $pembelian = Pembelian::create([
                 'nomor_pembelian' => Pembelian::buatNomorPembelian(),
                 'supplier_id' => $request->supplier_id,
@@ -82,8 +93,10 @@ class PembelianController extends Controller
                 'nomor_faktur_supplier' => $request->nomor_faktur_supplier,
                 'tanggal' => $request->tanggal,
                 'total' => $total,
+                'terbayar' => $isLunas ? $total : 0,
                 'status_bayar' => $request->status_bayar,
-                'jatuh_tempo' => $request->status_bayar === 'tempo' ? now()->addDays(30) : null,
+                'jatuh_tempo' => !$isLunas ? $tanggalFaktur->copy()->addDays(30) : null,
+                'tanggal_lunas' => $isLunas ? now() : null,
                 'keterangan' => $request->keterangan,
             ]);
 
@@ -121,8 +134,17 @@ class PembelianController extends Controller
                 ]);
             }
 
-            // Jika lunas, catat pengeluaran kas
-            if ($request->status_bayar === 'lunas') {
+            // Jika lunas, catat riwayat pembayaran & kas keluar
+            if ($isLunas) {
+                PembelianPembayaran::create([
+                    'pembelian_id' => $pembelian->id,
+                    'user_id' => auth()->id(),
+                    'tanggal_bayar' => now(),
+                    'nominal' => $total,
+                    'sumber' => 'kas',
+                    'keterangan' => 'Pembayaran Lunas Saat Transaksi Dibuat',
+                ]);
+
                 KasFlow::create([
                     'tanggal' => $request->tanggal,
                     'tipe' => 'keluar',
@@ -130,7 +152,7 @@ class PembelianController extends Controller
                     'kategori' => 'pembelian',
                     'no_referensi' => $pembelian->nomor_pembelian,
                     'nominal' => $total,
-                    'keterangan' => "Pembelian {$pembelian->nomor_pembelian} - Supplier ID {$request->supplier_id}",
+                    'keterangan' => "Pembelian {$pembelian->nomor_pembelian} - Supplier: " . ($pembelian->supplier->nama ?? '-'),
                 ]);
             }
 
@@ -148,7 +170,7 @@ class PembelianController extends Controller
     public function show(string|int $id): View
     {
         $realId = \App\Services\IdHasher::decode($id);
-        $pembelian = Pembelian::with(['supplier', 'user', 'details.barang'])
+        $pembelian = Pembelian::with(['supplier', 'user', 'details.barang', 'pembayarans.user'])
             ->where('nomor_pembelian', $id)
             ->orWhere('id', $realId)
             ->firstOrFail();
@@ -158,38 +180,68 @@ class PembelianController extends Controller
 
     public function pelunasan(Request $request, Pembelian $pembelian): RedirectResponse
     {
-        if ($pembelian->status_bayar === 'lunas') {
-            return back()->with('sukses', 'Faktur Pembelian ini sudah dalam status lunas.');
+        $sisaHutang = $pembelian->sisa_hutang;
+
+        if ($pembelian->status_bayar === 'lunas' || $sisaHutang <= 0) {
+            return back()->with('sukses', 'Faktur Pembelian ini sudah lunas.');
         }
 
         $request->validate([
+            'nominal_bayar' => 'required|numeric|min:1',
+            'tanggal_bayar' => 'required|date',
             'sumber' => 'required|in:kas,bank',
             'keterangan' => 'nullable|string|max:255',
         ]);
 
-        DB::transaction(function () use ($request, $pembelian) {
-            $pembelian->update([
-                'status_bayar' => 'lunas',
+        $nominalInput = (float) $request->nominal_bayar;
+        $bayarNyicil = min($nominalInput, $sisaHutang);
+
+        DB::transaction(function () use ($request, $pembelian, $bayarNyicil) {
+            $terbayarBaru = (float) $pembelian->terbayar + $bayarNyicil;
+            $isLunas = $terbayarBaru >= (float) $pembelian->total;
+            $tanggalBayar = Carbon::parse($request->tanggal_bayar);
+
+            // 1. Simpan Riwayat Cicilan / Pembayaran
+            PembelianPembayaran::create([
+                'pembelian_id' => $pembelian->id,
+                'user_id' => auth()->id(),
+                'tanggal_bayar' => $tanggalBayar,
+                'nominal' => $bayarNyicil,
+                'sumber' => $request->sumber,
+                'keterangan' => $request->keterangan ?: ($isLunas ? 'Pelunasan Penuh Hutang' : 'Pembayaran Cicilan Hutang'),
             ]);
 
+            // 2. Update status & saldo terbayar Pembelian
+            $pembelian->update([
+                'terbayar' => $terbayarBaru,
+                'status_bayar' => $isLunas ? 'lunas' : 'tempo',
+                'tanggal_lunas' => $isLunas ? $tanggalBayar : null,
+            ]);
+
+            // 3. Catat Arus Kas Keluar
             KasFlow::create([
-                'tanggal' => now()->toDateString(),
+                'tanggal' => $tanggalBayar->toDateString(),
                 'tipe' => 'keluar',
                 'sumber' => $request->sumber,
                 'kategori' => 'pembelian',
                 'no_referensi' => $pembelian->nomor_pembelian,
-                'nominal' => $pembelian->total,
-                'keterangan' => $request->keterangan ?: "Pelunasan hutang pembelian {$pembelian->nomor_pembelian} - Supplier: " . ($pembelian->supplier->nama ?? '-'),
+                'nominal' => $bayarNyicil,
+                'keterangan' => ($isLunas ? 'Pelunasan ' : 'Cicilan ') . "hutang pembelian {$pembelian->nomor_pembelian} - Supplier: " . ($pembelian->supplier->nama ?? '-'),
             ]);
 
+            // 4. Catat Audit Log
             AuditLog::catat(
-                'Pelunasan Hutang Pembelian',
+                'Pembayaran Hutang Pembelian',
                 'Pembelian',
                 $pembelian->nomor_pembelian,
-                "Pelunasan hutang sebesar Rp " . number_format((float) $pembelian->total, 0, ',', '.') . " via {$request->sumber}"
+                "Pembayaran cicilan Rp " . number_format($bayarNyicil, 0, ',', '.') . " (" . ($isLunas ? 'LUNAS' : 'Sisa Rp ' . number_format($pembelian->sisa_hutang, 0, ',', '.')) . ") via {$request->sumber}"
             );
         });
 
-        return back()->with('sukses', "Pelunasan hutang pembelian {$pembelian->nomor_pembelian} berhasil dicatat!");
+        $pesanSukses = $pembelian->fresh()->status_bayar === 'lunas'
+            ? "Hutang pembelian {$pembelian->nomor_pembelian} telah LUNAS sepenuhnya!"
+            : "Pembayaran cicilan Rp " . number_format($bayarNyicil, 0, ',', '.') . " berhasil dicatat. Sisa hutang: Rp " . number_format($pembelian->fresh()->sisa_hutang, 0, ',', '.');
+
+        return back()->with('sukses', $pesanSukses);
     }
 }
