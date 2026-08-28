@@ -286,17 +286,6 @@ class KasirController extends Controller
                     ];
                 }
 
-                    $dataItems[] = [
-                        'barang' => $barang,
-                        'is_jasa' => $isJasa,
-                        'qty' => $qty,
-                        'harga' => $harga,
-                        'diskon' => $diskonBaris,
-                        'hpp' => (float) $barang->hpp,
-                        'subtotal' => $itemSubtotal,
-                    ];
-                }
-
                 $diskon = (float) ($validated['diskon'] ?? 0);
                 $pajak = (float) ($validated['pajak'] ?? 0);
                 $uangMuka = (float) ($validated['uang_muka'] ?? 0);
