@@ -308,6 +308,30 @@ span[aria-hidden="true"] svg {
     transform: translateX(-50%) translateY(-8px);
 }
 
+/* Smart right-aligned tooltip for rightmost table columns so it never gets clipped */
+table td:last-child [data-tooltip]::before,
+[data-tooltip-pos="left"]::before {
+    left: auto !important;
+    right: 12px !important;
+    transform: translateY(4px) !important;
+}
+table td:last-child [data-tooltip]::after,
+[data-tooltip-pos="left"]::after {
+    left: auto !important;
+    right: 0 !important;
+    transform: translateY(-2px) !important;
+}
+table td:last-child [data-tooltip]:hover::before,
+[data-tooltip-pos="left"]:hover::before {
+    opacity: 1 !important;
+    transform: translateY(-2px) !important;
+}
+table td:last-child [data-tooltip]:hover::after,
+[data-tooltip-pos="left"]:hover::after {
+    opacity: 1 !important;
+    transform: translateY(-8px) !important;
+}
+
 /* Smart Hide-on-Scroll Navbar */
 .smart-nav {
     transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease, box-shadow 0.3s ease !important;

@@ -59,17 +59,17 @@ class BarangController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, StokService $stokService): RedirectResponse
     {
-        return $this->simpan($request, null);
+        return $this->simpan($request, null, $stokService);
     }
 
-    public function update(Request $request, Barang $barang): RedirectResponse
+    public function update(Request $request, Barang $barang, StokService $stokService): RedirectResponse
     {
-        return $this->simpan($request, $barang);
+        return $this->simpan($request, $barang, $stokService);
     }
 
-    private function simpan(Request $request, ?Barang $barang): RedirectResponse
+    private function simpan(Request $request, ?Barang $barang, StokService $stokService): RedirectResponse
     {
         try {
             $data = $request->validate([
@@ -85,6 +85,8 @@ class BarangController extends Controller
                 'min_qty_grosir_2' => ['nullable', 'numeric', 'min:1'],
                 'harga_grosir_2' => ['nullable', 'numeric', 'min:0'],
                 'stok_minimum' => ['required', 'numeric', 'min:0'],
+                'stok_awal' => ['nullable', 'numeric', 'min:0'],
+                'stok_saat_ini' => ['nullable', 'numeric', 'min:0'],
                 'lokasi_rak' => ['nullable', 'string', 'max:50'],
                 'barcode' => ['nullable', 'string', 'max:50'],
             ]);
@@ -94,23 +96,61 @@ class BarangController extends Controller
             }
 
             $barcodeInput = $data['barcode'] ?? null;
-            unset($data['barcode']);
+            $stokAwal = (float) ($data['stok_awal'] ?? 0);
+            $stokPenyesuaian = isset($data['stok_saat_ini']) ? (float) $data['stok_saat_ini'] : null;
+            unset($data['barcode'], $data['stok_awal'], $data['stok_saat_ini']);
 
-            DB::transaction(function () use ($data, $barang, $barcodeInput) {
+            DB::transaction(function () use ($data, $barang, $barcodeInput, $stokAwal, $stokPenyesuaian, $stokService) {
                 if ($barang) {
                     $barang->update($data);
-                    if ($barcodeInput && ! $barang->barcodes()->where('barcode', $barcodeInput)->exists()) {
-                        $barang->barcodes()->create(['barcode' => $barcodeInput, 'utama' => $barang->barcodes()->count() === 0]);
+                    if ($barcodeInput) {
+                        $barang->barcodes()->update(['utama' => false]);
+                        $barcodeObj = $barang->barcodes()->where('barcode', $barcodeInput)->first();
+                        if ($barcodeObj) {
+                            $barcodeObj->update(['utama' => true]);
+                        } else {
+                            $barang->barcodes()->create(['barcode' => $barcodeInput, 'utama' => true]);
+                        }
+                    }
+
+                    // Penyesuaian stok saat edit barang
+                    if ($stokPenyesuaian !== null) {
+                        $stokLama = $stokService->stokSaatIni($barang);
+                        $selisih = $stokPenyesuaian - $stokLama;
+                        if (abs($selisih) > 0.0001) {
+                            \App\Models\StokMutasi::create([
+                                'barang_id' => $barang->id,
+                                'tanggal' => now()->toDateString(),
+                                'jenis_mutasi' => 'koreksi',
+                                'no_dokumen' => 'KOR-' . date('YmdHis'),
+                                'masuk' => $selisih > 0 ? $selisih : 0,
+                                'keluar' => $selisih < 0 ? abs($selisih) : 0,
+                                'hpp' => $data['hpp'] ?? $barang->hpp ?? 0,
+                                'keterangan' => 'Penyesuaian stok dari menu Master Barang',
+                            ]);
+                        }
                     }
                 } else {
                     $baru = Barang::create($data + ['harga_beli_terakhir' => $data['hpp'] ?? 0]);
                     if ($barcodeInput) {
                         $baru->barcodes()->create(['barcode' => $barcodeInput, 'utama' => true]);
                     }
+                    if ($stokAwal > 0) {
+                        \App\Models\StokMutasi::create([
+                            'barang_id' => $baru->id,
+                            'tanggal' => now()->toDateString(),
+                            'jenis_mutasi' => 'stok_awal',
+                            'no_dokumen' => 'STOK-AWAL-' . $baru->kode,
+                            'masuk' => $stokAwal,
+                            'keluar' => 0,
+                            'hpp' => $data['hpp'] ?? 0,
+                            'keterangan' => 'Stok awal saat pendaftaran barang',
+                        ]);
+                    }
                 }
             }, attempts: 3);
 
-            return back()->with('sukses', $barang ? 'Barang berhasil diperbarui.' : 'Barang berhasil disimpan.');
+            return back()->with('sukses', $barang ? 'Barang & data stok berhasil diperbarui.' : 'Barang & stok awal berhasil disimpan.');
         } catch (ValidationException $e) {
             throw $e;
         } catch (Throwable $e) {

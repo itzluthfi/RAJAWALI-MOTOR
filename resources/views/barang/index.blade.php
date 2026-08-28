@@ -62,7 +62,7 @@
                 </div>
                 <div class="border-t border-line/60 pt-2 flex justify-end gap-2">
                     <button type="button" class="px-3 py-1.5 rounded-lg border border-line text-xs font-semibold text-ink hover:bg-canvas flex items-center gap-1"
-                        x-on:click="ubah(@js(collect($b->toArray())->only(['id','kode','nama','group_id','sub_group_id','satuan_id','hpp','harga_eceran','harga_grosir','stok_minimum','lokasi_rak'])), @js($b->barcodes->first()?->barcode ?? ''))">
+                        x-on:click="ubah(@js(collect($b->toArray())->only(['id','kode','nama','group_id','sub_group_id','satuan_id','hpp','harga_eceran','harga_grosir','stok_minimum','lokasi_rak'])), @js($b->barcodes->first()?->barcode ?? ''), {{ (float)$stokBarang }})">
                         <x-icon name="pencil" class="w-3.5 h-3.5" /> Ubah
                     </button>
                     <button type="button" class="px-3 py-1.5 rounded-lg border border-line text-xs font-semibold text-ink hover:bg-canvas flex items-center gap-1"
@@ -115,11 +115,11 @@
                             </td>
                             <td class="px-4 py-2.5 text-right">
                                 <div class="flex justify-end gap-1">
-                                    <button type="button" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-canvas cursor-pointer" data-tooltip="Ubah Barang"
-                                        x-on:click="ubah(@js(collect($b->toArray())->only(['id','kode','nama','group_id','sub_group_id','satuan_id','hpp','harga_eceran','harga_grosir','stok_minimum','lokasi_rak'])), @js($b->barcodes->first()?->barcode ?? ''))">
+                                    <button type="button" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-canvas cursor-pointer" data-tooltip="Ubah Data"
+                                        x-on:click="ubah(@js(collect($b->toArray())->only(['id','kode','nama','group_id','sub_group_id','satuan_id','hpp','harga_eceran','harga_grosir','stok_minimum','lokasi_rak'])), @js($b->barcodes->first()?->barcode ?? ''), {{ (float)$stokBarang }})">
                                         <x-icon name="pencil" class="w-4 h-4" />
                                     </button>
-                                    <button type="button" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-canvas cursor-pointer" data-tooltip="Lihat &amp; Cetak Barcode / QR"
+                                    <button type="button" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-canvas cursor-pointer" data-tooltip="Barcode &amp; QR Code"
                                         x-on:click="kelolaBarcode({{ $b->id }}, @js($b->kode), @js($b->nama), {{ (float)$b->harga_eceran }}, @js($b->barcodes->map(fn($x) => ['id' => $x->id, 'barcode' => $x->barcode, 'utama' => $x->utama])))">
                                         <x-icon name="barcode" class="w-4 h-4 text-slate-700" />
                                     </button>
@@ -225,11 +225,11 @@
             </x-select>
 
             @if(in_array($peranSaya, ['owner', 'admin'], true))
-                <x-input label="HPP (Modal Kulakan Beli)" name="hpp" type="number" mono x-model="form.hpp" required />
+                <x-input label="HPP (Modal Kulakan Beli)" name="hpp" type="number" min="0" mono x-model="form.hpp" required />
             @endif
 
-            <x-input label="Harga Eceran Standar (Rp)" name="harga_eceran" type="number" mono x-model="form.harga_eceran" required />
-            <x-input label="Harga Grosir Default (Rp)" name="harga_grosir" type="number" mono x-model="form.harga_grosir" required />
+            <x-input label="Harga Eceran Standar (Rp)" name="harga_eceran" type="number" min="0" mono x-model="form.harga_eceran" required />
+            <x-input label="Harga Grosir Default (Rp)" name="harga_grosir" type="number" min="0" mono x-model="form.harga_grosir" required />
 
             <div class="col-span-2 border-t border-slate-200 pt-3 mt-1">
                 <h4 class="font-bold text-xs text-steel uppercase tracking-wider mb-2 flex items-center gap-1">
@@ -239,22 +239,43 @@
                     <div class="space-y-1.5">
                         <span class="text-xs font-bold text-slate-700 block">Tier 1: Semi-Grosir (Pembelian Sedang)</span>
                         <div class="grid grid-cols-2 gap-2">
-                            <x-input label="Min Qty" name="min_qty_grosir_1" type="number" step="1" mono x-model="form.min_qty_grosir_1" placeholder="3" />
-                            <x-input label="Harga (Rp)" name="harga_grosir_1" type="number" mono x-model="form.harga_grosir_1" placeholder="0" />
+                            <x-input label="Min Qty" name="min_qty_grosir_1" type="number" min="1" step="1" mono x-model="form.min_qty_grosir_1" placeholder="3" />
+                            <x-input label="Harga (Rp)" name="harga_grosir_1" type="number" min="0" mono x-model="form.harga_grosir_1" placeholder="0" />
                         </div>
                     </div>
                     <div class="space-y-1.5">
                         <span class="text-xs font-bold text-slate-700 block">Tier 2: Grosir Karton (Pembelian Besar)</span>
                         <div class="grid grid-cols-2 gap-2">
-                            <x-input label="Min Qty" name="min_qty_grosir_2" type="number" step="1" mono x-model="form.min_qty_grosir_2" placeholder="24" />
-                            <x-input label="Harga (Rp)" name="harga_grosir_2" type="number" mono x-model="form.harga_grosir_2" placeholder="0" />
+                            <x-input label="Min Qty" name="min_qty_grosir_2" type="number" min="1" step="1" mono x-model="form.min_qty_grosir_2" placeholder="24" />
+                            <x-input label="Harga (Rp)" name="harga_grosir_2" type="number" min="0" mono x-model="form.harga_grosir_2" placeholder="0" />
                         </div>
                     </div>
                 </div>
             </div>
 
-            <x-input label="Stok Minimum Toko" name="stok_minimum" type="number" step="0.001" mono x-model="form.stok_minimum" required />
-            <x-input label="Lokasi Rak Gudang" name="lokasi_rak" x-model="form.lokasi_rak" placeholder="cth. A-12" />
+            {{-- PENGATURAN STOK AWAL / PENYESUAIAN & STOK MINIMUM --}}
+            <div class="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
+                <div>
+                    <template x-if="!modeEdit">
+                        <div>
+                            <x-input label="Stok Awal Fisik (Saat Ini)" name="stok_awal" type="number" step="0.001" min="0" mono x-model="form.stok_awal" placeholder="0" />
+                            <p class="text-[10px] text-slate-500 mt-1">Jumlah unit fisik yang sudah tersedia di toko/rak saat ini.</p>
+                        </div>
+                    </template>
+                    <template x-if="modeEdit">
+                        <div>
+                            <x-input label="Penyesuaian Stok Fisik" name="stok_saat_ini" type="number" step="0.001" min="0" mono x-model="form.stok_saat_ini" />
+                            <p class="text-[10px] text-amber-700 font-semibold mt-1">Stok fisik saat ini. Ubah nilai ini jika ada selisih stok.</p>
+                        </div>
+                    </template>
+                </div>
+                <div>
+                    <x-input label="Batas Stok Minimum (Peringatan)" name="stok_minimum" type="number" step="0.001" min="0" mono x-model="form.stok_minimum" required />
+                    <p class="text-[10px] text-slate-500 mt-1">Jika sisa stok &le; angka ini, sistem menandai <b>Stok Menipis</b> (merah).</p>
+                </div>
+            </div>
+
+            <x-input label="Lokasi Rak Gudang" name="lokasi_rak" x-model="form.lokasi_rak" placeholder="cth. A-12" class="col-span-2" />
 
             <div class="col-span-2 flex justify-end gap-2 mt-2 pt-3 border-t border-slate-200">
                 <x-button type="button" variant="secondary" x-on:click="$dispatch('tutup-modal', { name: 'form-barang' })">Batal</x-button>
@@ -441,7 +462,7 @@ function formBarang(adalahOwner) {
         form: {
             kode: '', nama: '', barcode: '', group_id: '', sub_group_id: '', satuan_id: '', hpp: 0, harga_eceran: 0, harga_grosir: 0,
             min_qty_grosir_1: 3, harga_grosir_1: 0, min_qty_grosir_2: 24, harga_grosir_2: 0,
-            stok_minimum: 0, lokasi_rak: ''
+            stok_awal: 0, stok_saat_ini: 0, stok_minimum: 0, lokasi_rak: ''
         },
         urlUpdate: '', idSedangDiubah: null,
         daftarBarcode: [],
@@ -479,13 +500,15 @@ function formBarang(adalahOwner) {
                 harga_grosir_1: 0,
                 min_qty_grosir_2: 24,
                 harga_grosir_2: 0,
+                stok_awal: 0,
+                stok_saat_ini: 0,
                 stok_minimum: 5,
                 lokasi_rak: ''
             };
             this.$dispatch('buka-modal', { name: 'form-barang' });
         },
 
-        ubah(data, barcodePertama) {
+        ubah(data, barcodePertama, stokFisik) {
             this.modeEdit = true;
             this.form = {
                 kode: data.kode,
@@ -501,6 +524,8 @@ function formBarang(adalahOwner) {
                 harga_grosir_1: data.harga_grosir_1 ?? 0,
                 min_qty_grosir_2: data.min_qty_grosir_2 ?? 24,
                 harga_grosir_2: data.harga_grosir_2 ?? 0,
+                stok_awal: 0,
+                stok_saat_ini: stokFisik ?? 0,
                 stok_minimum: data.stok_minimum,
                 lokasi_rak: data.lokasi_rak ?? '',
             };
