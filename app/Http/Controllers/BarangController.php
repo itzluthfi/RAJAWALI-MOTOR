@@ -28,6 +28,8 @@ class BarangController extends Controller
             $query->where(function ($q) use ($cari) {
                 $q->where('kode', 'like', "%{$cari}%")
                     ->orWhere('nama', 'like', "%{$cari}%")
+                    ->orWhere('barcode', 'like', "%{$cari}%")
+                    ->orWhere('qrcode', 'like', "%{$cari}%")
                     ->orWhereHas('barcodes', fn ($b) => $b->where('barcode', 'like', "%{$cari}%"));
             });
         }
@@ -88,7 +90,8 @@ class BarangController extends Controller
                 'stok_awal' => ['nullable', 'numeric', 'min:0'],
                 'stok_saat_ini' => ['nullable', 'numeric', 'min:0'],
                 'lokasi_rak' => ['nullable', 'string', 'max:50'],
-                'barcode' => ['nullable', 'string', 'max:50'],
+                'barcode' => ['nullable', 'string', 'max:100'],
+                'qrcode' => ['nullable', 'string', 'max:100'],
             ]);
 
             if (in_array($request->user()->peran, ['owner', 'admin'], true)) {
@@ -98,7 +101,7 @@ class BarangController extends Controller
             $barcodeInput = $data['barcode'] ?? null;
             $stokAwal = (float) ($data['stok_awal'] ?? 0);
             $stokPenyesuaian = isset($data['stok_saat_ini']) ? (float) $data['stok_saat_ini'] : null;
-            unset($data['barcode'], $data['stok_awal'], $data['stok_saat_ini']);
+            unset($data['stok_awal'], $data['stok_saat_ini']);
 
             DB::transaction(function () use ($data, $barang, $barcodeInput, $stokAwal, $stokPenyesuaian, $stokService) {
                 if ($barang) {

@@ -845,9 +845,11 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
             const q = (this.barcode || '').trim().toLowerCase();
             if (!q) return [];
             return this.daftarBarang.filter(b => 
-                b.nama.toLowerCase().includes(q) || 
+                (b.barcode && b.barcode.toLowerCase().includes(q)) || 
+                (b.all_barcodes && b.all_barcodes.some(bc => bc.toLowerCase().includes(q))) ||
+                (b.qrcode && b.qrcode.toLowerCase().includes(q)) ||
                 b.kode.toLowerCase().includes(q) || 
-                (b.barcode && b.barcode.toLowerCase().includes(q))
+                b.nama.toLowerCase().includes(q)
             ).slice(0, 8);
         },
 
@@ -886,9 +888,11 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
             const q = (this.cariQuery || '').trim().toLowerCase();
             if (!q) return this.daftarBarang;
             return this.daftarBarang.filter(b => 
-                b.nama.toLowerCase().includes(q) || 
+                (b.barcode && b.barcode.toLowerCase().includes(q)) || 
+                (b.all_barcodes && b.all_barcodes.some(bc => bc.toLowerCase().includes(q))) ||
+                (b.qrcode && b.qrcode.toLowerCase().includes(q)) ||
                 b.kode.toLowerCase().includes(q) || 
-                (b.barcode && b.barcode.toLowerCase().includes(q))
+                b.nama.toLowerCase().includes(q)
             );
         },
 
@@ -978,11 +982,11 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
             let q = this.barcode.trim();
             if (!q) return;
 
-            // Handle format QR Code JSON: {"kode":"..."} atau {"barcode":"..."}
+            // Handle format QR Code JSON: {"kode":"..."} atau {"barcode":"..."} atau {"qrcode":"..."}
             if (q.startsWith('{') && q.endsWith('}')) {
                 try {
                     const parsed = JSON.parse(q);
-                    q = (parsed.kode || parsed.barcode || parsed.id || q).toString().trim();
+                    q = (parsed.barcode || parsed.qrcode || parsed.kode || parsed.id || q).toString().trim();
                 } catch {}
             }
 
@@ -996,12 +1000,33 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
 
             const qLower = q.toLowerCase();
             const rawLower = this.barcode.trim().toLowerCase();
-            const barang = this.daftarBarang.find(b => 
+
+            // 1. Prioritas PERTAMA: Cek Barcode (1D Garis / all_barcodes)
+            let barang = this.daftarBarang.find(b => 
                 (b.barcode && (b.barcode.toLowerCase() === qLower || b.barcode.toLowerCase() === rawLower)) || 
-                (b.all_barcodes && b.all_barcodes.some(bc => bc.toLowerCase() === qLower || bc.toLowerCase() === rawLower)) ||
-                b.kode.toLowerCase() === qLower ||
-                b.nama.toLowerCase() === qLower
+                (b.all_barcodes && b.all_barcodes.some(bc => bc.toLowerCase() === qLower || bc.toLowerCase() === rawLower))
             );
+
+            // 2. Prioritas KEDUA: Cek QR Code (2D)
+            if (!barang) {
+                barang = this.daftarBarang.find(b => 
+                    b.qrcode && (b.qrcode.toLowerCase() === qLower || b.qrcode.toLowerCase() === rawLower)
+                );
+            }
+
+            // 3. Prioritas KETIGA: Cek Kode Barang
+            if (!barang) {
+                barang = this.daftarBarang.find(b => 
+                    b.kode && (b.kode.toLowerCase() === qLower || b.kode.toLowerCase() === rawLower)
+                );
+            }
+
+            // 4. Prioritas KEEMPAT: Cek Nama Barang (Exact match)
+            if (!barang) {
+                barang = this.daftarBarang.find(b => 
+                    b.nama && (b.nama.toLowerCase() === qLower || b.nama.toLowerCase() === rawLower)
+                );
+            }
 
             if (!barang) {
                 if (window.toastGagal) window.toastGagal(`Item / Barcode "${this.barcode}" tidak ditemukan.`);
@@ -1011,7 +1036,9 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
 
             this.tambahBarangKeKeranjang(barang);
             this.barcode = '';
+            this.indeksLive = 0;
             this.$nextTick(() => this.$refs.barcode?.focus());
+            bunyikanBeepSukses();
         },
 
         hitungHargaTier(barang, qty) {

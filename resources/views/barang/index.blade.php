@@ -62,7 +62,7 @@
                 </div>
                 <div class="border-t border-line/60 pt-2 flex justify-end gap-2">
                     <button type="button" class="px-3 py-1.5 rounded-lg border border-line text-xs font-semibold text-ink hover:bg-canvas flex items-center gap-1"
-                        x-on:click="ubah(@js(collect($b->toArray())->only(['id','kode','nama','group_id','sub_group_id','satuan_id','hpp','harga_eceran','harga_grosir','stok_minimum','lokasi_rak'])), @js($b->barcodes->first()?->barcode ?? ''), {{ (float)$stokBarang }})">
+                        x-on:click="ubah(@js(collect($b->toArray())->only(['id','kode','nama','barcode','qrcode','group_id','sub_group_id','satuan_id','hpp','harga_eceran','harga_grosir','min_qty_grosir_1','harga_grosir_1','min_qty_grosir_2','harga_grosir_2','stok_minimum','lokasi_rak'])), @js($b->barcodes->first()?->barcode ?? ''), @js($b->qrcode ?? ''), {{ (float)$stokBarang }})">
                         <x-icon name="pencil" class="w-3.5 h-3.5" /> Ubah
                     </button>
                     <button type="button" class="px-3 py-1.5 rounded-lg border border-line text-xs font-semibold text-ink hover:bg-canvas flex items-center gap-1"
@@ -89,7 +89,7 @@
                 <thead class="bg-canvas text-steel text-xs uppercase tracking-wide border-b border-line">
                     <tr>
                         <th class="text-left font-semibold px-4 py-2.5">Kode</th>
-                        <th class="text-left font-semibold px-4 py-2.5">Nama</th>
+                        <th class="text-left font-semibold px-4 py-2.5">Nama &amp; Barcode / QR</th>
                         <th class="text-left font-semibold px-4 py-2.5">Group</th>
                         <th class="text-left font-semibold px-4 py-2.5">Satuan</th>
                         <th class="text-right font-semibold px-4 py-2.5">Stok</th>
@@ -101,10 +101,27 @@
                 </thead>
                 <tbody>
                     @forelse($barang as $b)
-                        @php $stokBarang = $stok[$b->id] ?? 0; @endphp
+                        @php 
+                            $stokBarang = $stok[$b->id] ?? 0; 
+                            $primaryBc = $b->barcode ?: ($b->barcodes->firstWhere('utama', true)?->barcode ?? $b->barcodes->first()?->barcode ?? null);
+                        @endphp
                         <tr class="border-b border-line last:border-0 hover:bg-canvas transition duration-150">
                             <td class="px-4 py-2.5 font-mono text-xs font-bold text-rajawali">{{ $b->kode }}</td>
-                            <td class="px-4 py-2.5 font-medium">{{ $b->nama }}</td>
+                            <td class="px-4 py-2.5">
+                                <div class="font-medium text-slate-900">{{ $b->nama }}</div>
+                                <div class="flex items-center gap-1.5 flex-wrap mt-0.5">
+                                    @if($primaryBc)
+                                        <span class="text-[10px] font-mono font-bold text-amber-900 bg-amber-100 px-1.5 py-0.2 rounded border border-amber-200" title="Barcode Garis">
+                                            BAR: {{ $primaryBc }}
+                                        </span>
+                                    @endif
+                                    @if($b->qrcode)
+                                        <span class="text-[10px] font-mono font-bold text-blue-900 bg-blue-100 px-1.5 py-0.2 rounded border border-blue-200" title="QR Code">
+                                            QR: {{ $b->qrcode }}
+                                        </span>
+                                    @endif
+                                </div>
+                            </td>
                             <td class="px-4 py-2.5 text-steel">{{ $b->group->nama }}</td>
                             <td class="px-4 py-2.5 text-steel">{{ $b->satuan->nama }}</td>
                             <td class="px-4 py-2.5 text-right font-mono {{ $stokBarang <= (float) $b->stok_minimum ? 'text-rajawali font-semibold' : '' }}">{{ rtrim(rtrim(number_format($stokBarang, 3, ',', ''), '0'), ',') }}</td>
@@ -116,7 +133,7 @@
                             <td class="px-4 py-2.5 text-right">
                                 <div class="flex justify-end gap-1">
                                     <button type="button" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-canvas cursor-pointer" data-tooltip="Ubah Data"
-                                        x-on:click="ubah(@js(collect($b->toArray())->only(['id','kode','nama','group_id','sub_group_id','satuan_id','hpp','harga_eceran','harga_grosir','stok_minimum','lokasi_rak'])), @js($b->barcodes->first()?->barcode ?? ''), {{ (float)$stokBarang }})">
+                                        x-on:click="ubah(@js(collect($b->toArray())->only(['id','kode','nama','barcode','qrcode','group_id','sub_group_id','satuan_id','hpp','harga_eceran','harga_grosir','min_qty_grosir_1','harga_grosir_1','min_qty_grosir_2','harga_grosir_2','stok_minimum','lokasi_rak'])), @js($primaryBc ?? ''), @js($b->qrcode ?? ''), {{ (float)$stokBarang }})">
                                         <x-icon name="pencil" class="w-4 h-4" />
                                     </button>
                                     <button type="button" class="p-1.5 rounded-md text-steel hover:text-ink hover:bg-canvas cursor-pointer" data-tooltip="Barcode &amp; QR Code"
@@ -155,52 +172,103 @@
             <x-input label="Kode Barang (Unik)" name="kode" x-model="form.kode" placeholder="cth. DISVCBSTK" required />
             <x-input label="Nama Barang / Sparepart" name="nama" x-model="form.nama" placeholder="cth. DISC PAD VARIO CBS" required />
 
-            {{-- FIELD BARCODE DENGAN SCANNER KAMERA & SAMAKAN KODE / TIMPA --}}
-            <div class="col-span-1 sm:col-span-2 bg-amber-50/70 p-3 rounded-2xl border border-amber-200/80">
-                <div class="flex items-center justify-between mb-1.5">
-                    <label class="text-xs font-bold text-amber-950">Barcode / QR Code Kemasan (Opsional)</label>
-                    <template x-if="modeEdit && form.barcode">
-                        <span class="text-[11px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-md">Bisa di-scan ulang untuk menimpa</span>
-                    </template>
+            {{-- DUA KOLOM INPUT: BARCODE (1D GARIS) & QR CODE (2D MATRIX) --}}
+            <div class="col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {{-- FIELD 1: BARCODE GARIS (1D) --}}
+                <div class="bg-amber-50/70 p-3 rounded-2xl border border-amber-200/80 space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-bold text-amber-950 flex items-center gap-1">
+                            <x-icon name="barcode" class="w-3.5 h-3.5 text-amber-700" />
+                            <span>1. Barcode Kemasan (1D Garis)</span>
+                        </label>
+                        <template x-if="modeEdit && form.barcode">
+                            <span class="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">Tersimpan</span>
+                        </template>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <input
+                            type="text"
+                            name="barcode"
+                            x-model="form.barcode"
+                            placeholder="Scan/ketik barcode..."
+                            class="w-full text-xs font-mono font-bold rounded-xl border border-slate-300 px-3 py-2 bg-white focus:ring-2 focus:ring-rajawali focus:outline-none"
+                        >
+                        <button
+                            type="button"
+                            class="p-2 bg-rajawali hover:bg-rajawali-dark text-white text-xs font-bold rounded-xl whitespace-nowrap transition cursor-pointer flex items-center gap-1 shadow-xs shrink-0"
+                            x-on:click="bukaScannerKameraForm('barcode')"
+                            data-tooltip="Scan Barcode via Kamera"
+                        >
+                            <x-icon name="camera" class="w-4 h-4" />
+                        </button>
+                        <button
+                            type="button"
+                            class="px-2 py-2 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 text-xs font-bold rounded-xl whitespace-nowrap transition cursor-pointer shadow-xs shrink-0"
+                            x-on:click="form.barcode = form.kode"
+                            data-tooltip="Samakan dengan Kode Barang"
+                        >
+                            = Kode
+                        </button>
+                        <button
+                            type="button"
+                            x-show="form.barcode"
+                            class="p-2 bg-white hover:bg-red-50 border border-red-200 text-red-600 text-xs font-bold rounded-xl whitespace-nowrap transition cursor-pointer shrink-0"
+                            x-on:click="form.barcode = ''"
+                            data-tooltip="Kosongkan Barcode"
+                        >
+                            <x-icon name="x" class="w-4 h-4" />
+                        </button>
+                    </div>
+                    <p class="text-[10px] text-slate-500">Barcode garis fisik pada kemasan pabrik (EAN-13, Code 128, UPC).</p>
                 </div>
-                <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                    <input
-                        type="text"
-                        name="barcode"
-                        x-model="form.barcode"
-                        placeholder="Scan scanner tembak ke kemasan, ketik, atau klik Scan Kamera..."
-                        class="w-full text-xs font-mono font-bold rounded-xl border border-slate-300 px-3.5 py-2.5 bg-white focus:ring-2 focus:ring-rajawali focus:outline-none"
-                    >
-                    <button
-                        type="button"
-                        class="px-3.5 py-2.5 bg-rajawali hover:bg-rajawali-dark text-white text-xs font-bold rounded-xl whitespace-nowrap transition cursor-pointer flex items-center gap-1.5 shadow-xs shrink-0"
-                        x-on:click="bukaScannerKameraForm()"
-                    >
-                        <x-icon name="camera" class="w-4 h-4" />
-                        <span>Scan Kamera</span>
-                    </button>
-                    <button
-                        type="button"
-                        class="px-3 py-2.5 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 text-xs font-bold rounded-xl whitespace-nowrap transition cursor-pointer shadow-xs shrink-0"
-                        x-on:click="form.barcode = form.kode"
-                        title="Samakan Barcode dengan Kode Barang"
-                    >
-                        Samakan Kode
-                    </button>
-                    <button
-                        type="button"
-                        x-show="form.barcode"
-                        class="px-2.5 py-2.5 bg-white hover:bg-red-50 border border-red-200 text-red-600 text-xs font-bold rounded-xl whitespace-nowrap transition cursor-pointer shrink-0"
-                        x-on:click="form.barcode = ''"
-                        title="Kosongkan Barcode"
-                    >
-                        <x-icon name="x" class="w-4 h-4" />
-                    </button>
+
+                {{-- FIELD 2: QR CODE (2D) --}}
+                <div class="bg-blue-50/70 p-3 rounded-2xl border border-blue-200/80 space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-bold text-blue-950 flex items-center gap-1">
+                            <x-icon name="qr-code" class="w-3.5 h-3.5 text-blue-700" />
+                            <span>2. QR Code (2D Matrix)</span>
+                        </label>
+                        <template x-if="modeEdit && form.qrcode">
+                            <span class="text-[10px] font-bold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded">Tersimpan</span>
+                        </template>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <input
+                            type="text"
+                            name="qrcode"
+                            x-model="form.qrcode"
+                            placeholder="Scan/ketik QR Code..."
+                            class="w-full text-xs font-mono font-bold rounded-xl border border-slate-300 px-3 py-2 bg-white focus:ring-2 focus:ring-rajawali focus:outline-none"
+                        >
+                        <button
+                            type="button"
+                            class="p-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl whitespace-nowrap transition cursor-pointer flex items-center gap-1 shadow-xs shrink-0"
+                            x-on:click="bukaScannerKameraForm('qrcode')"
+                            data-tooltip="Scan QR Code via Kamera"
+                        >
+                            <x-icon name="camera" class="w-4 h-4" />
+                        </button>
+                        <button
+                            type="button"
+                            class="px-2 py-2 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 text-xs font-bold rounded-xl whitespace-nowrap transition cursor-pointer shadow-xs shrink-0"
+                            x-on:click="form.qrcode = form.kode"
+                            data-tooltip="Samakan dengan Kode Barang"
+                        >
+                            = Kode
+                        </button>
+                        <button
+                            type="button"
+                            x-show="form.qrcode"
+                            class="p-2 bg-white hover:bg-red-50 border border-red-200 text-red-600 text-xs font-bold rounded-xl whitespace-nowrap transition cursor-pointer shrink-0"
+                            x-on:click="form.qrcode = ''"
+                            data-tooltip="Kosongkan QR Code"
+                        >
+                            <x-icon name="x" class="w-4 h-4" />
+                        </button>
+                    </div>
+                    <p class="text-[10px] text-slate-500">QR Code kotak 2D untuk tracking khusus atau stiker internal.</p>
                 </div>
-                <p class="text-[11px] text-amber-800 font-medium mt-1.5 flex items-center gap-1">
-                    <x-icon name="info" class="w-3.5 h-3.5 shrink-0" />
-                    <span>Jika produk memiliki barcode di kardus/botol, cukup tembak barcode tersebut atau klik tombol Scan Kamera di atas. Form ini opsional.</span>
-                </p>
             </div>
 
             <x-select label="Group Kategori" name="group_id" x-model="form.group_id" required>
@@ -486,10 +554,13 @@ function formBarang(adalahOwner) {
 
         tambah() {
             this.modeEdit = false;
+            this.idSedangDiubah = null;
+            this.urlUpdate = '';
             this.form = {
                 kode: 'BRG-' + Math.floor(10000 + Math.random() * 90000),
                 nama: '',
                 barcode: '',
+                qrcode: '',
                 group_id: '',
                 sub_group_id: '',
                 satuan_id: '',
@@ -508,12 +579,13 @@ function formBarang(adalahOwner) {
             this.$dispatch('buka-modal', { name: 'form-barang' });
         },
 
-        ubah(data, barcodePertama, stokFisik) {
+        ubah(data, barcodePertama, qrcodeVal, stokFisik) {
             this.modeEdit = true;
             this.form = {
                 kode: data.kode,
                 nama: data.nama,
-                barcode: barcodePertama || '',
+                barcode: data.barcode || barcodePertama || '',
+                qrcode: data.qrcode || qrcodeVal || '',
                 group_id: data.group_id ?? '',
                 sub_group_id: data.sub_group_id ?? '',
                 satuan_id: data.satuan_id ?? '',
@@ -534,7 +606,9 @@ function formBarang(adalahOwner) {
             this.$dispatch('buka-modal', { name: 'form-barang' });
         },
 
-        bukaScannerKameraForm() {
+        targetScanField: 'barcode',
+        bukaScannerKameraForm(target = 'barcode') {
+            this.targetScanField = target;
             this.statusScanKameraForm = 'idle';
             this.hasilScanFormTerakhir = '';
             this.$dispatch('buka-modal', { name: 'scan-kamera-barang' });
@@ -599,12 +673,13 @@ function formBarang(adalahOwner) {
                         this.statusScanKameraForm = 'sukses';
                         this.hasilScanFormTerakhir = decodedText;
                         bunyikanBeepSukses();
-                        this.form.barcode = decodedText.trim();
+                        this.form[this.targetScanField] = decodedText.trim();
                         setTimeout(() => {
                             this.stopKameraForm();
                             this.$dispatch('tutup-modal', { name: 'scan-kamera-barang' });
                             this.statusScanKameraForm = 'idle';
-                            if (window.toastSukses) window.toastSukses('Barcode berhasil terbaca: ' + decodedText);
+                            const label = this.targetScanField === 'qrcode' ? 'QR Code' : 'Barcode';
+                            if (window.toastSukses) window.toastSukses(`${label} berhasil terbaca: ${decodedText}`);
                         }, 400);
                     },
                     () => {}

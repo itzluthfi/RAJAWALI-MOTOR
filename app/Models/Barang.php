@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Barang extends Model
 {
     protected $fillable = [
-        'kode', 'nama', 'group_id', 'sub_group_id', 'satuan_id',
+        'kode', 'nama', 'barcode', 'qrcode', 'group_id', 'sub_group_id', 'satuan_id',
         'harga_beli_terakhir', 'hpp', 'harga_eceran', 'harga_grosir',
         'min_qty_grosir_1', 'harga_grosir_1', 'min_qty_grosir_2', 'harga_grosir_2',
         'stok_minimum', 'lokasi_rak', 'aktif',

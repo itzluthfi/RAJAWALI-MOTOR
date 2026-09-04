@@ -37,11 +37,18 @@ class KasirController extends Controller
         $stok = $stokService->stokBanyakBarang($barang->pluck('id'));
 
         $daftarBarang = $barang->map(function (Barang $b) use ($stok) {
+            $primaryBarcode = $b->barcode ?: ($b->barcodes->firstWhere('utama', true)?->barcode ?? $b->barcodes->first()?->barcode ?? '');
+            $allBc = $b->barcodes->pluck('barcode')->toArray();
+            if ($b->barcode && !in_array($b->barcode, $allBc, true)) {
+                $allBc[] = $b->barcode;
+            }
+
             return [
                 'id' => $b->id,
                 'kode' => $b->kode,
-                'barcode' => $b->barcodes->firstWhere('utama', true)?->barcode ?? $b->barcodes->first()?->barcode ?? $b->kode,
-                'all_barcodes' => $b->barcodes->pluck('barcode')->toArray(),
+                'barcode' => $primaryBarcode ?: $b->kode,
+                'qrcode' => $b->qrcode ?: '',
+                'all_barcodes' => $allBc,
                 'nama' => $b->nama,
                 'is_jasa' => false,
                 'harga' => (float) $b->harga_eceran,
