@@ -321,12 +321,19 @@
                             </td>
                             <td class="px-3 py-2.5">
                                 <div class="font-black text-base text-slate-900 leading-tight" x-text="item.nama"></div>
-                                <template x-if="item.labelTier">
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono bg-emerald-100 text-emerald-800 font-bold border border-emerald-300 mt-1">
-                                        <x-icon name="sparkles" class="w-3.5 h-3.5 text-emerald-600" />
-                                        <span x-text="item.labelTier"></span>
-                                    </span>
-                                </template>
+                                <div class="flex items-center gap-1.5 flex-wrap mt-1">
+                                    <template x-if="item.labelTier">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">
+                                            <x-icon name="sparkles" class="w-3.5 h-3.5 text-emerald-600" />
+                                            <span x-text="item.labelTier"></span>
+                                        </span>
+                                    </template>
+                                    <template x-if="Number(item.hargaOriginal || 0) > Number(item.harga || 0)">
+                                        <span class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                            Harga Normal <span class="line-through" x-text="formatRp(item.hargaOriginal)"></span> (Hemat <span x-text="formatRp(item.hargaOriginal - item.harga)"></span>/pcs)
+                                        </span>
+                                    </template>
+                                </div>
                             </td>
                             <td class="px-3 py-2.5 text-center">
                                 <input
@@ -349,6 +356,12 @@
                                     x-on:blur="validasiHarga(idx)"
                                     class="w-28 text-right font-mono font-black text-sm bg-white border-2 border-slate-300 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-rajawali focus:border-rajawali focus:outline-none shadow-xs"
                                 >
+                                <template x-if="Number(item.hargaOriginal || 0) > Number(item.harga || 0)">
+                                    <div class="mt-0.5 text-right leading-tight">
+                                        <span class="text-[11px] text-slate-400 line-through block" x-text="formatRp(item.hargaOriginal)"></span>
+                                        <span class="text-[10px] text-emerald-700 font-black">- <span x-text="formatRp(item.hargaOriginal - item.harga)"></span></span>
+                                    </div>
+                                </template>
                             </td>
                             <td class="px-3 py-2.5 text-center">
                                 <input
@@ -371,7 +384,17 @@
                                     class="w-24 text-right font-mono font-bold text-sm bg-white border-2 border-slate-300 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-rajawali focus:border-rajawali focus:outline-none"
                                 >
                             </td>
-                            <td class="px-3 py-2.5 text-right font-mono font-black text-slate-900 text-base" x-text="formatRp(hitungTotalItem(item))"></td>
+                            <td class="px-3 py-2.5 text-right font-mono">
+                                <template x-if="(Number(item.hargaOriginal || item.harga || 0) * Number(item.qty || 0)) > hitungTotalItem(item)">
+                                    <div class="text-[11px] text-slate-400 line-through" x-text="formatRp((item.hargaOriginal || item.harga) * item.qty)"></div>
+                                </template>
+                                <div class="font-black text-slate-900 text-base" x-text="formatRp(hitungTotalItem(item))"></div>
+                                <template x-if="(Number(item.hargaOriginal || item.harga || 0) * Number(item.qty || 0)) > hitungTotalItem(item)">
+                                    <div class="text-[10px] text-emerald-700 font-bold">
+                                        Hemat <span x-text="formatRp(((item.hargaOriginal || item.harga) * item.qty) - hitungTotalItem(item))"></span>
+                                    </div>
+                                </template>
+                            </td>
                             <td class="px-2 py-2.5 text-center">
                                 <button
                                     type="button"
@@ -388,9 +411,11 @@
                         <tr>
                             <td colspan="9" class="py-16 text-center text-steel">
                                 <div class="max-w-md mx-auto space-y-2">
-                                    <x-icon name="shopping-bag" class="w-14 h-14 mx-auto text-steel/30" />
-                                    <p class="font-black text-base text-ink">Keranjang Transaksi Masih Kosong</p>
-                                    <p class="text-xs text-steel">Ketik nama barang / scan barcode di atas, atau tekan <kbd class="px-2 py-1 bg-canvas border-2 border-line rounded-lg font-mono text-xs font-black">F2</kbd> (Cari Barang).</p>
+                                    <div class="w-16 h-16 rounded-2xl bg-canvas flex items-center justify-center mx-auto text-steel/50">
+                                        <x-icon name="shopping-cart" class="w-8 h-8" />
+                                    </div>
+                                    <p class="font-black text-ink text-base">Keranjang Belanja Masih Kosong</p>
+                                    <p class="text-xs text-steel">Scan barcode fisik, ketik nama barang di atas, atau tekan <kbd class="px-1.5 py-0.5 bg-canvas border rounded text-xs font-mono font-bold">F2</kbd> untuk mencari barang.</p>
                                 </div>
                             </td>
                         </tr>
@@ -417,6 +442,12 @@
                 <div class="flex justify-between font-medium text-sm"><span class="text-steel font-bold">Subtotal:</span> <strong class="font-mono font-black text-slate-800 text-base" x-text="formatRp(subtotal)"></strong></div>
                 <template x-if="diskonNotaNominal > 0">
                     <div class="flex justify-between font-medium text-sm text-rajawali"><span>Diskon Nota:</span> <strong class="font-mono font-black text-base" x-text="'- ' + formatRp(diskonNotaNominal)"></strong></div>
+                </template>
+                <template x-if="totalHemat > 0">
+                    <div class="flex justify-between items-center py-1 px-2 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold">
+                        <span class="flex items-center gap-1"><x-icon name="sparkles" class="w-3.5 h-3.5 text-emerald-600" /> Total Anda Hemat:</span>
+                        <strong class="font-mono font-black text-emerald-700 text-sm" x-text="formatRp(totalHemat)"></strong>
+                    </div>
                 </template>
                 <div class="flex justify-between items-center pt-1.5 border-t-2 border-line">
                     <span class="text-xs font-black text-slate-700 uppercase tracking-wider">GRAND TOTAL:</span>
@@ -989,6 +1020,15 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
 
         get grandTotal() {
             return Math.max(0, this.subtotal - this.diskonNotaNominal);
+        },
+
+        get totalHemat() {
+            const hematItem = this.keranjang.reduce((acc, item) => {
+                const normalSub = (Number(item.hargaOriginal || item.harga || 0) * Number(item.qty || 0));
+                const actualSub = this.hitungTotalItem(item);
+                return acc + Math.max(0, normalSub - actualSub);
+            }, 0);
+            return hematItem + Number(this.diskonNotaNominal || 0);
         },
 
         formatRp(val) {
