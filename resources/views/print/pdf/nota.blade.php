@@ -62,15 +62,38 @@
 
     <div class="dashed-line"></div>
 
+    @php
+        $totalHematSemua = 0;
+    @endphp
     <table>
         @foreach($penjualan->details as $item)
+            @php
+                $hargaNormal = $item->barang ? (float) $item->barang->harga_eceran : (float) $item->harga_satuan;
+                $adaDiskonItem = (float) $item->diskon > 0;
+                $adaTierHemat = $hargaNormal > (float) $item->harga_satuan;
+                $hematPerPcs = $adaTierHemat ? ($hargaNormal - (float) $item->harga_satuan) : 0;
+
+                if ($adaTierHemat) {
+                    $totalHematSemua += ($hematPerPcs * (float) $item->qty);
+                }
+                if ($adaDiskonItem) {
+                    $totalHematSemua += (float) $item->diskon;
+                }
+            @endphp
             <tr>
                 <td colspan="2" class="font-bold" style="color: #0f172a; padding-top: 2px;">{{ $item->barang->nama }}</td>
             </tr>
+            @if($adaTierHemat)
+                <tr>
+                    <td colspan="2" style="font-size: {{ $is58mm ? '7px' : '8px' }}; color: #047857;">
+                        * Khusus (Normal: {{ number_format($hargaNormal, 0, ',', '.') }}) [Hemat {{ number_format($hematPerPcs, 0, ',', '.') }}/pcs]
+                    </td>
+                </tr>
+            @endif
             <tr>
                 <td style="font-size: {{ $is58mm ? '7.5px' : '8.5px' }}; color: #475569; padding-left: 2px;">
                     {{ rtrim(rtrim(number_format((float) $item->qty, 3, ',', ''), '0'), ',') }} x Rp {{ number_format($item->harga_satuan, 0, ',', '.') }}
-                    @if($item->diskon > 0)
+                    @if($adaDiskonItem)
                         (-{{ number_format($item->diskon, 0, ',', '.') }})
                     @endif
                 </td>
@@ -78,6 +101,10 @@
             </tr>
         @endforeach
     </table>
+
+    @php
+        $totalHematSemua += (float) $penjualan->diskon;
+    @endphp
 
     <div class="solid-line"></div>
 
@@ -102,6 +129,12 @@
             <td class="font-bold" style="font-size: {{ $is58mm ? '10px' : '11.5px' }}; color: #b0181c; padding-top: 2px;">TOTAL AKHIR:</td>
             <td class="text-right font-bold" style="font-size: {{ $is58mm ? '10px' : '11.5px' }}; color: #b0181c; padding-top: 2px;">Rp {{ number_format($penjualan->total_akhir, 0, ',', '.') }}</td>
         </tr>
+        @if($totalHematSemua > 0)
+            <tr>
+                <td style="color: #047857; font-weight: bold; padding-top: 3px;">Total Hemat (Diskon):</td>
+                <td class="text-right font-bold" style="color: #047857; padding-top: 3px;">Rp {{ number_format($totalHematSemua, 0, ',', '.') }}</td>
+            </tr>
+        @endif
     </table>
 
     <div class="dashed-line"></div>

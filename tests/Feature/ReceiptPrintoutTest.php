@@ -129,6 +129,38 @@ class ReceiptPrintoutTest extends TestCase
         $pdf58 = $this->get('/admin/cetak/nota/' . $penjualan->nomor_nota . '/pdf?size=58');
         $pdf58->assertOk();
         $this->assertEquals('application/pdf', $pdf58->headers->get('content-type'));
+
+        // Enkripsi hash URL
+        $hashId = \App\Services\IdHasher::encode($penjualan->id);
+        $this->assertNotEquals((string) $penjualan->id, $hashId);
+        $resHash = $this->get('/admin/cetak/nota/' . $hashId);
+        $resHash->assertOk()->assertSee($penjualan->nomor_nota);
+
+        // Uji deteksi penghematan tier/mitra
+        $penjualanTier = Penjualan::create([
+            'nomor_nota' => 'PJ-TIER-01',
+            'customer_id' => $customer->id,
+            'user_id' => $kasirUser->id,
+            'subtotal' => 48000,
+            'diskon' => 0,
+            'pajak' => 0,
+            'total_akhir' => 48000,
+            'bayar' => 48000,
+            'kembali' => 0,
+            'metode_pembayaran' => 'tunai',
+            'status_bayar' => 'lunas',
+        ]);
+        PenjualanDetail::create([
+            'penjualan_id' => $penjualanTier->id,
+            'barang_id' => $barang->id,
+            'qty' => 1,
+            'harga_satuan' => 48000, // Harga khusus (normal 55000)
+            'diskon' => 0,
+            'hpp' => 45000,
+            'subtotal' => 48000,
+        ]);
+        $resTier = $this->get('/admin/cetak/nota/' . $penjualanTier->nomor_nota);
+        $resTier->assertOk()->assertSee('Total Hemat (Diskon):');
     }
 
     public function test_faktur_and_surat_jalan_preview_and_pdf(): void

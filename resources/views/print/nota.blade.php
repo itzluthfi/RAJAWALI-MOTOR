@@ -187,15 +187,37 @@
         <div class="dashed-line"></div>
 
         <!-- Daftar Barang -->
+        @php
+            $totalHematSemua = 0;
+        @endphp
         <div class="space-y-2 my-1">
             @foreach($penjualan->details as $d)
+                @php
+                    $hargaNormal = $d->barang ? (float) $d->barang->harga_eceran : (float) $d->harga_satuan;
+                    $adaDiskonItem = (float) $d->diskon > 0;
+                    $adaTierHemat = $hargaNormal > (float) $d->harga_satuan;
+                    $hematPerPcs = $adaTierHemat ? ($hargaNormal - (float) $d->harga_satuan) : 0;
+                    
+                    if ($adaTierHemat) {
+                        $totalHematSemua += ($hematPerPcs * (float) $d->qty);
+                    }
+                    if ($adaDiskonItem) {
+                        $totalHematSemua += (float) $d->diskon;
+                    }
+                @endphp
                 <div>
                     <div class="font-bold text-slate-900 leading-tight break-words">{{ $d->barang->nama }}</div>
+                    @if($adaTierHemat)
+                        <div class="text-[10px] text-emerald-700 font-semibold flex items-center gap-1 mt-0.5">
+                            <span>* Harga Khusus (Normal: {{ number_format($hargaNormal, 0, ',', '.') }})</span>
+                            <span class="text-emerald-800">[Hemat {{ number_format($hematPerPcs, 0, ',', '.') }}/pcs]</span>
+                        </div>
+                    @endif
                     <div class="flex justify-between items-center text-slate-700 text-[11px] mt-0.5">
                         <span>
                             {{ rtrim(rtrim(number_format((float) $d->qty, 3, ',', ''), '0'), ',') }} x 
                             {{ number_format($d->harga_satuan, 0, ',', '.') }}
-                            @if($d->diskon > 0)
+                            @if($adaDiskonItem)
                                 <span class="text-red-600 font-semibold">(-{{ number_format($d->diskon, 0, ',', '.') }})</span>
                             @endif
                         </span>
@@ -204,6 +226,10 @@
                 </div>
             @endforeach
         </div>
+
+        @php
+            $totalHematSemua += (float) $penjualan->diskon;
+        @endphp
 
         <div class="solid-line"></div>
 
@@ -229,6 +255,12 @@
                 <span>GRAND TOTAL</span>
                 <span>Rp {{ number_format($penjualan->total_akhir, 0, ',', '.') }}</span>
             </div>
+            @if($totalHematSemua > 0)
+                <div class="flex justify-between items-center text-emerald-800 font-bold text-[11px] bg-emerald-50 px-2 py-1 rounded border border-emerald-200 mt-1.5">
+                    <span>Total Hemat (Diskon):</span>
+                    <span class="font-mono font-black text-emerald-700">Rp {{ number_format($totalHematSemua, 0, ',', '.') }}</span>
+                </div>
+            @endif
         </div>
         
         <div class="dashed-line"></div>

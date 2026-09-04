@@ -425,9 +425,9 @@ class KasirController extends Controller
                     'sukses' => true,
                     'pesan' => "Transaksi {$penjualan->nomor_nota} berhasil disimpan.",
                     'nomor_nota' => $penjualan->nomor_nota,
-                    'penjualan_id' => $penjualan->id,
+                    'penjualan_id' => \App\Services\IdHasher::encode($penjualan->id),
                     'tipe' => 'penjualan',
-                    'cetak_url' => route('cetak.nota', $penjualan->id),
+                    'cetak_url' => route('cetak.nota', \App\Services\IdHasher::encode($penjualan->id)),
                 ];
             });
 
