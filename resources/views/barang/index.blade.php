@@ -550,8 +550,47 @@ function formBarang(adalahOwner) {
             if (this.html5QrCodeForm) this.stopKameraForm();
             try {
                 this.statusScanKameraForm = 'scanning';
-                this.html5QrCodeForm = new Html5Qrcode("html5-qr-code-reader-barang");
-                const config = { fps: 15, qrbox: { width: 250, height: 160 } };
+
+                const formatsToSupport = (typeof Html5QrcodeSupportedFormats !== 'undefined') ? [
+                    Html5QrcodeSupportedFormats.EAN_13,
+                    Html5QrcodeSupportedFormats.EAN_8,
+                    Html5QrcodeSupportedFormats.CODE_128,
+                    Html5QrcodeSupportedFormats.CODE_39,
+                    Html5QrcodeSupportedFormats.CODE_93,
+                    Html5QrcodeSupportedFormats.UPC_A,
+                    Html5QrcodeSupportedFormats.UPC_E,
+                    Html5QrcodeSupportedFormats.UPC_EAN_EXTENSION,
+                    Html5QrcodeSupportedFormats.ITF,
+                    Html5QrcodeSupportedFormats.QR_CODE
+                ] : undefined;
+
+                this.html5QrCodeForm = new Html5Qrcode("html5-qr-code-reader-barang", {
+                    formatsToSupport: formatsToSupport,
+                    verbose: false,
+                    experimentalFeatures: {
+                        useBarCodeDetectorIfSupported: true
+                    }
+                });
+
+                const qrboxFunction = (viewfinderWidth, viewfinderHeight) => {
+                    return {
+                        width: Math.floor(viewfinderWidth * 0.9),
+                        height: Math.floor(viewfinderHeight * 0.65)
+                    };
+                };
+
+                const config = {
+                    fps: 25,
+                    qrbox: qrboxFunction,
+                    aspectRatio: 1.333334,
+                    videoConstraints: {
+                        facingMode: "environment",
+                        focusMode: "continuous",
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                };
+
                 this.html5QrCodeForm.start(
                     { facingMode: "environment" },
                     config,
@@ -566,7 +605,7 @@ function formBarang(adalahOwner) {
                             this.$dispatch('tutup-modal', { name: 'scan-kamera-barang' });
                             this.statusScanKameraForm = 'idle';
                             if (window.toastSukses) window.toastSukses('Barcode berhasil terbaca: ' + decodedText);
-                        }, 500);
+                        }, 400);
                     },
                     () => {}
                 ).then(() => {

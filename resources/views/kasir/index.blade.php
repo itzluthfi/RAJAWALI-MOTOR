@@ -486,7 +486,7 @@
 
                 <!-- Laser scanning animation overlay -->
                 <div x-show="kameraAktif && statusScanKamera === 'scanning'" class="absolute inset-0 pointer-events-none flex flex-col justify-center items-center">
-                    <div class="w-56 h-40 border-2 border-red-500/70 rounded-xl relative overflow-hidden shadow-inner">
+                    <div class="w-64 h-36 border-2 border-red-500/70 rounded-xl relative overflow-hidden shadow-inner">
                         <div class="absolute inset-x-0 h-0.5 bg-red-500 shadow-[0_0_10px_#ef4444] animate-bounce"></div>
                     </div>
                 </div>
@@ -505,7 +505,7 @@
                 <template x-if="statusScanKamera === 'scanning'">
                     <span class="flex items-center gap-1.5 animate-pulse text-slate-700">
                         <span class="w-2 h-2 rounded-full bg-red-500"></span>
-                        Arahkan kamera ke Barcode (Garis) atau QR Code produk...
+                        Arahkan garis barcode mendatar ke tengah kotak scanner...
                     </span>
                 </template>
                 <template x-if="statusScanKamera === 'sukses'">
@@ -513,6 +513,15 @@
                         <x-icon name="check" class="w-4 h-4 text-emerald-600" /> Memasukkan ke keranjang kasir...
                     </span>
                 </template>
+            </div>
+
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-2.5 text-[11px] text-amber-800 text-left space-y-1">
+                <p class="font-bold flex items-center gap-1"><x-icon name="lightbulb" class="w-3.5 h-3.5 text-amber-600 shrink-0" /> Tips Scan Barcode Garis (1D):</p>
+                <ul class="list-disc list-inside text-slate-600 space-y-0.5 pl-1">
+                    <li>Posisikan garis barcode <strong>mendatar (horizontal)</strong> lurus ke kamera.</li>
+                    <li>Hindari pantulan <strong>kilau cahaya/lampu (glare)</strong> pada plastik kemasan.</li>
+                    <li>Jaga jarak 15–20 cm agar kamera fokus dan tidak buram.</li>
+                </ul>
             </div>
 
             <x-button type="button" variant="secondary" x-on:click="$dispatch('tutup-modal', { name: 'scan-kamera' }); stopKamera()">Tutup Kamera</x-button>
@@ -721,8 +730,47 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
             if (this.html5QrCode) this.stopKamera();
             try {
                 this.statusScanKamera = 'scanning';
-                this.html5QrCode = new Html5Qrcode("html5-qr-code-reader-kasir");
-                const config = { fps: 15, qrbox: { width: 250, height: 160 } };
+
+                const formatsToSupport = (typeof Html5QrcodeSupportedFormats !== 'undefined') ? [
+                    Html5QrcodeSupportedFormats.EAN_13,
+                    Html5QrcodeSupportedFormats.EAN_8,
+                    Html5QrcodeSupportedFormats.CODE_128,
+                    Html5QrcodeSupportedFormats.CODE_39,
+                    Html5QrcodeSupportedFormats.CODE_93,
+                    Html5QrcodeSupportedFormats.UPC_A,
+                    Html5QrcodeSupportedFormats.UPC_E,
+                    Html5QrcodeSupportedFormats.UPC_EAN_EXTENSION,
+                    Html5QrcodeSupportedFormats.ITF,
+                    Html5QrcodeSupportedFormats.QR_CODE
+                ] : undefined;
+
+                this.html5QrCode = new Html5Qrcode("html5-qr-code-reader-kasir", {
+                    formatsToSupport: formatsToSupport,
+                    verbose: false,
+                    experimentalFeatures: {
+                        useBarCodeDetectorIfSupported: true
+                    }
+                });
+
+                const qrboxFunction = (viewfinderWidth, viewfinderHeight) => {
+                    return {
+                        width: Math.floor(viewfinderWidth * 0.9),
+                        height: Math.floor(viewfinderHeight * 0.65)
+                    };
+                };
+
+                const config = {
+                    fps: 25,
+                    qrbox: qrboxFunction,
+                    aspectRatio: 1.333334,
+                    videoConstraints: {
+                        facingMode: "environment",
+                        focusMode: "continuous",
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                };
+
                 this.html5QrCode.start(
                     { facingMode: "environment" },
                     config,
@@ -737,7 +785,7 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
                             this.stopKamera();
                             this.$dispatch('tutup-modal', { name: 'scan-kamera' });
                             this.statusScanKamera = 'idle';
-                        }, 500);
+                        }, 400);
                     },
                     () => {}
                 ).then(() => {
