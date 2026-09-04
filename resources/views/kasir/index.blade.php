@@ -45,117 +45,106 @@
     </div>
 
     {{-- BARIS 2: PANEL TERPADU PELANGGAN & KENDARAAN (SEMUA FIELD OPSIONAL) --}}
-    <div class="bg-white p-3.5 rounded-2xl border-2 border-slate-200 shadow-xs space-y-2.5">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-12 gap-3 items-center">
+    <div class="bg-white p-3 rounded-2xl border-2 border-slate-200 shadow-xs space-y-2">
+        <div class="flex flex-wrap lg:flex-nowrap gap-2.5 items-end">
             {{-- PILIH CUSTOMER (SEARCHABLE) --}}
-            <div class="xl:col-span-3 lg:col-span-2 md:col-span-1 sm:col-span-2">
-                <label class="block text-[11px] font-black text-slate-600 uppercase mb-1">Pelanggan / Customer (Opsional)</label>
-                <div class="flex items-center gap-1.5">
-                    <div class="relative flex-1" x-data="{ terbuka: false, cari: '' }" x-on:click.outside="terbuka = false">
-                        <button
-                            type="button"
-                            x-on:click="terbuka = !terbuka; if(terbuka) $nextTick(() => $refs.inputCariCust?.focus())"
-                            class="w-full flex items-center justify-between rounded-xl border-2 border-slate-300 bg-slate-50 px-3 py-2 text-xs font-bold shadow-xs focus:outline-none focus:ring-2 focus:ring-rajawali hover:bg-white transition"
-                        >
-                            <div class="flex items-center gap-1.5 truncate">
-                                <x-icon name="user" class="w-3.5 h-3.5 text-steel shrink-0" />
-                                <span class="truncate text-ink font-black" x-text="customerTerpilih ? customerTerpilih.nama : 'Umum (Tunai)'"></span>
-                                <template x-if="customerTerpilih && customerTerpilih.kategori && customerTerpilih.kategori !== 'umum'">
-                                    <span
-                                        :class="customerTerpilih.kategori === 'grosir' ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-blue-100 text-blue-800 border-blue-300'"
-                                        class="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold uppercase shrink-0 border"
-                                        x-text="customerTerpilih.kategori"
-                                    ></span>
-                                </template>
-                            </div>
-                            <x-icon name="chevron-down" class="w-3.5 h-3.5 text-steel shrink-0 ml-1" />
-                        </button>
-
-                        {{-- Dropdown Customer Popup --}}
-                        <div
-                            x-show="terbuka"
-                            x-transition:enter="transition ease-out duration-100"
-                            x-transition:enter-start="opacity-0 scale-95"
-                            x-transition:enter-end="opacity-100 scale-100"
-                            x-transition:leave="transition ease-in duration-75"
-                            x-transition:leave-start="opacity-100 scale-100"
-                            x-transition:leave-end="opacity-0 scale-95"
-                            x-cloak
-                            class="absolute left-0 top-full mt-1.5 w-84 rounded-2xl border-2 border-slate-300 bg-white shadow-2xl z-50 overflow-hidden"
-                        >
-                            <div class="p-2.5 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
-                                <x-icon name="search" class="w-4 h-4 text-steel shrink-0 ml-1" />
-                                <input
-                                    x-ref="inputCariCust"
-                                    type="text"
-                                    x-model="cari"
-                                    placeholder="Cari Nama / Plat / Motor / WA..."
-                                    class="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-rajawali font-bold"
-                                >
-                                <button x-show="cari" type="button" x-on:click="cari = ''" class="text-steel hover:text-ink text-xs font-bold px-1">
-                                    <x-icon name="x" class="w-3.5 h-3.5" />
-                                </button>
-                            </div>
-
-                            <div class="p-2 bg-slate-100/70 border-b border-slate-200 flex justify-between items-center">
-                                <span class="text-[11px] text-steel font-bold">Pilih Pelanggan Toko</span>
-                                <button
-                                    type="button"
-                                    x-on:click="terbuka = false; bukaModalCustomerCepat()"
-                                    class="text-[11px] font-black text-rajawali hover:underline flex items-center gap-1 cursor-pointer"
-                                >
-                                    <x-icon name="plus" class="w-3 h-3" />
-                                    <span>+ Customer Baru</span>
-                                </button>
-                            </div>
-
-                            <div class="max-h-56 overflow-y-auto divide-y divide-slate-100">
-                                <template x-for="c in filterCustomer(cari)" :key="c.id">
-                                    <div
-                                        x-on:click="pilihCustomer(c); terbuka = false; cari = ''"
-                                        :class="customerId == c.id ? 'bg-rajawali/10 font-bold text-rajawali' : 'hover:bg-slate-100 text-slate-800'"
-                                        class="p-2.5 cursor-pointer text-xs transition flex justify-between items-center"
-                                    >
-                                        <div class="space-y-0.5">
-                                            <div class="flex items-center gap-1.5 font-bold">
-                                                <span x-text="c.nama"></span>
-                                                <template x-if="c.kategori && c.kategori !== 'umum'">
-                                                    <span
-                                                        :class="c.kategori === 'grosir' ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-blue-100 text-blue-800 border-blue-300'"
-                                                        class="px-1.5 py-0.2 rounded text-[9px] font-mono border uppercase font-bold"
-                                                        x-text="c.kategori"
-                                                    ></span>
-                                                </template>
-                                            </div>
-                                            <template x-if="c.plat || c.motor || c.telepon">
-                                                <div class="text-[11px] text-steel font-mono">
-                                                    <span x-text="c.plat || ''" class="text-rajawali font-bold"></span>
-                                                    <span x-text="c.motor ? ' (' + c.motor + ')' : ''"></span>
-                                                    <span x-text="c.telepon ? ' · ' + c.telepon : ''" class="text-slate-500"></span>
-                                                </div>
-                                            </template>
-                                        </div>
-                                        <x-icon x-show="customerId == c.id" name="check" class="w-4 h-4 text-rajawali shrink-0" />
-                                    </div>
-                                </template>
-                            </div>
-                        </div>
-                    </div>
-
+            <div class="w-full sm:w-[calc(50%-5px)] lg:flex-1 min-w-0">
+                <label class="block text-[11px] font-black text-slate-600 uppercase mb-1 truncate">Pelanggan / Customer (Opsional)</label>
+                <div class="relative" x-data="{ terbuka: false, cari: '' }" x-on:click.outside="terbuka = false">
                     <button
                         type="button"
-                        x-on:click="bukaModalCustomerCepat()"
-                        class="p-2 rounded-xl bg-blue-50 text-blue-800 hover:bg-blue-100 border-2 border-blue-200 text-xs font-black shrink-0 transition cursor-pointer"
-                        data-tooltip="Daftar Customer Baru"
+                        x-on:click="terbuka = !terbuka; if(terbuka) $nextTick(() => $refs.inputCariCust?.focus())"
+                        class="w-full flex items-center justify-between rounded-xl border-2 border-slate-300 bg-slate-50 px-3 py-2 text-xs font-bold shadow-xs focus:outline-none focus:ring-2 focus:ring-rajawali hover:bg-white transition"
                     >
-                        <x-icon name="user-plus" class="w-4 h-4 text-blue-700" />
+                        <div class="flex items-center gap-1.5 truncate">
+                            <x-icon name="user" class="w-3.5 h-3.5 text-steel shrink-0" />
+                            <span class="truncate text-ink font-black" x-text="customerTerpilih ? customerTerpilih.nama : 'Umum (Tunai)'"></span>
+                            <template x-if="customerTerpilih && customerTerpilih.kategori && customerTerpilih.kategori !== 'umum'">
+                                <span
+                                    :class="customerTerpilih.kategori === 'grosir' ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-blue-100 text-blue-800 border-blue-300'"
+                                    class="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold uppercase shrink-0 border"
+                                    x-text="customerTerpilih.kategori"
+                                ></span>
+                            </template>
+                        </div>
+                        <x-icon name="chevron-down" class="w-3.5 h-3.5 text-steel shrink-0 ml-1" />
                     </button>
+
+                    {{-- Dropdown Customer Popup --}}
+                    <div
+                        x-show="terbuka"
+                        x-transition:enter="transition ease-out duration-100"
+                        x-transition:enter-start="opacity-0 scale-95"
+                        x-transition:enter-end="opacity-100 scale-100"
+                        x-transition:leave="transition ease-in duration-75"
+                        x-transition:leave-start="opacity-100 scale-100"
+                        x-transition:leave-end="opacity-0 scale-95"
+                        x-cloak
+                        class="absolute left-0 top-full mt-1.5 w-84 rounded-2xl border-2 border-slate-300 bg-white shadow-2xl z-50 overflow-hidden"
+                    >
+                        <div class="p-2.5 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
+                            <x-icon name="search" class="w-4 h-4 text-steel shrink-0 ml-1" />
+                            <input
+                                x-ref="inputCariCust"
+                                type="text"
+                                x-model="cari"
+                                placeholder="Cari Nama / Plat / Motor / WA..."
+                                class="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-rajawali font-bold"
+                            >
+                            <button x-show="cari" type="button" x-on:click="cari = ''" class="text-steel hover:text-ink text-xs font-bold px-1">
+                                <x-icon name="x" class="w-3.5 h-3.5" />
+                            </button>
+                        </div>
+
+                        <div class="p-2 bg-slate-100/70 border-b border-slate-200 flex justify-between items-center">
+                            <span class="text-[11px] text-steel font-bold">Pilih Pelanggan Toko</span>
+                            <button
+                                type="button"
+                                x-on:click="terbuka = false; bukaModalCustomerCepat()"
+                                class="text-[11px] font-black text-rajawali hover:underline flex items-center gap-1 cursor-pointer"
+                            >
+                                <x-icon name="plus" class="w-3 h-3" />
+                                <span>+ Customer Baru</span>
+                            </button>
+                        </div>
+
+                        <div class="max-h-56 overflow-y-auto divide-y divide-slate-100">
+                            <template x-for="c in filterCustomer(cari)" :key="c.id">
+                                <div
+                                    x-on:click="pilihCustomer(c); terbuka = false; cari = ''"
+                                    :class="customerId == c.id ? 'bg-rajawali/10 font-bold text-rajawali' : 'hover:bg-slate-100 text-slate-800'"
+                                    class="p-2.5 cursor-pointer text-xs transition flex justify-between items-center"
+                                >
+                                    <div class="space-y-0.5">
+                                        <div class="flex items-center gap-1.5 font-bold">
+                                            <span x-text="c.nama"></span>
+                                            <template x-if="c.kategori && c.kategori !== 'umum'">
+                                                <span
+                                                    :class="c.kategori === 'grosir' ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-blue-100 text-blue-800 border-blue-300'"
+                                                    class="px-1.5 py-0.2 rounded text-[9px] font-mono border uppercase font-bold"
+                                                    x-text="c.kategori"
+                                                ></span>
+                                            </template>
+                                        </div>
+                                        <template x-if="c.plat || c.motor || c.telepon">
+                                            <div class="text-[11px] text-steel font-mono">
+                                                <span x-text="c.plat || ''" class="text-rajawali font-bold"></span>
+                                                <span x-text="c.motor ? ' (' + c.motor + ')' : ''"></span>
+                                                <span x-text="c.telepon ? ' · ' + c.telepon : ''" class="text-slate-500"></span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <x-icon x-show="customerId == c.id" name="check" class="w-4 h-4 text-rajawali shrink-0" />
+                                </div>
+                            </template>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             {{-- NO WA / HP (OPSIONAL) --}}
-            <div class="xl:col-span-2 lg:col-span-2 md:col-span-1">
-                <label class="block text-[11px] font-black text-slate-600 uppercase mb-1">No. WA / HP (Opsional)</label>
+            <div class="w-full sm:w-[calc(50%-5px)] lg:w-44 shrink-0">
+                <label class="block text-[11px] font-black text-slate-600 uppercase mb-1 truncate">No. WA / HP (Opsional)</label>
                 <input
                     type="text"
                     x-model="teleponCustomer"
@@ -165,20 +154,20 @@
             </div>
 
             {{-- PLAT NOMOR (OPSIONAL) --}}
-            <div class="xl:col-span-2 lg:col-span-2 md:col-span-1">
-                <label class="block text-[11px] font-black text-slate-600 uppercase mb-1">Plat Nomor (Opsional)</label>
+            <div class="w-full sm:w-[calc(50%-5px)] lg:w-36 shrink-0">
+                <label class="block text-[11px] font-black text-slate-600 uppercase mb-1 truncate">Plat No (Opsional)</label>
                 <input
                     type="text"
                     x-model="platNomor"
                     x-on:input="sinkronPlatKeCustomer()"
-                    placeholder="cth. L 1234 ABC"
+                    placeholder="L 1234 ABC"
                     class="w-full text-xs font-mono font-black bg-slate-50 border-2 border-slate-300 rounded-xl px-3 py-2 uppercase focus:ring-2 focus:ring-rajawali focus:bg-white focus:outline-none"
                 >
             </div>
 
             {{-- TIPE MOTOR (OPSIONAL) --}}
-            <div class="xl:col-span-2 lg:col-span-2 md:col-span-1">
-                <label class="block text-[11px] font-black text-slate-600 uppercase mb-1">Tipe Motor (Opsional)</label>
+            <div class="w-full sm:w-[calc(50%-5px)] lg:w-36 shrink-0">
+                <label class="block text-[11px] font-black text-slate-600 uppercase mb-1 truncate">Tipe Motor (Opsional)</label>
                 <input
                     type="text"
                     x-model="merkType"
@@ -188,8 +177,8 @@
             </div>
 
             {{-- MEKANIK / MONTIR (OPSIONAL) --}}
-            <div class="xl:col-span-2 lg:col-span-2 md:col-span-1">
-                <label class="block text-[11px] font-black text-slate-600 uppercase mb-1">Mekanik / Montir (Opsional)</label>
+            <div class="w-full sm:w-[calc(50%-5px)] lg:w-44 shrink-0">
+                <label class="block text-[11px] font-black text-slate-600 uppercase mb-1 truncate">Mekanik / Montir (Opsional)</label>
                 <select
                     x-model="montirId"
                     class="w-full text-xs font-bold bg-slate-50 border-2 border-slate-300 rounded-xl px-2.5 py-2 focus:ring-2 focus:ring-rajawali focus:bg-white focus:outline-none"
@@ -202,8 +191,8 @@
             </div>
 
             {{-- JENIS PEMBAYARAN (TUNAI / TEMPO) --}}
-            <div class="xl:col-span-1 lg:col-span-2 md:col-span-1">
-                <label class="block text-[11px] font-black text-slate-600 uppercase mb-1">Jenis Bayar</label>
+            <div class="w-full sm:w-[calc(50%-5px)] lg:w-36 shrink-0">
+                <label class="block text-[11px] font-black text-slate-600 uppercase mb-1 truncate">Jenis Bayar</label>
                 <div class="flex items-center rounded-xl border-2 border-slate-300 overflow-hidden text-xs font-black shadow-xs bg-white">
                     <button type="button" x-on:click="jenisBayar = 'tunai'" :class="jenisBayar === 'tunai' ? 'bg-rajawali text-white shadow-xs' : 'bg-white text-steel hover:bg-slate-50'" class="flex-1 py-2 text-center transition cursor-pointer">Tunai</button>
                     <button type="button" x-on:click="jenisBayar = 'tempo'" :class="jenisBayar === 'tempo' ? 'bg-rajawali text-white shadow-xs' : 'bg-white text-steel hover:bg-slate-50'" class="flex-1 py-2 text-center transition cursor-pointer">Tempo</button>
