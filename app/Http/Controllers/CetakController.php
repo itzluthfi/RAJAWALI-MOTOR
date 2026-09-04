@@ -30,8 +30,15 @@ class CetakController extends Controller
         $size = request()->query('size', '80');
         $widthPt = ($size === '58') ? 164.41 : 226.77; // 58mm = 164.41pt, 80mm = 226.77pt
 
+        // Hitung tinggi kertas secara dinamis agar pas dengan isi dan tidak menyisakan ruang putih panjang
+        $itemCount = $penjualan->details->count();
+        $baseHeaderMeta = 135; // Kop toko, alamat, no nota, tanggal, kasir, customer
+        $itemHeight = 28;     // Tinggi per baris nama barang + qty x harga
+        $baseTotalsFooter = 135; // Subtotal, diskon, grand total, status, ucapan terima kasih
+        $heightPt = max(280, $baseHeaderMeta + ($itemCount * $itemHeight) + $baseTotalsFooter);
+
         $pdf = Pdf::loadView('print.pdf.nota', ['penjualan' => $penjualan, 'size' => $size])
-            ->setPaper([0, 0, $widthPt, 800], 'portrait');
+            ->setPaper([0, 0, $widthPt, $heightPt], 'portrait');
 
         return $pdf->download("Struk_{$penjualan->nomor_nota}.pdf");
     }
