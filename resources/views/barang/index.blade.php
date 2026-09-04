@@ -160,7 +160,7 @@
 
     {{-- MODAL TAMBAH & EDIT BARANG --}}
     <x-modal name="form-barang" title="Master Data Barang &amp; Sparepart" wide>
-        <form method="POST" x-bind:action="modeEdit ? urlUpdate : '{{ route('barang.store') }}'" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form method="POST" x-bind:action="modeEdit ? urlUpdate : '{{ route('barang.store') }}'">
             @csrf
             <template x-if="modeEdit">
                 <div>
@@ -169,8 +169,9 @@
                 </div>
             </template>
 
-            <x-input label="Kode Barang (Unik)" name="kode" x-model="form.kode" placeholder="cth. DISVCBSTK" required />
-            <x-input label="Nama Barang / Sparepart" name="nama" x-model="form.nama" placeholder="cth. DISC PAD VARIO CBS" required />
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <x-input label="Kode Barang (Unik)" name="kode" x-model="form.kode" placeholder="cth. DISVCBSTK" required />
+                <x-input label="Nama Barang / Sparepart" name="nama" x-model="form.nama" placeholder="cth. DISC PAD VARIO CBS" required />
 
             {{-- DUA KOLOM INPUT: BARCODE (1D GARIS) & QR CODE (2D MATRIX) --}}
             <div class="col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -345,11 +346,12 @@
 
             <x-input label="Lokasi Rak Gudang" name="lokasi_rak" x-model="form.lokasi_rak" placeholder="cth. A-12" class="col-span-1 sm:col-span-2" />
 
-            <div class="col-span-1 sm:col-span-2 flex justify-end gap-2 mt-2 pt-3 border-t border-slate-200">
-                <x-button type="button" variant="secondary" x-on:click="$dispatch('tutup-modal', { name: 'form-barang' })">Batal</x-button>
-                <x-button type="submit" variant="primary">
-                    <x-icon name="check" class="w-4 h-4" /> Simpan Data Barang
-                </x-button>
+                <div class="col-span-1 sm:col-span-2 flex justify-end gap-2 mt-2 pt-3 border-t border-slate-200">
+                    <x-button type="button" variant="secondary" x-on:click="$dispatch('tutup-modal', { name: 'form-barang' })">Batal</x-button>
+                    <x-button type="submit" variant="primary">
+                        <x-icon name="check" class="w-4 h-4" /> Simpan Data Barang
+                    </x-button>
+                </div>
             </div>
         </form>
     </x-modal>
