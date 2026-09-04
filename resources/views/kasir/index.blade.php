@@ -5,36 +5,29 @@
     x-on:keydown.window="tanganiShortcut($event)"
     class="flex flex-col gap-3 -m-3 p-3 min-h-[calc(100vh-4.5rem)]"
 >
-    {{-- BARIS 1: MODE TRANSAKSI SWITCHER & ANTREAN SERVIS --}}
-    <div class="flex items-center justify-between flex-wrap gap-2.5 bg-surface p-2.5 rounded-2xl border border-line shadow-sm">
-        <div class="flex items-center gap-2">
-            <div class="inline-flex rounded-xl border-2 border-line bg-canvas p-1 text-sm font-bold shadow-xs">
-                <button
-                    type="button"
-                    x-on:click="gantiMode('penjualan')"
-                    :class="modeTransaksi === 'penjualan' ? 'bg-rajawali text-white shadow-md' : 'text-steel hover:text-ink'"
-                    class="px-4 py-2 rounded-lg transition cursor-pointer flex items-center gap-2 text-sm font-black"
-                >
-                    <x-icon name="shopping-cart" class="w-4 h-4" />
-                    <span>Penjualan Sparepart</span>
-                </button>
-                <button
-                    type="button"
-                    x-on:click="gantiMode('service')"
-                    :class="modeTransaksi === 'service' ? 'bg-blue-600 text-white shadow-md' : 'text-steel hover:text-ink'"
-                    class="px-4 py-2 rounded-lg transition cursor-pointer flex items-center gap-2 text-sm font-black"
-                >
-                    <x-icon name="wrench" class="w-4 h-4" />
-                    <span>Servis Motor</span>
-                </button>
+    {{-- BARIS 1: TOP BAR (KASIR STATUS, ANTREAN SERVIS, & TRANSAKSI BARU) --}}
+    <div class="flex items-center justify-between flex-wrap gap-2.5 bg-surface p-3 rounded-2xl border border-line shadow-xs">
+        <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-rajawali text-white flex items-center justify-center font-black shadow-xs">
+                <x-icon name="shopping-bag" class="w-5 h-5" />
             </div>
+            <div>
+                <h1 class="font-black text-slate-900 text-base leading-tight">Kasir POS &amp; Bengkel Terpadu</h1>
+                <p class="text-xs text-steel">Penjualan sparepart langsung &amp; servis motor dalam satu form.</p>
+            </div>
+            <template x-if="serviceIdAktif">
+                <span class="ml-2 text-xs font-mono font-black bg-blue-600 text-white px-3 py-1 rounded-full flex items-center gap-1.5 shadow-xs animate-pulse">
+                    <x-icon name="wrench" class="w-3.5 h-3.5" />
+                    <span>Pelunasan SPK: <strong x-text="nomorSpkAktif"></strong></span>
+                </span>
+            </template>
         </div>
 
         <div class="flex items-center gap-2">
             <button
                 type="button"
                 x-on:click="bukaModalAntreanService()"
-                class="px-4 py-2.5 rounded-xl bg-white border-2 border-slate-300 hover:border-blue-600 text-slate-800 text-sm font-bold flex items-center gap-2 shadow-xs transition hover:bg-blue-50 cursor-pointer"
+                class="px-3.5 py-2 rounded-xl bg-white border-2 border-slate-300 hover:border-blue-600 text-slate-800 text-xs font-bold flex items-center gap-2 shadow-xs transition hover:bg-blue-50 cursor-pointer"
             >
                 <x-icon name="clipboard-list" class="w-4 h-4 text-blue-600" />
                 <span>Antrean Servis</span>
@@ -44,254 +37,277 @@
                 ></span>
             </button>
 
+            <button
+                type="button"
+                x-on:click="resetTransaksi()"
+                class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer border border-slate-300"
+                data-tooltip="Reset kasir & buka transaksi baru"
+            >
+                <x-icon name="rotate-ccw" class="w-3.5 h-3.5" />
+                <span>+ Kasir Baru</span>
+            </button>
+
             <div class="text-xs text-steel font-mono font-bold px-3 py-2 bg-canvas rounded-xl border border-line hidden sm:block" x-data="{ tgl: '' }" x-init="tgl = new Intl.DateTimeFormat('id-ID', {dateStyle:'medium', timeStyle:'short', timeZone:'Asia/Jakarta'}).format(new Date())">
                 <span x-text="tgl"></span> WIB
             </div>
         </div>
     </div>
 
-    {{-- BARIS 2: DATA KENDARAAN (KHUSUS MODE SERVIS MOTOR) --}}
-    <div
-        x-show="modeTransaksi === 'service'"
-        x-transition:enter="transition ease-out duration-150"
-        x-transition:enter-start="opacity-0 -translate-y-2"
-        x-transition:enter-end="opacity-100 translate-y-0"
-        x-cloak
-        class="p-4 bg-blue-50/70 border-2 border-blue-200 rounded-2xl space-y-3 shadow-sm"
-    >
-        <div class="flex justify-between items-center pb-2 border-b border-blue-200/80">
-            <h4 class="font-black text-xs text-blue-950 flex items-center gap-2 uppercase tracking-wider">
-                <x-icon name="bike" class="w-4 h-4 text-blue-700" />
-                <span>Informasi Kendaraan &amp; Montir Teknisi</span>
-            </h4>
-            <template x-if="serviceIdAktif">
-                <span class="text-xs font-mono font-black bg-blue-600 text-white px-3 py-1 rounded-full flex items-center gap-1 shadow-xs">
-                    <span>Pelunasan SPK:</span>
-                    <span x-text="nomorSpkAktif"></span>
-                </span>
-            </template>
-        </div>
+    {{-- BARIS 2: PANEL TERPADU PELANGGAN & KENDARAAN (SEMUA FIELD OPSIONAL) --}}
+    <div class="bg-white p-3.5 rounded-2xl border-2 border-slate-200 shadow-xs space-y-2.5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-center">
+            {{-- PILIH CUSTOMER (SEARCHABLE) --}}
+            <div class="lg:col-span-4">
+                <label class="block text-[11px] font-black text-slate-600 uppercase mb-1">Pelanggan / Customer (Opsional)</label>
+                <div class="flex items-center gap-1.5">
+                    <div class="relative flex-1" x-data="{ terbuka: false, cari: '' }" x-on:click.outside="terbuka = false">
+                        <button
+                            type="button"
+                            x-on:click="terbuka = !terbuka; if(terbuka) $nextTick(() => $refs.inputCariCust?.focus())"
+                            class="w-full flex items-center justify-between rounded-xl border-2 border-slate-300 bg-slate-50 px-3 py-2 text-xs font-bold shadow-xs focus:outline-none focus:ring-2 focus:ring-rajawali hover:bg-white transition"
+                        >
+                            <div class="flex items-center gap-1.5 truncate">
+                                <x-icon name="user" class="w-3.5 h-3.5 text-steel shrink-0" />
+                                <span class="truncate text-ink font-black" x-text="customerTerpilih ? customerTerpilih.nama : 'Umum (Tunai)'"></span>
+                                <template x-if="customerTerpilih && customerTerpilih.kategori && customerTerpilih.kategori !== 'umum'">
+                                    <span
+                                        :class="customerTerpilih.kategori === 'grosir' ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-blue-100 text-blue-800 border-blue-300'"
+                                        class="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold uppercase shrink-0 border"
+                                        x-text="customerTerpilih.kategori"
+                                    ></span>
+                                </template>
+                            </div>
+                            <x-icon name="chevron-down" class="w-3.5 h-3.5 text-steel shrink-0 ml-1" />
+                        </button>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <div>
-                <label class="block text-xs font-black text-blue-950 uppercase tracking-wider mb-1">Nomor Plat Motor *</label>
+                        {{-- Dropdown Customer Popup --}}
+                        <div
+                            x-show="terbuka"
+                            x-transition:enter="transition ease-out duration-100"
+                            x-transition:enter-start="opacity-0 scale-95"
+                            x-transition:enter-end="opacity-100 scale-100"
+                            x-transition:leave="transition ease-in duration-75"
+                            x-transition:leave-start="opacity-100 scale-100"
+                            x-transition:leave-end="opacity-0 scale-95"
+                            x-cloak
+                            class="absolute left-0 top-full mt-1.5 w-84 rounded-2xl border-2 border-slate-300 bg-white shadow-2xl z-50 overflow-hidden"
+                        >
+                            <div class="p-2.5 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
+                                <x-icon name="search" class="w-4 h-4 text-steel shrink-0 ml-1" />
+                                <input
+                                    x-ref="inputCariCust"
+                                    type="text"
+                                    x-model="cari"
+                                    placeholder="Cari Nama / Plat / Motor / WA..."
+                                    class="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-rajawali font-bold"
+                                >
+                                <button x-show="cari" type="button" x-on:click="cari = ''" class="text-steel hover:text-ink text-xs font-bold px-1">
+                                    <x-icon name="x" class="w-3.5 h-3.5" />
+                                </button>
+                            </div>
+
+                            <div class="p-2 bg-slate-100/70 border-b border-slate-200 flex justify-between items-center">
+                                <span class="text-[11px] text-steel font-bold">Pilih Pelanggan Toko</span>
+                                <button
+                                    type="button"
+                                    x-on:click="terbuka = false; bukaModalCustomerCepat()"
+                                    class="text-[11px] font-black text-rajawali hover:underline flex items-center gap-1 cursor-pointer"
+                                >
+                                    <x-icon name="plus" class="w-3 h-3" />
+                                    <span>+ Customer Baru</span>
+                                </button>
+                            </div>
+
+                            <div class="max-h-56 overflow-y-auto divide-y divide-slate-100">
+                                <template x-for="c in filterCustomer(cari)" :key="c.id">
+                                    <div
+                                        x-on:click="pilihCustomer(c); terbuka = false; cari = ''"
+                                        :class="customerId == c.id ? 'bg-rajawali/10 font-bold text-rajawali' : 'hover:bg-slate-100 text-slate-800'"
+                                        class="p-2.5 cursor-pointer text-xs transition flex justify-between items-center"
+                                    >
+                                        <div class="space-y-0.5">
+                                            <div class="flex items-center gap-1.5 font-bold">
+                                                <span x-text="c.nama"></span>
+                                                <template x-if="c.kategori && c.kategori !== 'umum'">
+                                                    <span
+                                                        :class="c.kategori === 'grosir' ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-blue-100 text-blue-800 border-blue-300'"
+                                                        class="px-1.5 py-0.2 rounded text-[9px] font-mono border uppercase font-bold"
+                                                        x-text="c.kategori"
+                                                    ></span>
+                                                </template>
+                                            </div>
+                                            <template x-if="c.plat || c.motor || c.telepon">
+                                                <div class="text-[11px] text-steel font-mono">
+                                                    <span x-text="c.plat || ''" class="text-rajawali font-bold"></span>
+                                                    <span x-text="c.motor ? ' (' + c.motor + ')' : ''"></span>
+                                                    <span x-text="c.telepon ? ' · ' + c.telepon : ''" class="text-slate-500"></span>
+                                                </div>
+                                            </template>
+                                        </div>
+                                        <x-icon x-show="customerId == c.id" name="check" class="w-4 h-4 text-rajawali shrink-0" />
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button
+                        type="button"
+                        x-on:click="bukaModalCustomerCepat()"
+                        class="p-2 rounded-xl bg-blue-50 text-blue-800 hover:bg-blue-100 border-2 border-blue-200 text-xs font-black shrink-0 transition cursor-pointer"
+                        data-tooltip="Daftar Customer Baru"
+                    >
+                        <x-icon name="user-plus" class="w-4 h-4 text-blue-700" />
+                    </button>
+                </div>
+            </div>
+
+            {{-- PLAT NOMOR (OPSIONAL) --}}
+            <div class="lg:col-span-2">
+                <label class="block text-[11px] font-black text-slate-600 uppercase mb-1">Plat Nomor (Opsional)</label>
                 <input
                     type="text"
                     x-model="platNomor"
                     x-on:input="sinkronPlatKeCustomer()"
-                    placeholder="Contoh: L 1234 ABC"
-                    class="w-full text-sm font-mono font-black bg-white border-2 border-blue-300 rounded-xl px-3 py-2 uppercase focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                    placeholder="cth. L 1234 ABC"
+                    class="w-full text-xs font-mono font-black bg-slate-50 border-2 border-slate-300 rounded-xl px-3 py-2 uppercase focus:ring-2 focus:ring-rajawali focus:bg-white focus:outline-none"
                 >
             </div>
-            <div>
-                <label class="block text-xs font-black text-blue-950 uppercase tracking-wider mb-1">Merk / Tipe Motor</label>
+
+            {{-- TIPE MOTOR (OPSIONAL) --}}
+            <div class="lg:col-span-2">
+                <label class="block text-[11px] font-black text-slate-600 uppercase mb-1">Tipe Motor (Opsional)</label>
                 <input
                     type="text"
                     x-model="merkType"
-                    placeholder="Contoh: Honda Vario 125"
-                    class="w-full text-sm font-bold bg-white border-2 border-blue-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                    placeholder="cth. Vario 125"
+                    class="w-full text-xs font-bold bg-slate-50 border-2 border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-rajawali focus:bg-white focus:outline-none"
                 >
             </div>
-            <div>
-                <label class="block text-xs font-black text-blue-950 uppercase tracking-wider mb-1">Montir / Teknisi *</label>
+
+            {{-- MEKANIK / MONTIR (OPSIONAL) --}}
+            <div class="lg:col-span-2">
+                <label class="block text-[11px] font-black text-slate-600 uppercase mb-1">Mekanik / Montir (Opsional)</label>
                 <select
                     x-model="montirId"
-                    class="w-full text-sm font-bold bg-white border-2 border-blue-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                    class="w-full text-xs font-bold bg-slate-50 border-2 border-slate-300 rounded-xl px-2.5 py-2 focus:ring-2 focus:ring-rajawali focus:bg-white focus:outline-none"
                 >
-                    <option value="">-- Pilih Montir --</option>
+                    <option value="">-- Tanpa Montir --</option>
                     <template x-for="m in montirs" :key="m.id">
                         <option :value="m.id" x-text="m.nama + ' (' + m.peran + ')'"></option>
                     </template>
                 </select>
             </div>
-            <div>
-                <label class="block text-xs font-black text-blue-950 uppercase tracking-wider mb-1">Keluhan / Diagnosa</label>
+
+            {{-- JENIS PEMBAYARAN (TUNAI / TEMPO) --}}
+            <div class="lg:col-span-2">
+                <label class="block text-[11px] font-black text-slate-600 uppercase mb-1">Jenis Bayar</label>
+                <div class="flex items-center rounded-xl border-2 border-slate-300 overflow-hidden text-xs font-black shadow-xs bg-white">
+                    <button type="button" x-on:click="jenisBayar = 'tunai'" :class="jenisBayar === 'tunai' ? 'bg-rajawali text-white shadow-xs' : 'bg-white text-steel hover:bg-slate-50'" class="flex-1 py-2 text-center transition cursor-pointer">Tunai</button>
+                    <button type="button" x-on:click="jenisBayar = 'tempo'" :class="jenisBayar === 'tempo' ? 'bg-rajawali text-white shadow-xs' : 'bg-white text-steel hover:bg-slate-50'" class="flex-1 py-2 text-center transition cursor-pointer">Tempo</button>
+                </div>
+            </div>
+        </div>
+
+        {{-- TOGGLE KELUHAN / CATATAN KHUSUS SERVIS (EXPANDABLE) --}}
+        <div x-data="{ bukaCatatan: false }" class="pt-1 border-t border-slate-100">
+            <div class="flex items-center justify-between">
+                <button
+                    type="button"
+                    x-on:click="bukaCatatan = !bukaCatatan"
+                    class="text-[11px] font-bold text-slate-500 hover:text-slate-800 flex items-center gap-1 transition cursor-pointer"
+                >
+                    <x-icon name="file-text" class="w-3.5 h-3.5" />
+                    <span x-text="bukaCatatan ? 'Tutup Kolom Catatan / Keluhan' : '+ Tambah Catatan Servis / Keluhan Motor'"></span>
+                </button>
+                <template x-if="keluhan">
+                    <span class="text-[11px] text-blue-700 font-bold font-mono">Ada Catatan Servis</span>
+                </template>
+            </div>
+            <div x-show="bukaCatatan || keluhan" x-cloak class="mt-2">
                 <input
                     type="text"
                     x-model="keluhan"
-                    placeholder="Contoh: Ganti oli mesin &amp; kampas rem"
-                    class="w-full text-sm font-medium bg-white border-2 border-blue-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-600 focus:outline-none"
+                    placeholder="Tulis keluhan servis, misal: Ganti oli mesin + stel rantai + rem bunyi..."
+                    class="w-full text-xs font-medium bg-slate-50 border-2 border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-rajawali focus:bg-white focus:outline-none"
                 >
             </div>
         </div>
     </div>
 
-    {{-- BARIS 3: SEARCH BARCODE, SELECT CUSTOMER, & JENIS BAYAR --}}
-    <div class="flex items-center gap-3 flex-wrap">
-        {{-- INPUT BARCODE & LIVE SEARCH --}}
-        <div class="relative flex-1 min-w-72 flex items-center gap-2">
-            <div class="relative flex-1" x-on:click.outside="fokusMainInput = false">
-                <x-icon name="scan-barcode" class="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-steel" />
-                <input
-                    x-ref="barcode"
-                    x-model="barcode"
-                    x-on:focus="fokusMainInput = true"
-                    x-on:keydown.down.prevent="indeksLive = Math.min(indeksLive + 1, hasilLive.length - 1)"
-                    x-on:keydown.up.prevent="indeksLive = Math.max(indeksLive - 1, 0)"
-                    x-on:keydown.enter.prevent="pilihLiveAtauBarcode()"
-                    type="text"
-                    autocomplete="off"
-                    placeholder="Scan barcode / ketik nama barang atau jasa..."
-                    class="w-full rounded-xl border-2 border-slate-300 bg-white pl-11 pr-4 py-2.5 text-base font-bold focus:outline-none focus:ring-2 focus:ring-rajawali focus:border-rajawali shadow-xs placeholder:text-sm placeholder:font-medium placeholder:text-steel"
-                >
+    {{-- BARIS 3: SEARCH BARCODE & LIVE SEARCH (LEBAR & MUDAH DISCAN) --}}
+    <div class="flex items-center gap-2">
+        <div class="relative flex-1" x-on:click.outside="fokusMainInput = false">
+            <x-icon name="scan-barcode" class="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-steel" />
+            <input
+                x-ref="barcode"
+                x-model="barcode"
+                x-on:focus="fokusMainInput = true"
+                x-on:keydown.down.prevent="indeksLive = Math.min(indeksLive + 1, hasilLive.length - 1)"
+                x-on:keydown.up.prevent="indeksLive = Math.max(indeksLive - 1, 0)"
+                x-on:keydown.enter.prevent="pilihLiveAtauBarcode()"
+                type="text"
+                autocomplete="off"
+                placeholder="Scan barcode fisik / ketik nama barang atau jasa... (Tekan F2 untuk cari)"
+                class="w-full rounded-2xl border-2 border-slate-300 bg-white pl-11 pr-4 py-3 text-base font-bold focus:outline-none focus:ring-2 focus:ring-rajawali focus:border-rajawali shadow-xs placeholder:text-sm placeholder:font-medium placeholder:text-steel"
+            >
 
-                <!-- Live Search Floating Dropdown Popup -->
-                <div
-                    x-show="barcode.trim().length >= 1 && hasilLive.length > 0"
-                    x-cloak
-                    class="absolute left-0 right-0 top-full mt-1.5 bg-white border-2 border-rajawali rounded-2xl shadow-2xl z-50 max-h-80 overflow-y-auto divide-y divide-line"
-                >
-                    <template x-for="(b, idx) in hasilLive" :key="b.id">
-                        <div
-                            x-on:click="pilihBarangLive(b)"
-                            x-on:mouseenter="indeksLive = idx"
-                            :class="indeksLive === idx ? 'bg-rajawali/10 font-bold border-l-4 border-rajawali' : 'hover:bg-canvas'"
-                            class="p-3 cursor-pointer flex justify-between items-center transition"
-                        >
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <span class="font-mono text-xs font-bold text-rajawali bg-red-50 px-1.5 py-0.5 rounded border border-red-200" x-text="b.kode"></span>
-                                    <span class="font-black text-base text-ink" x-text="b.nama"></span>
-                                    <template x-if="b.is_jasa">
-                                        <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-blue-100 text-blue-800 border border-blue-300 font-bold">JASA</span>
-                                    </template>
-                                </div>
-                                <p class="text-xs text-steel mt-0.5">Barcode: <span class="font-mono" x-text="b.barcode || '-'"></span></p>
-                            </div>
-                            <div class="text-right">
-                                <span class="font-mono font-black text-base text-ink block" x-text="formatRp(b.harga)"></span>
-                                <template x-if="!b.is_jasa">
-                                    <span class="text-xs font-mono text-steel">Stok: <strong :class="b.stok <= 0 ? 'text-rajawali' : 'text-lunas'" class="text-sm" x-text="b.stok"></strong></span>
+            <!-- Live Search Floating Dropdown Popup -->
+            <div
+                x-show="barcode.trim().length >= 1 && hasilLive.length > 0"
+                x-cloak
+                class="absolute left-0 right-0 top-full mt-1.5 bg-white border-2 border-rajawali rounded-2xl shadow-2xl z-50 max-h-80 overflow-y-auto divide-y divide-line"
+            >
+                <template x-for="(b, idx) in hasilLive" :key="b.id">
+                    <div
+                        x-on:click="pilihBarangLive(b)"
+                        x-on:mouseenter="indeksLive = idx"
+                        :class="indeksLive === idx ? 'bg-rajawali/10 font-bold border-l-4 border-rajawali' : 'hover:bg-canvas'"
+                        class="p-3 cursor-pointer flex justify-between items-center transition"
+                    >
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-mono text-xs font-bold text-rajawali bg-red-50 px-1.5 py-0.5 rounded border border-red-200" x-text="b.kode"></span>
+                                <span class="font-black text-base text-ink" x-text="b.nama"></span>
+                                <template x-if="b.is_jasa">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-blue-100 text-blue-800 border border-blue-300 font-bold">JASA</span>
                                 </template>
                             </div>
+                            <p class="text-xs text-steel mt-0.5">Barcode: <span class="font-mono" x-text="b.barcode || '-'"></span></p>
                         </div>
-                    </template>
-                </div>
+                        <div class="text-right">
+                            <span class="font-mono font-black text-base text-ink block" x-text="formatRp(b.harga)"></span>
+                            <template x-if="!b.is_jasa">
+                                <span class="text-xs font-mono text-steel">Stok: <strong :class="b.stok <= 0 ? 'text-rajawali' : 'text-lunas'" class="text-sm" x-text="b.stok"></strong></span>
+                            </template>
+                        </div>
+                    </div>
+                </template>
             </div>
-
-            <button type="button" x-on:click="bukaScannerKamera()" class="px-3.5 py-2.5 bg-rajawali/10 text-rajawali rounded-xl hover:bg-rajawali/20 font-black text-xs flex items-center gap-1.5 shrink-0 transition border border-rajawali/20" data-tooltip="Scan Barcode via Kamera">
-                <x-icon name="camera" class="w-4 h-4" />
-                <span class="hidden sm:inline">Kamera</span>
-            </button>
         </div>
 
-        {{-- CUSTOMER SELECT SEARCHABLE (DENGAN TOMBOL TAMBAH CEPAT) --}}
-        <div class="flex items-center gap-2 min-w-64 max-w-sm">
-            <div class="relative flex-1" x-data="{ terbuka: false, cari: '' }" x-on:click.outside="terbuka = false">
-                <button
-                    type="button"
-                    x-on:click="terbuka = !terbuka; if(terbuka) $nextTick(() => $refs.inputCariCust?.focus())"
-                    class="w-full flex items-center justify-between rounded-xl border-2 border-slate-300 bg-white px-3.5 py-2.5 text-sm font-bold shadow-xs focus:outline-none focus:ring-2 focus:ring-rajawali hover:bg-slate-50 transition"
-                >
-                    <div class="flex items-center gap-2 truncate">
-                        <x-icon name="user" class="w-4 h-4 text-steel shrink-0" />
-                        <span class="truncate text-ink font-black" x-text="customerTerpilih ? customerTerpilih.nama : 'Umum (Tunai)'"></span>
-                        <template x-if="customerTerpilih && customerTerpilih.kategori && customerTerpilih.kategori !== 'umum'">
-                            <span
-                                :class="customerTerpilih.kategori === 'grosir' ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-blue-100 text-blue-800 border-blue-300'"
-                                class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase shrink-0 border"
-                                x-text="customerTerpilih.kategori"
-                            ></span>
-                        </template>
-                    </div>
-                    <x-icon name="chevron-down" class="w-4 h-4 text-steel shrink-0 ml-1" />
-                </button>
+        <button
+            type="button"
+            x-on:click="bukaScannerKamera()"
+            class="px-4 py-3 bg-rajawali hover:bg-rajawali-dark text-white rounded-2xl font-bold text-xs flex items-center gap-2 shrink-0 transition shadow-xs cursor-pointer"
+            data-tooltip="Scan Barcode via Kamera"
+        >
+            <x-icon name="camera" class="w-4 h-4" />
+            <span class="hidden sm:inline">Kamera</span>
+        </button>
 
-                {{-- Dropdown Customer Popup --}}
-                <div
-                    x-show="terbuka"
-                    x-transition:enter="transition ease-out duration-100"
-                    x-transition:enter-start="opacity-0 scale-95"
-                    x-transition:enter-end="opacity-100 scale-100"
-                    x-transition:leave="transition ease-in duration-75"
-                    x-transition:leave-start="opacity-100 scale-100"
-                    x-transition:leave-end="opacity-0 scale-95"
-                    x-cloak
-                    class="absolute left-0 top-full mt-1.5 w-84 rounded-2xl border-2 border-slate-300 bg-white shadow-2xl z-50 overflow-hidden"
-                >
-                    <div class="p-2.5 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
-                        <x-icon name="search" class="w-4 h-4 text-steel shrink-0 ml-1" />
-                        <input
-                            x-ref="inputCariCust"
-                            type="text"
-                            x-model="cari"
-                            placeholder="Cari Nama / Plat / Motor / WA..."
-                            class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-rajawali font-bold"
-                        >
-                        <button x-show="cari" type="button" x-on:click="cari = ''" class="text-steel hover:text-ink text-xs font-bold px-1">
-                            <x-icon name="x" class="w-4 h-4" />
-                        </button>
-                    </div>
-
-                    <div class="p-2.5 bg-slate-100/70 border-b border-slate-200 flex justify-between items-center">
-                        <span class="text-xs text-steel font-bold">Pilih Pelanggan Toko</span>
-                        <button
-                            type="button"
-                            x-on:click="terbuka = false; bukaModalCustomerCepat()"
-                            class="text-xs font-black text-rajawali hover:underline flex items-center gap-1 cursor-pointer"
-                        >
-                            <x-icon name="plus" class="w-3.5 h-3.5" />
-                            <span>+ Customer Baru</span>
-                        </button>
-                    </div>
-
-                    {{-- Customer List --}}
-                    <div class="max-h-64 overflow-y-auto divide-y divide-slate-100">
-                        <template x-for="c in filterCustomer(cari)" :key="c.id">
-                            <div
-                                x-on:click="pilihCustomer(c); terbuka = false; cari = ''"
-                                :class="customerId == c.id ? 'bg-rajawali/10 font-bold text-rajawali' : 'hover:bg-slate-100 text-slate-800'"
-                                class="p-3 cursor-pointer text-xs transition flex justify-between items-center"
-                            >
-                                <div class="space-y-0.5">
-                                    <div class="flex items-center gap-2 font-black text-sm">
-                                        <span x-text="c.nama"></span>
-                                        <template x-if="c.kategori && c.kategori !== 'umum'">
-                                            <span
-                                                :class="c.kategori === 'grosir' ? 'bg-amber-100 text-amber-800 border-amber-300' : 'bg-blue-100 text-blue-800 border-blue-300'"
-                                                class="px-1.5 py-0.2 rounded text-[9px] font-mono border uppercase font-bold"
-                                                x-text="c.kategori"
-                                            ></span>
-                                        </template>
-                                    </div>
-                                    <template x-if="c.plat || c.motor || c.telepon">
-                                        <div class="text-xs text-steel font-mono">
-                                            <span x-text="c.plat || ''" class="text-rajawali font-bold"></span>
-                                            <span x-text="c.motor ? ' (' + c.motor + ')' : ''"></span>
-                                            <span x-text="c.telepon ? ' · ' + c.telepon : ''" class="text-slate-500"></span>
-                                        </div>
-                                    </template>
-                                </div>
-                                <x-icon x-show="customerId == c.id" name="check" class="w-4 h-4 text-rajawali shrink-0" />
-                            </div>
-                        </template>
-                        <template x-if="filterCustomer(cari).length === 0">
-                            <div class="p-6 text-center text-xs text-steel italic">Customer tidak ditemukan.</div>
-                        </template>
-                    </div>
-                </div>
-            </div>
-
-            {{-- TOMBOL CEPAT TAMBAH CUSTOMER BARU --}}
-            <button
-                type="button"
-                x-on:click="bukaModalCustomerCepat()"
-                class="px-3.5 py-2.5 rounded-xl bg-blue-50 text-blue-800 hover:bg-blue-100 border-2 border-blue-200 text-xs font-black flex items-center gap-1.5 shrink-0 shadow-xs transition cursor-pointer"
-                data-tooltip="Daftarkan Customer Baru Cepat (Nama & WA untuk garansi/retur)"
-            >
-                <x-icon name="user-plus" class="w-4 h-4 text-blue-700" />
-                <span class="hidden xl:inline">+ Baru</span>
-            </button>
-        </div>
-
-        {{-- TOGGLE JENIS BAYAR (TUNAI / TEMPO) --}}
-        <div class="flex items-center rounded-xl border-2 border-slate-300 overflow-hidden text-sm font-black shadow-xs bg-white">
-            <button type="button" x-on:click="jenisBayar = 'tunai'" :class="jenisBayar === 'tunai' ? 'bg-rajawali text-white shadow-xs' : 'bg-white text-steel hover:bg-slate-50'" class="px-4 py-2 transition cursor-pointer">Tunai</button>
-            <button type="button" x-on:click="jenisBayar = 'tempo'" :class="jenisBayar === 'tempo' ? 'bg-rajawali text-white shadow-xs' : 'bg-white text-steel hover:bg-slate-50'" class="px-4 py-2 transition cursor-pointer">Tempo</button>
-        </div>
+        <button
+            type="button"
+            x-on:click="bukaModalCari()"
+            class="px-4 py-3 bg-white hover:bg-slate-50 border-2 border-slate-300 text-slate-800 rounded-2xl font-bold text-xs flex items-center gap-1.5 shrink-0 transition shadow-xs cursor-pointer"
+            data-tooltip="Buka Katalog Lengkap (F2)"
+        >
+            <x-icon name="search" class="w-4 h-4 text-steel" />
+            <span class="hidden sm:inline">Cari (F2)</span>
+        </button>
     </div>
 
-    {{-- BARIS 4: TABEL KERANJANG TRANSAKSI POS --}}
+    {{-- BARIS 4: TABEL KERANJANG TRANSAKSI POS (RAPI, BERSIH & PROPORSIONAL) --}}
     <x-card :padded="false" class="flex-1 overflow-hidden flex flex-col shadow-lg border border-slate-200/80">
         <div class="overflow-y-auto flex-1">
             <table class="w-full text-sm">
@@ -304,7 +320,7 @@
                         <th class="text-right px-3 py-3 w-36">Harga Satuan</th>
                         <th class="text-center px-3 py-3 w-24">Disc (%)</th>
                         <th class="text-right px-3 py-3 w-32">Disc (Rp)</th>
-                        <th class="text-right px-3 py-3 w-40">Total (Rp)</th>
+                        <th class="text-right px-3 py-3 w-36">Total (Rp)</th>
                         <th class="text-center px-2 py-3 w-12">Aksi</th>
                     </tr>
                 </thead>
@@ -320,20 +336,24 @@
                                 <span class="font-mono text-xs font-black text-rajawali bg-red-50 px-2 py-0.5 rounded border border-red-200 inline-block" x-text="item.kode"></span>
                             </td>
                             <td class="px-3 py-2.5">
-                                <div class="font-black text-base text-slate-900 leading-tight" x-text="item.nama"></div>
-                                <div class="flex items-center gap-1.5 flex-wrap mt-1">
-                                    <template x-if="item.labelTier">
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">
-                                            <x-icon name="sparkles" class="w-3.5 h-3.5 text-emerald-600" />
-                                            <span x-text="item.labelTier"></span>
-                                        </span>
-                                    </template>
-                                    <template x-if="Number(item.hargaOriginal || 0) > Number(item.harga || 0)">
-                                        <span class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                                            Harga Normal <span class="line-through" x-text="formatRp(item.hargaOriginal)"></span> (Hemat <span x-text="formatRp(item.hargaOriginal - item.harga)"></span>/pcs)
-                                        </span>
-                                    </template>
-                                </div>
+                                <div class="font-black text-sm text-slate-900 leading-tight" x-text="item.nama"></div>
+                                {{-- KETERANGAN DISKON / TIER PROMO YANG RAPI & BERSIH --}}
+                                <template x-if="item.labelTier || (Number(item.hargaOriginal || 0) > Number(item.harga || 0))">
+                                    <div class="flex items-center gap-1.5 flex-wrap mt-0.5">
+                                        <template x-if="item.labelTier">
+                                            <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-mono bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">
+                                                <x-icon name="sparkles" class="w-3 h-3 text-emerald-600" />
+                                                <span x-text="item.labelTier"></span>
+                                            </span>
+                                        </template>
+                                        <template x-if="Number(item.hargaOriginal || 0) > Number(item.harga || 0)">
+                                            <span class="text-[11px] text-slate-500 font-medium">
+                                                Normal: <span class="line-through font-mono" x-text="formatRp(item.hargaOriginal)"></span>
+                                                <span class="text-emerald-700 font-bold">(Hemat <span x-text="formatRp(item.hargaOriginal - item.harga)"></span>/pcs)</span>
+                                            </span>
+                                        </template>
+                                    </div>
+                                </template>
                             </td>
                             <td class="px-3 py-2.5 text-center">
                                 <input
@@ -344,7 +364,7 @@
                                     x-on:blur="validasiQty(idx)"
                                     min="0.001"
                                     step="any"
-                                    class="w-20 text-center font-mono font-black text-base bg-white border-2 border-slate-300 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-rajawali focus:border-rajawali focus:outline-none shadow-xs"
+                                    class="w-20 text-center font-mono font-black text-sm bg-white border-2 border-slate-300 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-rajawali focus:border-rajawali focus:outline-none shadow-xs"
                                 >
                             </td>
                             <td class="px-3 py-2.5 text-right font-mono font-bold text-ink">
@@ -357,10 +377,7 @@
                                     class="w-28 text-right font-mono font-black text-sm bg-white border-2 border-slate-300 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-rajawali focus:border-rajawali focus:outline-none shadow-xs"
                                 >
                                 <template x-if="Number(item.hargaOriginal || 0) > Number(item.harga || 0)">
-                                    <div class="mt-0.5 text-right leading-tight">
-                                        <span class="text-[11px] text-slate-400 line-through block" x-text="formatRp(item.hargaOriginal)"></span>
-                                        <span class="text-[10px] text-emerald-700 font-black">- <span x-text="formatRp(item.hargaOriginal - item.harga)"></span></span>
-                                    </div>
+                                    <span class="text-[10px] text-slate-400 line-through block text-right mt-0.5" x-text="formatRp(item.hargaOriginal)"></span>
                                 </template>
                             </td>
                             <td class="px-3 py-2.5 text-center">
@@ -385,14 +402,11 @@
                                 >
                             </td>
                             <td class="px-3 py-2.5 text-right font-mono">
+                                <div class="font-black text-slate-900 text-sm" x-text="formatRp(hitungTotalItem(item))"></div>
                                 <template x-if="(Number(item.hargaOriginal || item.harga || 0) * Number(item.qty || 0)) > hitungTotalItem(item)">
-                                    <div class="text-[11px] text-slate-400 line-through" x-text="formatRp((item.hargaOriginal || item.harga) * item.qty)"></div>
-                                </template>
-                                <div class="font-black text-slate-900 text-base" x-text="formatRp(hitungTotalItem(item))"></div>
-                                <template x-if="(Number(item.hargaOriginal || item.harga || 0) * Number(item.qty || 0)) > hitungTotalItem(item)">
-                                    <div class="text-[10px] text-emerald-700 font-bold">
+                                    <span class="text-[10px] text-emerald-700 font-bold block">
                                         Hemat <span x-text="formatRp(((item.hargaOriginal || item.harga) * item.qty) - hitungTotalItem(item))"></span>
-                                    </div>
+                                    </span>
                                 </template>
                             </td>
                             <td class="px-2 py-2.5 text-center">
@@ -415,7 +429,7 @@
                                         <x-icon name="shopping-cart" class="w-8 h-8" />
                                     </div>
                                     <p class="font-black text-ink text-base">Keranjang Belanja Masih Kosong</p>
-                                    <p class="text-xs text-steel">Scan barcode fisik, ketik nama barang di atas, atau tekan <kbd class="px-1.5 py-0.5 bg-canvas border rounded text-xs font-mono font-bold">F2</kbd> untuk mencari barang.</p>
+                                    <p class="text-xs text-steel">Scan barcode fisik, ketik nama barang/jasa di atas, atau tekan <kbd class="px-1.5 py-0.5 bg-canvas border rounded text-xs font-mono font-bold">F2</kbd> untuk mencari barang.</p>
                                 </div>
                             </td>
                         </tr>
@@ -456,63 +470,45 @@
             </div>
 
             <div class="flex items-center justify-end gap-2 flex-wrap">
-                {{-- TOMBOL AKSI MODE SERVIS --}}
-                <template x-if="modeTransaksi === 'service'">
-                    <div class="flex items-center gap-2">
-                        <button
-                            type="button"
-                            x-on:click="simpanSpkService()"
-                            x-bind:disabled="sedangMenyimpan"
-                            class="px-5 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs flex items-center gap-2 shadow-md transition active:scale-98 cursor-pointer"
-                            data-tooltip="Simpan order antrean servis & terbitkan tanda terima tanpa pembayaran langsung"
-                        >
-                            <x-icon name="clipboard-check" class="w-4 h-4" />
-                            <span>Terima Servis (SPK)</span>
-                            <kbd class="text-[10px] bg-white/20 px-1.5 py-0.5 rounded font-mono">F10</kbd>
-                        </button>
+                {{-- TOMBOL SIMPAN SPK JIKA MOTOR MASUK BENGKEL & DITINGGAL --}}
+                <button
+                    type="button"
+                    x-on:click="simpanSpkService()"
+                    x-bind:disabled="sedangMenyimpan"
+                    class="px-4 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs flex items-center gap-1.5 shadow-md transition active:scale-98 cursor-pointer"
+                    data-tooltip="Simpan order antrean servis & terbitkan tanda terima SPK tanpa bayar langsung"
+                >
+                    <x-icon name="clipboard-check" class="w-4 h-4" />
+                    <span>Terima Servis (SPK)</span>
+                    <kbd class="text-[10px] bg-white/20 px-1.5 py-0.5 rounded font-mono">F10</kbd>
+                </button>
 
-                        <button
-                            type="button"
-                            x-on:click="simpanNota()"
-                            x-bind:disabled="sedangMenyimpan"
-                            class="px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm flex items-center gap-2 shadow-lg shadow-emerald-900/20 transition active:scale-98 cursor-pointer"
-                            data-tooltip="Servis selesai & langsung bayar lunas sekarang"
-                        >
-                            <x-icon name="check-circle" class="w-5 h-5" />
-                            <span>Bayar Lunas</span>
-                            <kbd class="text-xs bg-white/20 px-1.5 py-0.5 rounded font-mono">F12</kbd>
-                        </button>
-                    </div>
-                </template>
-
-                {{-- TOMBOL AKSI MODE PENJUALAN --}}
-                <template x-if="modeTransaksi === 'penjualan'">
-                    <button
-                        type="button"
-                        x-on:click="simpanNota()"
-                        x-bind:disabled="sedangMenyimpan"
-                        class="px-8 py-3.5 rounded-xl bg-[#B0181C] hover:bg-[#8f1013] text-white font-black text-base flex items-center gap-2.5 shadow-xl shadow-red-900/20 transition active:scale-98 cursor-pointer"
-                    >
-                        <x-icon name="save" class="w-5 h-5" />
-                        <span>Simpan &amp; Bayar Lunas</span>
-                        <kbd class="text-xs bg-white/25 px-2 py-0.5 rounded-lg ml-1 font-mono">F12</kbd>
-                    </button>
-                </template>
+                {{-- TOMBOL UTAMA BAYAR LUNAS (SELESAI TRANSAKSI & CETAK NOTA) --}}
+                <button
+                    type="button"
+                    x-on:click="simpanNota()"
+                    x-bind:disabled="sedangMenyimpan"
+                    class="px-7 py-3.5 rounded-xl bg-[#B0181C] hover:bg-[#8f1013] text-white font-black text-sm flex items-center gap-2 shadow-xl shadow-red-900/20 transition active:scale-98 cursor-pointer"
+                >
+                    <x-icon name="save" class="w-5 h-5" />
+                    <span>Simpan &amp; Bayar Lunas</span>
+                    <kbd class="text-xs bg-white/25 px-2 py-0.5 rounded-lg ml-1 font-mono">F12</kbd>
+                </button>
             </div>
         </div>
     </x-card>
 
-    {{-- MODAL SCANNER KAMERA --}}
-    <x-modal name="scan-kamera" title="Scanner Kamera (Barcode &amp; QR Code)">
+    {{-- MODAL SCANNER KAMERA DENGAN RETICLE LASER & SUARA BEEP KASIR --}}
+    <x-modal name="scan-kamera" title="Scanner Kamera Barcode &amp; QR Code">
         <div class="space-y-3.5 text-center">
-            <div class="relative w-full max-w-sm mx-auto overflow-hidden rounded-2xl border-2 transition-all duration-300 bg-black min-h-56 flex items-center justify-center"
+            <div class="relative w-full max-w-sm mx-auto overflow-hidden rounded-2xl border-2 transition-all duration-300 bg-black min-h-60 flex items-center justify-center"
                  :class="statusScanKamera === 'sukses' ? 'border-emerald-500 ring-4 ring-emerald-500/30' : 'border-slate-700'">
                 
-                <div id="html5-qr-code-reader" class="w-full"></div>
+                <div id="html5-qr-code-reader-kasir" class="w-full"></div>
 
                 <!-- Laser scanning animation overlay -->
                 <div x-show="kameraAktif && statusScanKamera === 'scanning'" class="absolute inset-0 pointer-events-none flex flex-col justify-center items-center">
-                    <div class="w-52 h-36 border-2 border-red-500/70 rounded-xl relative overflow-hidden shadow-inner">
+                    <div class="w-56 h-40 border-2 border-red-500/70 rounded-xl relative overflow-hidden shadow-inner">
                         <div class="absolute inset-x-0 h-0.5 bg-red-500 shadow-[0_0_10px_#ef4444] animate-bounce"></div>
                     </div>
                 </div>
@@ -522,7 +518,7 @@
                     <div class="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center text-white mb-2 shadow-lg animate-pulse">
                         <x-icon name="check" class="w-6 h-6 stroke-[3]" />
                     </div>
-                    <span class="text-xs font-bold text-emerald-200 uppercase tracking-wide">BERHASIL TERDETEKSI!</span>
+                    <span class="text-xs font-bold text-emerald-200 uppercase tracking-wide">BERHASIL DITEMUKAN!</span>
                     <p class="font-mono text-xs font-black text-white mt-1 break-all line-clamp-2" x-text="hasilScanTerakhir"></p>
                 </div>
             </div>
@@ -546,38 +542,32 @@
     </x-modal>
 
     {{-- MODAL CARI BARANG (F2) --}}
-    <x-modal name="cari-barang" title="Katalog Cari Barang &amp; Sparepart (F2)">
-        <div class="space-y-3.5" x-init="$nextTick(() => $refs.modalCariInput?.focus())">
-            <div class="relative">
-                <x-icon name="search" class="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-steel" />
-                <input
-                    x-ref="modalCariInput"
-                    x-model="cariQuery"
-                    x-on:keydown.enter.prevent="pilihTopBarangModal()"
-                    type="text"
-                    placeholder="Ketik nama sparepart / kode / barcode..."
-                    class="w-full rounded-xl border-2 border-slate-300 bg-white pl-11 pr-4 py-3 text-base font-bold focus:outline-none focus:ring-2 focus:ring-rajawali"
-                >
-            </div>
-            <div class="max-h-80 overflow-y-auto border-2 border-line rounded-2xl divide-y divide-line">
+    <x-modal name="cari-barang" title="Katalog Barang &amp; Jasa (F2)" wide>
+        <div class="space-y-3">
+            <x-input
+                x-ref="inputCariModal"
+                x-model="cariQuery"
+                label="Cari Cepat"
+                placeholder="Ketik kode, nama sparepart, atau jasa..."
+            />
+            <div class="max-h-96 overflow-y-auto divide-y divide-line border rounded-xl">
                 <template x-for="b in daftarBarangFiltered" :key="b.id">
                     <div
                         x-on:click="pilihBarangDariModal(b)"
-                        class="p-3.5 hover:bg-canvas cursor-pointer flex justify-between items-center transition group"
+                        class="p-3 hover:bg-canvas cursor-pointer flex justify-between items-center transition"
                     >
                         <div>
                             <div class="flex items-center gap-2">
-                                <span class="font-mono text-xs font-black text-rajawali bg-red-50 px-2 py-0.5 rounded border border-red-200" x-text="b.kode"></span>
-                                <span class="font-black text-base text-ink group-hover:text-rajawali" x-text="b.nama"></span>
+                                <span class="font-mono text-xs font-bold text-rajawali bg-red-50 px-1.5 py-0.5 rounded border border-red-200" x-text="b.kode"></span>
+                                <span class="font-bold text-ink" x-text="b.nama"></span>
+                                <template x-if="b.is_jasa">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-blue-100 text-blue-800 border border-blue-300 font-bold">JASA</span>
+                                </template>
                             </div>
-                            <div class="text-xs text-steel font-mono mt-1">
-                                <span x-text="'Barcode: ' + (b.barcode || '-')"></span>
-                                <span class="mx-1">·</span>
-                                <span x-text="'Rak: ' + (b.lokasi_rak || '-')"></span>
-                            </div>
+                            <p class="text-xs text-steel mt-0.5">Barcode: <span class="font-mono" x-text="b.barcode || '-'"></span></p>
                         </div>
                         <div class="text-right">
-                            <span class="font-mono font-black text-base text-ink block" x-text="formatRp(b.harga)"></span>
+                            <span class="font-mono font-bold text-ink block" x-text="formatRp(b.harga)"></span>
                             <span class="text-xs font-mono text-steel">Stok: <strong :class="b.stok <= 0 ? 'text-rajawali' : 'text-lunas'" class="text-sm font-black" x-text="b.stok"></strong></span>
                         </div>
                     </div>
@@ -630,22 +620,17 @@
         </div>
     </x-modal>
 
-    {{-- MODAL CUSTOMER BARU CEPAT (QUICK ADD) --}}
-    <x-modal name="tambah-customer-cepat" title="Tambah Pelanggan Cepat">
-        <form x-on:submit.prevent="simpanCustomerCepat()" class="space-y-3.5">
-            <div class="p-2.5 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900 font-bold flex items-center gap-2">
-                <x-icon name="info" class="w-4 h-4 text-blue-600 shrink-0" />
-                <span>Cukup isi <strong>Nama</strong> &amp; <strong>No. WhatsApp</strong> untuk kirim struk digital.</span>
-            </div>
-
+    {{-- MODAL TAMBAH CUSTOMER CEPAT --}}
+    <x-modal name="tambah-customer-cepat" title="Daftarkan Customer Baru">
+        <form x-on:submit.prevent="simpanCustomerCepat()" class="space-y-3">
             <div>
-                <label class="block text-xs font-black text-slate-800 uppercase mb-1">Nama Pelanggan *</label>
-                <input type="text" x-model="formCustomer.nama" required placeholder="Nama pelanggan..." class="w-full text-sm font-bold rounded-xl border-2 border-slate-300 px-3.5 py-2.5 focus:ring-2 focus:ring-rajawali focus:outline-none">
+                <label class="block text-xs font-black text-slate-800 uppercase mb-1">Nama Customer *</label>
+                <input type="text" x-model="formCustomer.nama" placeholder="Contoh: Budi Santoso" required class="w-full text-sm font-bold rounded-xl border-2 border-slate-300 px-3.5 py-2.5 focus:ring-2 focus:ring-rajawali focus:outline-none">
             </div>
             <div class="grid grid-cols-2 gap-3">
                 <div>
                     <label class="block text-xs font-black text-slate-800 uppercase mb-1">No. WhatsApp / HP</label>
-                    <input type="text" x-model="formCustomer.telepon" placeholder="08xxxxxxxxxx" class="w-full text-sm font-mono font-bold rounded-xl border-2 border-slate-300 px-3.5 py-2.5 focus:ring-2 focus:ring-rajawali focus:outline-none">
+                    <input type="text" x-model="formCustomer.telepon" placeholder="08123456789" class="w-full text-sm font-mono font-bold rounded-xl border-2 border-slate-300 px-3.5 py-2.5 focus:ring-2 focus:ring-rajawali focus:outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-black text-slate-800 uppercase mb-1">Kategori Harga</label>
@@ -750,19 +735,18 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
         montirs: dataMontir,
         antreanServiceList: [],
 
-        // Mode: 'penjualan' / 'service'
-        modeTransaksi: 'penjualan',
+        // Active State
         serviceIdAktif: null,
         nomorSpkAktif: '',
 
-        // Service Form States
+        // Customer & Vehicle Form States (Semua Opsional)
         platNomor: '',
         merkType: '',
         montirId: '',
         keluhan: '',
 
         // POS States
-        customerId: dataCustomer[0].id,
+        customerId: dataCustomer[0]?.id || null,
         jenisBayar: 'tunai',
         barcode: '',
         cariQuery: '',
@@ -797,46 +781,88 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
             this.muatAntreanService();
         },
 
-        gantiMode(mode) {
-            this.modeTransaksi = mode;
-            if (mode === 'penjualan') {
-                this.serviceIdAktif = null;
-                this.nomorSpkAktif = '';
-            }
+        resetTransaksi() {
+            this.keranjang = [];
+            this.diskonNotaValue = '';
+            this.serviceIdAktif = null;
+            this.nomorSpkAktif = '';
+            this.platNomor = '';
+            this.merkType = '';
+            this.montirId = '';
+            this.keluhan = '';
+            this.customerId = this.customerList[0]?.id || null;
+            this.jenisBayar = 'tunai';
             this.$nextTick(() => this.$refs.barcode?.focus());
+            if (window.toastSukses) window.toastSukses('Kasir di-reset. Siap untuk transaksi baru.');
         },
 
-        bukaModalCustomerCepat() {
-            this.formCustomer = { nama: '', telepon: '', plat_nomor: '', jenis_kendaraan: '', kategori: 'umum' };
-            this.$dispatch('buka-modal', { name: 'tambah-customer-cepat' });
+        bukaScannerKamera() {
+            this.statusScanKamera = 'idle';
+            this.hasilScanTerakhir = '';
+            this.$dispatch('buka-modal', { name: 'scan-kamera' });
+            setTimeout(() => this.mulaiKamera(), 300);
         },
 
-        async simpanCustomerCepat() {
-            if (!this.formCustomer.nama) return;
-            try {
-                const res = await fetch('/admin/kasir/customer-cepat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify(this.formCustomer)
-                });
-                const data = await res.json();
-                if (data.sukses && data.customer) {
-                    this.customerList.push(data.customer);
-                    this.customerId = data.customer.id;
-                    if (data.customer.plat) this.platNomor = data.customer.plat;
-                    if (data.customer.motor) this.merkType = data.customer.motor;
-                    this.$dispatch('tutup-modal', { name: 'tambah-customer-cepat' });
-                    if (window.toastSukses) window.toastSukses(data.pesan);
-                } else {
-                    if (window.toastGagal) window.toastGagal(data.pesan || 'Gagal menyimpan customer');
-                }
-            } catch (err) {
-                if (window.toastGagal) window.toastGagal('Error: ' + err.message);
+        mulaiKamera() {
+            if (typeof Html5Qrcode === 'undefined') {
+                const el = document.getElementById('html5-qr-code-reader-kasir');
+                if (el) el.innerHTML = '<div class="p-4 text-xs text-amber-600 bg-amber-50 rounded-xl font-bold">Pustaka scanner kamera sedang dimuat...</div>';
+                return;
             }
+            if (this.html5QrCode) this.stopKamera();
+            try {
+                this.statusScanKamera = 'scanning';
+                this.html5QrCode = new Html5Qrcode("html5-qr-code-reader-kasir");
+                const config = { fps: 15, qrbox: { width: 250, height: 160 } };
+                this.html5QrCode.start(
+                    { facingMode: "environment" },
+                    config,
+                    (decodedText) => {
+                        if (this.statusScanKamera === 'sukses') return;
+                        this.statusScanKamera = 'sukses';
+                        this.hasilScanTerakhir = decodedText;
+                        bunyikanBeepSukses();
+                        setTimeout(() => {
+                            this.barcode = decodedText.trim();
+                            this.tambahDariBarcode();
+                            this.stopKamera();
+                            this.$dispatch('tutup-modal', { name: 'scan-kamera' });
+                            this.statusScanKamera = 'idle';
+                        }, 500);
+                    },
+                    () => {}
+                ).then(() => {
+                    this.kameraAktif = true;
+                }).catch((err) => {
+                    this.kameraAktif = false;
+                    this.statusScanKamera = 'idle';
+                    const el = document.getElementById('html5-qr-code-reader-kasir');
+                    if (el) el.innerHTML = '<div class="p-4 text-xs text-red-600 bg-red-50 rounded-xl font-bold">Kamera tidak dapat diakses. Pastikan izin kamera diaktifkan.</div>';
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        },
+
+        stopKamera() {
+            if (this.html5QrCode && this.kameraAktif) {
+                this.html5QrCode.stop().then(() => {
+                    this.html5QrCode.clear();
+                    this.kameraAktif = false;
+                    this.statusScanKamera = 'idle';
+                }).catch(() => {
+                    this.kameraAktif = false;
+                    this.statusScanKamera = 'idle';
+                });
+            }
+        },
+
+        async muatAntreanService() {
+            try {
+                const res = await fetch('/admin/service/antrean-json');
+                const data = await res.json();
+                if (data.sukses) this.antreanServiceList = data.antrean;
+            } catch (e) {}
         },
 
         bukaModalAntreanService() {
@@ -844,30 +870,19 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
             this.$dispatch('buka-modal', { name: 'antrean-service' });
         },
 
-        async muatAntreanService() {
-            try {
-                const res = await fetch('/admin/kasir/antrean-service');
-                const data = await res.json();
-                if (data.sukses) {
-                    this.antreanServiceList = data.antrean || [];
-                }
-            } catch {}
-        },
-
         async muatServiceKeKasir(serviceId) {
             try {
-                const res = await fetch(`/admin/kasir/antrean-service/${serviceId}`);
+                const res = await fetch(`/admin/service/${serviceId}/detail-json`);
                 const data = await res.json();
                 if (data.sukses && data.service) {
                     const s = data.service;
-                    this.modeTransaksi = 'service';
                     this.serviceIdAktif = s.id;
                     this.nomorSpkAktif = s.nomor_dokumen;
                     if (s.customer_id) this.customerId = s.customer_id;
-                    this.platNomor = s.plat_nomor;
-                    this.merkType = s.merk_type;
-                    this.montirId = s.montir_id;
-                    this.keluhan = s.keluhan;
+                    this.platNomor = s.plat_nomor || '';
+                    this.merkType = s.merk_type || '';
+                    this.montirId = s.montir_id || '';
+                    this.keluhan = s.keluhan || '';
 
                     // Muat item ke keranjang
                     this.keranjang = [];
@@ -887,7 +902,7 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
                             labelTier: null
                         });
                     });
-                    if (window.toastSukses) window.toastSukses(`Antrean ${s.nomor_dokumen} (${s.customer_nama}) berhasil dimuat ke kasir.`);
+                    if (window.toastSukses) window.toastSukses(`Antrean ${s.nomor_dokumen} (${s.customer_nama}) berhasil dimuat.`);
                 }
             } catch (err) {
                 if (window.toastGagal) window.toastGagal('Gagal memuat detail servis: ' + err.message);
@@ -897,8 +912,8 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
         pilihCustomer(c) {
             this.customerId = c.id;
             if (c.plat) this.platNomor = c.plat;
-            if (c.motor) this.merkType = c.motor;
-            this.keranjang.forEach((item, idx) => {
+            if (c.motor && !this.merkType) this.merkType = c.motor;
+            this.keranjang.forEach((item) => {
                 const barang = this.daftarBarang.find(b => b.kode === item.kode);
                 if (barang) {
                     const tier = this.hitungHargaTier(barang, item.qty);
@@ -930,43 +945,25 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
         pilihLiveAtauBarcode() {
             const q = this.barcode.trim();
             if (!q) return;
-
-            if (this.hasilLive.length > 0 && this.indeksLive >= 0 && this.indeksLive < this.hasilLive.length) {
-                this.tambahBarangKeKeranjang(this.hasilLive[this.indeksLive]);
-                this.barcode = '';
-                this.indeksLive = 0;
-                this.fokusMainInput = false;
-                return;
+            if (this.hasilLive.length > 0) {
+                const dipilih = this.hasilLive[this.indeksLive] || this.hasilLive[0];
+                this.pilihBarangLive(dipilih);
+            } else {
+                this.tambahDariBarcode();
             }
-
-            this.tambahDariBarcode();
         },
 
         pilihBarangLive(b) {
             this.tambahBarangKeKeranjang(b);
             this.barcode = '';
             this.indeksLive = 0;
-            this.fokusMainInput = false;
             this.$nextTick(() => this.$refs.barcode?.focus());
         },
 
         bukaModalCari() {
-            this.cariQuery = this.barcode;
+            this.cariQuery = '';
             this.$dispatch('buka-modal', { name: 'cari-barang' });
-            this.$nextTick(() => {
-                setTimeout(() => {
-                    if (this.$refs.modalCariInput) {
-                        this.$refs.modalCariInput.focus();
-                        this.$refs.modalCariInput.select();
-                    }
-                }, 100);
-            });
-        },
-
-        pilihTopBarangModal() {
-            if (this.daftarBarangFiltered.length > 0) {
-                this.pilihBarangDariModal(this.daftarBarangFiltered[0]);
-            }
+            setTimeout(() => this.$refs.inputCariModal?.focus(), 200);
         },
 
         pilihBarangDariModal(b) {
@@ -1256,12 +1253,7 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
                 if (data.sukses) {
                     if (window.toastSukses) window.toastSukses(data.pesan);
                     window.open(data.cetak_url, '_blank');
-                    this.keranjang = [];
-                    this.platNomor = '';
-                    this.merkType = '';
-                    this.keluhan = '';
-                    this.montirId = '';
-                    this.serviceIdAktif = null;
+                    this.resetTransaksi();
                 } else {
                     if (window.toastGagal) window.toastGagal(data.pesan || 'Gagal membuat SPK servis.');
                 }
@@ -1282,7 +1274,9 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
 
             const bayarFinal = this.jenisBayar === 'tunai' ? this.grandTotal : (this.uangMuka || 0);
 
-            const tipe = this.serviceIdAktif ? 'service_pelunasan' : (this.modeTransaksi === 'service' ? 'service_langsung' : 'penjualan');
+            // Jika ada serviceIdAktif gunakan service_pelunasan, jika ada jasa/montir gunakan service_langsung, jika tidak penjualan
+            const adaJasaAtauMontir = this.keranjang.some(i => i.is_jasa) || this.platNomor || this.montirId;
+            const tipe = this.serviceIdAktif ? 'service_pelunasan' : (adaJasaAtauMontir ? 'service_langsung' : 'penjualan');
 
             const payload = {
                 tipe_transaksi: tipe,
@@ -1322,14 +1316,7 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
                 if (data.sukses) {
                     if (window.toastSukses) window.toastSukses(data.pesan);
                     window.open(data.cetak_url, '_blank');
-                    this.keranjang = [];
-                    this.diskonNotaValue = '';
-                    this.serviceIdAktif = null;
-                    this.nomorSpkAktif = '';
-                    this.platNomor = '';
-                    this.merkType = '';
-                    this.keluhan = '';
-                    this.montirId = '';
+                    this.resetTransaksi();
                 } else {
                     if (window.toastGagal) window.toastGagal(data.pesan || 'Gagal memproses transaksi.');
                 }
@@ -1339,109 +1326,88 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
             }
         },
 
-        bukaScannerKamera() {
-            this.statusScanKamera = 'idle';
-            this.hasilScanTerakhir = '';
-            this.$dispatch('buka-modal', { name: 'scan-kamera' });
-            setTimeout(() => this.mulaiKamera(), 300);
+        bukaModalCustomerCepat() {
+            this.formCustomer = {
+                nama: '',
+                telepon: '',
+                plat_nomor: this.platNomor || '',
+                jenis_kendaraan: this.merkType || '',
+                kategori: 'umum',
+            };
+            this.$dispatch('buka-modal', { name: 'tambah-customer-cepat' });
         },
 
-        mulaiKamera() {
-            if (typeof Html5Qrcode === 'undefined') {
-                const el = document.getElementById('html5-qr-code-reader');
-                if (el) {
-                    el.innerHTML = '<div class="p-4 text-xs text-amber-600 bg-amber-50 rounded-xl font-bold">Pustaka kamera sedang diunduh, silakan coba klik lagi.</div>';
-                }
+        async simpanCustomerCepat() {
+            if (!this.formCustomer.nama.trim()) {
+                if (window.toastGagal) window.toastGagal('Nama customer wajib diisi.');
                 return;
             }
-            if (this.html5QrCode) this.stopKamera();
+
             try {
-                this.statusScanKamera = 'scanning';
-                this.html5QrCode = new Html5Qrcode("html5-qr-code-reader");
-                const config = { fps: 15, qrbox: { width: 250, height: 160 } };
-                this.html5QrCode.start(
-                    { facingMode: "environment" },
-                    config,
-                    (decodedText) => {
-                        if (this.statusScanKamera === 'sukses') return;
-                        this.statusScanKamera = 'sukses';
-                        this.hasilScanTerakhir = decodedText;
-                        bunyikanBeepSukses();
-                        this.barcode = decodedText;
-                        this.tambahDariBarcode();
-                        setTimeout(() => {
-                            this.stopKamera();
-                            this.$dispatch('tutup-modal', { name: 'scan-kamera' });
-                            this.statusScanKamera = 'idle';
-                        }, 500);
+                const res = await fetch('/admin/customer/cepat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
-                    () => {}
-                ).then(() => {
-                    this.kameraAktif = true;
-                }).catch((err) => {
-                    this.kameraAktif = false;
-                    this.statusScanKamera = 'idle';
-                    const el = document.getElementById('html5-qr-code-reader');
-                    if (el) {
-                        el.innerHTML = '<div class="p-4 text-xs text-red-600 bg-red-50 rounded-xl font-bold">Kamera tidak dapat diakses. Pastikan Anda mengizinkan akses kamera (Camera Permission) pada browser.</div>';
-                    }
+                    body: JSON.stringify(this.formCustomer)
                 });
-            } catch (e) {
-                console.error(e);
+
+                const data = await res.json();
+                if (data.sukses && data.customer) {
+                    this.customerList.push({
+                        id: data.customer.id,
+                        nama: data.customer.nama,
+                        plat: data.customer.plat_nomor,
+                        motor: data.customer.jenis_kendaraan,
+                        kategori: data.customer.kategori,
+                        telepon: data.customer.telepon || data.customer.no_wa || '',
+                        termin: data.customer.termin_hari || 30
+                    });
+                    this.pilihCustomer(data.customer);
+                    this.$dispatch('tutup-modal', { name: 'tambah-customer-cepat' });
+                    if (window.toastSukses) window.toastSukses('Customer baru berhasil didaftarkan.');
+                } else {
+                    if (window.toastGagal) window.toastGagal(data.pesan || 'Gagal menambahkan customer.');
+                }
+            } catch (err) {
+                if (window.toastGagal) window.toastGagal('Error: ' + err.message);
             }
         },
 
-        stopKamera() {
-            if (this.html5QrCode && this.kameraAktif) {
-                this.html5QrCode.stop().then(() => {
-                    this.html5QrCode.clear();
-                    this.kameraAktif = false;
-                    this.statusScanKamera = 'idle';
-                }).catch(() => {
-                    this.kameraAktif = false;
-                    this.statusScanKamera = 'idle';
-                });
+        async dapatkanHargaTerakhir() {
+            if (!this.customerId || this.barisAktif === null || !this.keranjang[this.barisAktif]) {
+                this.hargaTerakhirInfo = null;
+                return;
+            }
+            const item = this.keranjang[this.barisAktif];
+            try {
+                const res = await fetch(`/admin/kasir/harga-terakhir?customer_id=${this.customerId}&kode_barang=${item.kode}`);
+                const data = await res.json();
+                if (data.sukses && data.ditemukan) {
+                    this.hargaTerakhirInfo = data;
+                } else {
+                    this.hargaTerakhirInfo = null;
+                }
+            } catch (e) {
+                this.hargaTerakhirInfo = null;
             }
         },
 
         tanganiShortcut(e) {
-            if (this.modalTerbuka > 0) return;
             if (e.key === 'F2') {
                 e.preventDefault();
                 this.bukaModalCari();
             } else if (e.key === 'F6') {
                 e.preventDefault();
                 this.$dispatch('buka-modal', { name: 'diskon-nota' });
-            } else if (e.key === 'F10' && this.modeTransaksi === 'service') {
+            } else if (e.key === 'F10') {
                 e.preventDefault();
                 this.simpanSpkService();
             } else if (e.key === 'F12') {
                 e.preventDefault();
                 this.simpanNota();
-            }
-        },
-
-        async dapatkanHargaTerakhir() {
-            if (this.barisAktif === null || !this.customerId) {
-                this.hargaTerakhirInfo = null;
-                return;
-            }
-            const item = this.keranjang[this.barisAktif];
-            if (!item) {
-                this.hargaTerakhirInfo = null;
-                return;
-            }
-            const barang = this.daftarBarang.find(b => b.kode === item.kode);
-            if (!barang) {
-                this.hargaTerakhirInfo = null;
-                return;
-            }
-            try {
-                const res = await fetch(`/admin/kasir/harga-terakhir?customer_id=${this.customerId}&barang_id=${barang.id}`);
-                const data = await res.json();
-                this.hargaTerakhirInfo = data.harga ? data : null;
-            } catch {
-                this.hargaTerakhirInfo = null;
             }
         }
     };
