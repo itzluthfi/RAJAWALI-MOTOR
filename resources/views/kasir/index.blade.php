@@ -20,12 +20,22 @@
         <div class="flex items-center gap-2">
             <button
                 type="button"
+                x-on:click="bukaModalCustomerCepat()"
+                class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+                data-tooltip="Daftar customer baru secara cepat"
+            >
+                <x-icon name="user-plus" class="w-3.5 h-3.5" />
+                <span>+ Customer Baru</span>
+            </button>
+
+            <button
+                type="button"
                 x-on:click="resetTransaksi()"
                 class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer border border-slate-300"
                 data-tooltip="Reset kasir & buka transaksi baru"
             >
                 <x-icon name="rotate-ccw" class="w-3.5 h-3.5" />
-                <span>+ Kasir Baru</span>
+                <span>+ Transaksi Baru</span>
             </button>
 
             <div class="text-xs text-steel font-mono font-bold px-3 py-2 bg-canvas rounded-xl border border-line hidden sm:block" x-data="{ tgl: '' }" x-init="tgl = new Intl.DateTimeFormat('id-ID', {dateStyle:'medium', timeStyle:'short', timeZone:'Asia/Jakarta'}).format(new Date())">
@@ -36,9 +46,9 @@
 
     {{-- BARIS 2: PANEL TERPADU PELANGGAN & KENDARAAN (SEMUA FIELD OPSIONAL) --}}
     <div class="bg-white p-3.5 rounded-2xl border-2 border-slate-200 shadow-xs space-y-2.5">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-center">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-12 gap-3 items-center">
             {{-- PILIH CUSTOMER (SEARCHABLE) --}}
-            <div class="lg:col-span-4">
+            <div class="xl:col-span-3 lg:col-span-2 md:col-span-1 sm:col-span-2">
                 <label class="block text-[11px] font-black text-slate-600 uppercase mb-1">Pelanggan / Customer (Opsional)</label>
                 <div class="flex items-center gap-1.5">
                     <div class="relative flex-1" x-data="{ terbuka: false, cari: '' }" x-on:click.outside="terbuka = false">
@@ -143,8 +153,19 @@
                 </div>
             </div>
 
+            {{-- NO WA / HP (OPSIONAL) --}}
+            <div class="xl:col-span-2 lg:col-span-2 md:col-span-1">
+                <label class="block text-[11px] font-black text-slate-600 uppercase mb-1">No. WA / HP (Opsional)</label>
+                <input
+                    type="text"
+                    x-model="teleponCustomer"
+                    placeholder="cth. 08123456789"
+                    class="w-full text-xs font-mono font-bold bg-slate-50 border-2 border-slate-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-rajawali focus:bg-white focus:outline-none"
+                >
+            </div>
+
             {{-- PLAT NOMOR (OPSIONAL) --}}
-            <div class="lg:col-span-2">
+            <div class="xl:col-span-2 lg:col-span-2 md:col-span-1">
                 <label class="block text-[11px] font-black text-slate-600 uppercase mb-1">Plat Nomor (Opsional)</label>
                 <input
                     type="text"
@@ -156,7 +177,7 @@
             </div>
 
             {{-- TIPE MOTOR (OPSIONAL) --}}
-            <div class="lg:col-span-2">
+            <div class="xl:col-span-2 lg:col-span-2 md:col-span-1">
                 <label class="block text-[11px] font-black text-slate-600 uppercase mb-1">Tipe Motor (Opsional)</label>
                 <input
                     type="text"
@@ -167,7 +188,7 @@
             </div>
 
             {{-- MEKANIK / MONTIR (OPSIONAL) --}}
-            <div class="lg:col-span-2">
+            <div class="xl:col-span-2 lg:col-span-2 md:col-span-1">
                 <label class="block text-[11px] font-black text-slate-600 uppercase mb-1">Mekanik / Montir (Opsional)</label>
                 <select
                     x-model="montirId"
@@ -181,7 +202,7 @@
             </div>
 
             {{-- JENIS PEMBAYARAN (TUNAI / TEMPO) --}}
-            <div class="lg:col-span-2">
+            <div class="xl:col-span-1 lg:col-span-2 md:col-span-1">
                 <label class="block text-[11px] font-black text-slate-600 uppercase mb-1">Jenis Bayar</label>
                 <div class="flex items-center rounded-xl border-2 border-slate-300 overflow-hidden text-xs font-black shadow-xs bg-white">
                     <button type="button" x-on:click="jenisBayar = 'tunai'" :class="jenisBayar === 'tunai' ? 'bg-rajawali text-white shadow-xs' : 'bg-white text-steel hover:bg-slate-50'" class="flex-1 py-2 text-center transition cursor-pointer">Tunai</button>
@@ -644,6 +665,7 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
         merkType: '',
         montirId: '',
         keluhan: '',
+        teleponCustomer: '',
 
         // POS States
         customerId: dataCustomer[0]?.id || null,
@@ -687,6 +709,7 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
             this.merkType = '';
             this.montirId = '';
             this.keluhan = '';
+            this.teleponCustomer = '';
             this.customerId = this.customerList[0]?.id || null;
             this.jenisBayar = 'tunai';
             this.$nextTick(() => this.$refs.barcode?.focus());
@@ -758,6 +781,7 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
             this.customerId = c.id;
             if (c.plat) this.platNomor = c.plat;
             if (c.motor && !this.merkType) this.merkType = c.motor;
+            if (c.telepon || c.no_wa) this.teleponCustomer = c.telepon || c.no_wa || '';
             this.keranjang.forEach((item) => {
                 const barang = this.daftarBarang.find(b => b.kode === item.kode);
                 if (barang) {
@@ -774,6 +798,9 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
             if (match) {
                 this.customerId = match.id;
                 if (match.motor && !this.merkType) this.merkType = match.motor;
+                if ((match.telepon || match.no_wa) && !this.teleponCustomer) {
+                    this.teleponCustomer = match.telepon || match.no_wa || '';
+                }
             }
         },
 
@@ -1071,6 +1098,7 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
             const payload = {
                 tipe_transaksi: tipe,
                 customer_id: this.customerId,
+                telepon: this.teleponCustomer,
                 plat_nomor: this.platNomor,
                 merk_type: this.merkType,
                 montir_id: this.montirId || null,
@@ -1118,7 +1146,7 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
         bukaModalCustomerCepat() {
             this.formCustomer = {
                 nama: '',
-                telepon: '',
+                telepon: this.teleponCustomer || '',
                 plat_nomor: this.platNomor || '',
                 jenis_kendaraan: this.merkType || '',
                 kategori: 'umum',

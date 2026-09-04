@@ -80,7 +80,7 @@
                         <x-nav-item href="{{ route('barang.index') }}" icon="package" :active="request()->routeIs('barang.*')">Master Barang</x-nav-item>
                     @endif
                     @if(in_array($peranSaya, ['owner', 'admin']))
-                        <x-nav-item href="{{ route('jasa.index') }}" icon="wrench" :active="request()->routeIs('jasa.*')">Tarif Jasa Servis</x-nav-item>
+                        <x-nav-item href="{{ route('jasa.index') }}" icon="wrench" :active="request()->routeIs('jasa.*')">Master Jasa Servis</x-nav-item>
                     @endif
                     @if(in_array($peranSaya, ['owner', 'admin', 'kasir']))
                         <x-nav-item href="{{ route('customer.index') }}" icon="users" :active="request()->routeIs('customer.*')">Master Customer</x-nav-item>
@@ -263,8 +263,8 @@
                 </div>
 
                 @if(in_array($peranSaya, ['owner', 'admin', 'kasir']))
-                    <x-button as="a" href="{{ route('kasir') }}" variant="primary" class="text-xs px-3 py-1.5">
-                        <x-icon name="plus" class="w-3.5 h-3.5" /> <span class="hidden sm:inline">Kasir Baru</span>
+                    <x-button as="a" href="{{ route('kasir') }}" variant="primary" class="text-xs px-3 py-1.5 font-bold">
+                        <x-icon name="shopping-cart" class="w-3.5 h-3.5" /> <span class="hidden sm:inline">Kasir POS</span>
                     </x-button>
                 @endif
 

@@ -147,6 +147,7 @@ class KasirController extends Controller
             'service_id' => ['nullable', 'exists:services,id'],
             'customer_id' => ['nullable', 'exists:customers,id'],
             'plat_nomor' => ['nullable', 'string', 'max:30'],
+            'telepon' => ['nullable', 'string', 'max:30'],
             'merk_type' => ['nullable', 'string', 'max:100'],
             'montir_id' => ['nullable', 'exists:users,id'],
             'keluhan' => ['nullable', 'string', 'max:500'],
@@ -325,6 +326,15 @@ class KasirController extends Controller
                 $catatanTambahan = $validated['catatan'] ?? '';
                 if (!empty($validated['plat_nomor'])) {
                     $catatanTambahan = trim("Plat: {$validated['plat_nomor']} (" . ($validated['merk_type'] ?? 'Motor') . ") | " . $catatanTambahan, " |");
+                }
+                if (!empty($validated['telepon'])) {
+                    $catatanTambahan = trim("WA: {$validated['telepon']} | " . $catatanTambahan, " |");
+                    if (!empty($validated['customer_id'])) {
+                        $cObj = Customer::find($validated['customer_id']);
+                        if ($cObj && empty($cObj->telepon) && !str_contains(strtolower($cObj->nama), 'umum')) {
+                            $cObj->update(['telepon' => $validated['telepon'], 'no_wa' => $validated['telepon']]);
+                        }
+                    }
                 }
 
                 $penjualan = Penjualan::create([

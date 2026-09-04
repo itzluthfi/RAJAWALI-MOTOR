@@ -1,4 +1,4 @@
-<x-app-layout title="Master Tarif Jasa Servis">
+<x-app-layout title="Master Jasa Servis">
 <div
     x-data="formJasa()"
     x-init="
