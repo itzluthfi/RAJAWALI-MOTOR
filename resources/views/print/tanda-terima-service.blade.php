@@ -5,22 +5,55 @@
         ->orWhere('id', $realId)
         ->orWhere('id', is_numeric($id) ? (int)$id : 0)
         ->first();
+    $pengaturan = \App\Models\PengaturanToko::current();
 @endphp
 <x-print-layout title="Tanda Terima Service {{ $id }}">
+<style>
+    @media print {
+        @page {
+            size: A5 landscape;
+            margin: 5mm;
+        }
+        html, body {
+            width: 210mm;
+            height: 148mm;
+            background-color: #fff !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        .tanda-terima-box {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+        }
+        .no-print {
+            display: none !important;
+        }
+    }
+</style>
 @if($service)
-<div class="max-w-3xl mx-auto p-8 bg-white text-slate-900 font-sans border border-slate-200 rounded-2xl shadow-sm my-6">
-    <div class="flex justify-between items-start border-b border-slate-200 pb-6 mb-6">
-        <div class="flex items-center gap-4">
-            <img alt="Rajawali Motor Logo" class="h-12 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsYEm9KYYbuD248b0jN_sheEfynwQ6j7teJdvKA8edK8NYF0ndmkXVXlqw9SKIhago4iUYt5RmUV5kgkIuq0AjjoDKToRqxiuEM17EOurrulLi0qsUlk36AxIH4JObdUrym7rxUnRAwC9aLkxP4pUlSgGe9qLiTLXOV0I1-pYXxewRVi_zU2DtKVLzY0W20Ve5lzZD-FdFadE3YvJ_ozDGIJmgDt6aLfSKhBNi1YFqbLL-76iue9ykhTo7OsirOQuyfFH_HfkN0Dc"/>
+<div class="tanda-terima-box w-full max-w-[210mm] mx-auto p-5 bg-white text-slate-900 font-sans border border-slate-200 rounded-xl shadow-md my-4 text-xs">
+    <div class="flex justify-between items-start border-b border-slate-300 pb-3 mb-3">
+        <div class="flex items-center gap-3">
+            @if($pengaturan->logo_url)
+                <img alt="{{ $pengaturan->nama_toko }} Logo" class="h-10 w-auto object-contain shrink-0" src="{{ $pengaturan->logo_url }}"/>
+            @endif
             <div>
-                <h1 class="font-extrabold text-xl text-[#B0181C]">RAJAWALI MOTOR</h1>
-                <p class="text-xs text-slate-600 font-bold">Jl. Samanhudi No.102, Jasem, Sidoarjo | WA: +62 856-4888-8441</p>
+                <h1 class="font-black text-lg text-[#B0181C] leading-tight">{{ strtoupper($pengaturan->nama_toko) }}</h1>
+                <p class="text-[11px] text-slate-600 font-medium">{{ $pengaturan->alamat }} | WA: {{ $pengaturan->telepon }}</p>
+                @if($pengaturan->slogan)
+                    <p class="text-[10px] text-slate-500">{{ $pengaturan->slogan }}</p>
+                @endif
             </div>
         </div>
-        <div class="text-right font-bold">
-            <h2 class="font-black text-lg text-slate-800 tracking-wider">TANDA TERIMA SERVICE</h2>
-            <p class="font-mono text-sm font-bold text-[#B0181C] mt-1">{{ $service->nomor_dokumen }}</p>
-            <p class="text-xs text-slate-500 mt-1">Tanggal: {{ $service->tanggal_masuk->format('d F Y') }}</p>
+        <div class="text-right">
+            <h2 class="font-black text-base text-slate-800 tracking-wider">TANDA TERIMA SERVICE</h2>
+            <p class="font-mono text-xs font-bold text-[#B0181C] mt-0.5">{{ $service->nomor_dokumen }}</p>
+            <p class="text-[11px] text-slate-500">Tanggal: {{ $service->tanggal_masuk->translatedFormat('d F Y') }}</p>
         </div>
     </div>
 

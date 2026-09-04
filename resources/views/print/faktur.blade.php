@@ -5,6 +5,7 @@
         ->orWhere('id', $realId)
         ->orWhere('id', is_numeric($id) ? (int)$id : 0)
         ->first();
+    $pengaturan = \App\Models\PengaturanToko::current();
 @endphp
 <x-print-layout title="Faktur Penjualan {{ $id }}">
 <style>
@@ -39,11 +40,15 @@
     <!-- Header Kop Toko & Faktur -->
     <div class="flex justify-between items-start border-b border-slate-300 pb-3 mb-3">
         <div class="flex items-center gap-3">
-            <img alt="Rajawali Motor Logo" class="h-10 w-auto object-contain shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsYEm9KYYbuD248b0jN_sheEfynwQ6j7teJdvKA8edK8NYF0ndmkXVXlqw9SKIhago4iUYt5RmUV5kgkIuq0AjjoDKToRqxiuEM17EOurrulLi0qsUlk36AxIH4JObdUrym7rxUnRAwC9aLkxP4pUlSgGe9qLiTLXOV0I1-pYXxewRVi_zU2DtKVLzY0W20Ve5lzZD-FdFadE3YvJ_ozDGIJmgDt6aLfSKhBNi1YFqbLL-76iue9ykhTo7OsirOQuyfFH_HfkN0Dc"/>
+            @if($pengaturan->logo_url)
+                <img alt="{{ $pengaturan->nama_toko }} Logo" class="h-10 w-auto object-contain shrink-0" src="{{ $pengaturan->logo_url }}"/>
+            @endif
             <div>
-                <h1 class="font-black text-lg text-[#B0181C] leading-tight">RAJAWALI MOTOR</h1>
-                <p class="text-[11px] text-slate-600 font-medium">Jl. Samanhudi No.102, Jasem, Sidoarjo | WA: +62 856-4888-8441</p>
-                <p class="text-[10px] text-slate-500">Spesialis Injeksi, Tune Up, Ganti Oli &amp; Body Repair</p>
+                <h1 class="font-black text-lg text-[#B0181C] leading-tight">{{ strtoupper($pengaturan->nama_toko) }}</h1>
+                <p class="text-[11px] text-slate-600 font-medium">{{ $pengaturan->alamat }} | WA: {{ $pengaturan->telepon }}</p>
+                @if($pengaturan->slogan)
+                    <p class="text-[10px] text-slate-500">{{ $pengaturan->slogan }}</p>
+                @endif
             </div>
         </div>
         <div class="text-right">

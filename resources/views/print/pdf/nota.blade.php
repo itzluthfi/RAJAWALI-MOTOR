@@ -1,3 +1,7 @@
+@php
+    $pengaturan = \App\Models\PengaturanToko::current();
+    $is58mm = ($size ?? '80') === '58';
+@endphp
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -5,13 +9,13 @@
     <title>Struk {{ $penjualan->nomor_nota }}</title>
     <style>
         @page {
-            size: 80mm auto;
-            margin: 2mm;
+            size: {{ $is58mm ? '58mm' : '80mm' }} auto;
+            margin: 1.5mm;
         }
         body {
             font-family: 'Courier', monospace;
-            font-size: 10px;
-            line-height: 1.3;
+            font-size: {{ $is58mm ? '8.5px' : '10px' }};
+            line-height: 1.25;
             color: #000;
             margin: 0;
             padding: 0;
@@ -19,14 +23,19 @@
         .text-center { text-align: center; }
         .text-right { text-align: right; }
         .font-bold { font-weight: bold; }
-        .line { border-bottom: 1px dashed #000; margin: 4px 0; }
+        .line { border-bottom: 1px dashed #000; margin: 3px 0; }
         table { width: 100%; border-collapse: collapse; }
     </style>
 </head>
 <body>
-    <div class="text-center font-bold" style="font-size: 12px;">RAJAWALI MOTOR</div>
-    <div class="text-center" style="font-size: 8px;">Jl. Samanhudi No.102, Jasem, Sidoarjo</div>
-    <div class="text-center" style="font-size: 8px;">WA: +62 856-4888-8441 | Telp: (031) 8431234</div>
+    <div class="text-center font-bold" style="font-size: {{ $is58mm ? '10.5px' : '12px' }};">{{ strtoupper($pengaturan->nama_toko) }}</div>
+    @if($pengaturan->slogan)
+        <div class="text-center" style="font-size: {{ $is58mm ? '7px' : '8px' }}; font-style: italic;">{{ $pengaturan->slogan }}</div>
+    @endif
+    <div class="text-center" style="font-size: {{ $is58mm ? '7.5px' : '8px' }};">{{ $pengaturan->alamat }}</div>
+    @if($pengaturan->telepon)
+        <div class="text-center" style="font-size: {{ $is58mm ? '7.5px' : '8px' }};">WA/Telp: {{ $pengaturan->telepon }}</div>
+    @endif
     <div class="line"></div>
     <table>
         <tr><td>No Nota:</td><td class="text-right font-bold">{{ $penjualan->nomor_nota }}</td></tr>
@@ -41,7 +50,7 @@
                 <td colspan="2" class="font-bold">{{ $item->barang->nama }}</td>
             </tr>
             <tr>
-                <td style="font-size: 9px; padding-left: 6px;">{{ rtrim(rtrim(number_format((float) $item->qty, 3, ',', ''), '0'), ',') }} x Rp {{ number_format($item->harga_satuan, 0, ',', '.') }}</td>
+                <td style="font-size: {{ $is58mm ? '7.5px' : '9px' }}; padding-left: 4px;">{{ rtrim(rtrim(number_format((float) $item->qty, 3, ',', ''), '0'), ',') }} x Rp {{ number_format($item->harga_satuan, 0, ',', '.') }}</td>
                 <td class="text-right font-bold">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
             </tr>
         @endforeach
@@ -59,8 +68,8 @@
             </tr>
         @endif
         <tr>
-            <td class="font-bold" style="font-size: 11px;">GRAND TOTAL:</td>
-            <td class="text-right font-bold" style="font-size: 11px;">Rp {{ number_format($penjualan->total_akhir, 0, ',', '.') }}</td>
+            <td class="font-bold" style="font-size: {{ $is58mm ? '9.5px' : '11px' }};">GRAND TOTAL:</td>
+            <td class="text-right font-bold" style="font-size: {{ $is58mm ? '9.5px' : '11px' }};">Rp {{ number_format($penjualan->total_akhir, 0, ',', '.') }}</td>
         </tr>
         <tr>
             <td>Status:</td>
@@ -68,9 +77,9 @@
         </tr>
     </table>
     <div class="line"></div>
-    <div class="text-center" style="font-size: 9px; margin-top: 6px;">
+    <div class="text-center" style="font-size: {{ $is58mm ? '7.5px' : '8.5px' }}; margin-top: 5px;">
         Terima kasih atas kunjungan Anda!<br>
-        Garansi Servis &amp; Sparepart Original<br>
+        {{ $pengaturan->footer_struk ?? 'Garansi Servis & Sparepart Original' }}<br>
         Simpan Nota Ini
     </div>
 </body>

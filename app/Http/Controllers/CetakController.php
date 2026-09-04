@@ -27,8 +27,11 @@ class CetakController extends Controller
             ->orWhere('id', is_numeric($id) ? (int)$id : 0)
             ->firstOrFail();
 
-        $pdf = Pdf::loadView('print.pdf.nota', ['penjualan' => $penjualan])
-            ->setPaper([0, 0, 226.77, 600], 'portrait');
+        $size = request()->query('size', '80');
+        $widthPt = ($size === '58') ? 164.41 : 226.77; // 58mm = 164.41pt, 80mm = 226.77pt
+
+        $pdf = Pdf::loadView('print.pdf.nota', ['penjualan' => $penjualan, 'size' => $size])
+            ->setPaper([0, 0, $widthPt, 800], 'portrait');
 
         return $pdf->download("Struk_{$penjualan->nomor_nota}.pdf");
     }
@@ -87,7 +90,7 @@ class CetakController extends Controller
             ->orWhere('id', is_numeric($id) ? (int)$id : 0)
             ->firstOrFail();
 
-        $pdf = Pdf::loadView('print.pdf.faktur', ['penjualan' => $penjualan])
+        $pdf = Pdf::loadView('print.pdf.surat-jalan', ['penjualan' => $penjualan])
             ->setPaper('a5', 'landscape');
 
         return $pdf->download("SuratJalan_{$penjualan->nomor_nota}.pdf");

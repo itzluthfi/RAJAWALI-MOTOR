@@ -71,4 +71,122 @@ class ReceiptPrintoutTest extends TestCase
         $response->assertDontSee('Kembali:');
         $response->assertDontSee('Bayar:');
     }
+
+    public function test_nota_supports_80mm_and_58mm_preview_and_pdf(): void
+    {
+        $kasirUser = $this->kasir();
+        $this->actingAs($kasirUser);
+
+        $customer = Customer::create(['nama' => 'Agus']);
+        $group = Group::create(['nama' => 'Oli']);
+        $satuan = Satuan::create(['nama' => 'BOTOL']);
+        $barang = Barang::create([
+            'kode' => 'OLI-MPX',
+            'nama' => 'Oli MPX2 0.8L',
+            'group_id' => $group->id,
+            'satuan_id' => $satuan->id,
+            'hpp' => 45000,
+            'harga_eceran' => 55000,
+            'stok_minimum' => 5,
+        ]);
+
+        $penjualan = Penjualan::create([
+            'nomor_nota' => 'PJ-THERMAL-01',
+            'customer_id' => $customer->id,
+            'user_id' => $kasirUser->id,
+            'subtotal' => 55000,
+            'diskon' => 0,
+            'pajak' => 0,
+            'total_akhir' => 55000,
+            'bayar' => 55000,
+            'kembali' => 0,
+            'metode_pembayaran' => 'tunai',
+            'status_bayar' => 'lunas',
+        ]);
+
+        PenjualanDetail::create([
+            'penjualan_id' => $penjualan->id,
+            'barang_id' => $barang->id,
+            'qty' => 1,
+            'harga_satuan' => 55000,
+            'diskon' => 0,
+            'hpp' => 45000,
+            'subtotal' => 55000,
+        ]);
+
+        // Preview default (80mm) & 58mm
+        $res80 = $this->get('/admin/cetak/nota/' . $penjualan->nomor_nota);
+        $res80->assertOk()->assertSee('Thermal 80mm')->assertSee('Thermal 58mm');
+
+        $res58 = $this->get('/admin/cetak/nota/' . $penjualan->nomor_nota . '?size=58');
+        $res58->assertOk()->assertSee('Oli MPX2 0.8L');
+
+        // PDF 80mm & 58mm
+        $pdf80 = $this->get('/admin/cetak/nota/' . $penjualan->nomor_nota . '/pdf');
+        $pdf80->assertOk();
+        $this->assertEquals('application/pdf', $pdf80->headers->get('content-type'));
+
+        $pdf58 = $this->get('/admin/cetak/nota/' . $penjualan->nomor_nota . '/pdf?size=58');
+        $pdf58->assertOk();
+        $this->assertEquals('application/pdf', $pdf58->headers->get('content-type'));
+    }
+
+    public function test_faktur_and_surat_jalan_preview_and_pdf(): void
+    {
+        $kasirUser = $this->kasir();
+        $this->actingAs($kasirUser);
+
+        $customer = Customer::create(['nama' => 'Bengkel Mandiri']);
+        $group = Group::create(['nama' => 'Ban']);
+        $satuan = Satuan::create(['nama' => 'PCS']);
+        $barang = Barang::create([
+            'kode' => 'BAN-IRC',
+            'nama' => 'Ban Luar IRC 80/90-14',
+            'group_id' => $group->id,
+            'satuan_id' => $satuan->id,
+            'hpp' => 150000,
+            'harga_eceran' => 185000,
+            'stok_minimum' => 2,
+        ]);
+
+        $penjualan = Penjualan::create([
+            'nomor_nota' => 'PJ-FAKTUR-01',
+            'customer_id' => $customer->id,
+            'user_id' => $kasirUser->id,
+            'subtotal' => 185000,
+            'diskon' => 0,
+            'pajak' => 0,
+            'total_akhir' => 185000,
+            'bayar' => 185000,
+            'kembali' => 0,
+            'metode_pembayaran' => 'tunai',
+            'status_bayar' => 'lunas',
+        ]);
+
+        PenjualanDetail::create([
+            'penjualan_id' => $penjualan->id,
+            'barang_id' => $barang->id,
+            'qty' => 1,
+            'harga_satuan' => 185000,
+            'diskon' => 0,
+            'hpp' => 150000,
+            'subtotal' => 185000,
+        ]);
+
+        // Faktur HTML & PDF
+        $fakturHtml = $this->get('/admin/cetak/faktur/' . $penjualan->nomor_nota);
+        $fakturHtml->assertOk()->assertSee('FAKTUR PENJUALAN');
+
+        $fakturPdf = $this->get('/admin/cetak/faktur/' . $penjualan->nomor_nota . '/pdf');
+        $fakturPdf->assertOk();
+        $this->assertEquals('application/pdf', $fakturPdf->headers->get('content-type'));
+
+        // Surat Jalan HTML & PDF
+        $sjHtml = $this->get('/admin/cetak/surat-jalan/' . $penjualan->nomor_nota);
+        $sjHtml->assertOk()->assertSee('SURAT JALAN PENGIRIMAN');
+
+        $sjPdf = $this->get('/admin/cetak/surat-jalan/' . $penjualan->nomor_nota . '/pdf');
+        $sjPdf->assertOk();
+        $this->assertEquals('application/pdf', $sjPdf->headers->get('content-type'));
+    }
 }
