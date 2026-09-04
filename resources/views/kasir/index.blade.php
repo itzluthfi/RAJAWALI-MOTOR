@@ -5,7 +5,7 @@
     x-on:keydown.window="tanganiShortcut($event)"
     class="flex flex-col gap-3 -m-3 p-3 min-h-[calc(100vh-4.5rem)]"
 >
-    {{-- BARIS 1: TOP BAR (KASIR STATUS, ANTREAN SERVIS, & TRANSAKSI BARU) --}}
+    {{-- BARIS 1: TOP BAR (KASIR STATUS & TRANSAKSI BARU) --}}
     <div class="flex items-center justify-between flex-wrap gap-2.5 bg-surface p-3 rounded-2xl border border-line shadow-xs">
         <div class="flex items-center gap-2.5">
             <div class="w-9 h-9 rounded-xl bg-rajawali text-white flex items-center justify-center font-black shadow-xs">
@@ -13,30 +13,11 @@
             </div>
             <div>
                 <h1 class="font-black text-slate-900 text-base leading-tight">Kasir POS &amp; Bengkel Terpadu</h1>
-                <p class="text-xs text-steel">Penjualan sparepart langsung &amp; servis motor dalam satu form.</p>
+                <p class="text-xs text-steel">Penjualan sparepart langsung &amp; servis motor dalam satu kasir.</p>
             </div>
-            <template x-if="serviceIdAktif">
-                <span class="ml-2 text-xs font-mono font-black bg-blue-600 text-white px-3 py-1 rounded-full flex items-center gap-1.5 shadow-xs animate-pulse">
-                    <x-icon name="wrench" class="w-3.5 h-3.5" />
-                    <span>Pelunasan SPK: <strong x-text="nomorSpkAktif"></strong></span>
-                </span>
-            </template>
         </div>
 
         <div class="flex items-center gap-2">
-            <button
-                type="button"
-                x-on:click="bukaModalAntreanService()"
-                class="px-3.5 py-2 rounded-xl bg-white border-2 border-slate-300 hover:border-blue-600 text-slate-800 text-xs font-bold flex items-center gap-2 shadow-xs transition hover:bg-blue-50 cursor-pointer"
-            >
-                <x-icon name="clipboard-list" class="w-4 h-4 text-blue-600" />
-                <span>Antrean Servis</span>
-                <span
-                    class="px-2 py-0.5 rounded-full text-xs font-mono font-black bg-blue-100 text-blue-800 border border-blue-200"
-                    x-text="antreanServiceList.length + ' Motor'"
-                ></span>
-            </button>
-
             <button
                 type="button"
                 x-on:click="resetTransaksi()"
@@ -438,7 +419,7 @@
             </table>
         </div>
 
-        {{-- FOOTER KASIR: TOTAL & TOMBOL AKSI --}}
+        {{-- FOOTER KASIR: TOTAL & TOMBOL AKSI UTAMA --}}
         <div class="border-t-2 border-line bg-surface p-4 grid grid-cols-1 lg:grid-cols-3 gap-4 items-center">
             <div class="flex items-center gap-2 flex-wrap">
                 <x-button type="button" variant="secondary" size="sm" x-on:click="bukaModalCari()">
@@ -470,25 +451,12 @@
             </div>
 
             <div class="flex items-center justify-end gap-2 flex-wrap">
-                {{-- TOMBOL SIMPAN SPK JIKA MOTOR MASUK BENGKEL & DITINGGAL --}}
-                <button
-                    type="button"
-                    x-on:click="simpanSpkService()"
-                    x-bind:disabled="sedangMenyimpan"
-                    class="px-4 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs flex items-center gap-1.5 shadow-md transition active:scale-98 cursor-pointer"
-                    data-tooltip="Simpan order antrean servis & terbitkan tanda terima SPK tanpa bayar langsung"
-                >
-                    <x-icon name="clipboard-check" class="w-4 h-4" />
-                    <span>Terima Servis (SPK)</span>
-                    <kbd class="text-[10px] bg-white/20 px-1.5 py-0.5 rounded font-mono">F10</kbd>
-                </button>
-
                 {{-- TOMBOL UTAMA BAYAR LUNAS (SELESAI TRANSAKSI & CETAK NOTA) --}}
                 <button
                     type="button"
                     x-on:click="simpanNota()"
                     x-bind:disabled="sedangMenyimpan"
-                    class="px-7 py-3.5 rounded-xl bg-[#B0181C] hover:bg-[#8f1013] text-white font-black text-sm flex items-center gap-2 shadow-xl shadow-red-900/20 transition active:scale-98 cursor-pointer"
+                    class="w-full lg:w-auto px-8 py-3.5 rounded-xl bg-[#B0181C] hover:bg-[#8f1013] text-white font-black text-base flex items-center justify-center gap-2.5 shadow-xl shadow-red-900/20 transition active:scale-98 cursor-pointer"
                 >
                     <x-icon name="save" class="w-5 h-5" />
                     <span>Simpan &amp; Bayar Lunas</span>
@@ -660,69 +628,6 @@
             </div>
         </form>
     </x-modal>
-
-    {{-- MODAL DAFTAR ANTREAN SERVIS --}}
-    <x-modal name="antrean-service" title="Daftar Antrean Servis Motor">
-        <div class="space-y-3">
-            <div class="overflow-x-auto max-h-80 border-2 border-line rounded-2xl">
-                <table class="w-full text-xs">
-                    <thead class="bg-canvas text-steel uppercase font-black border-b border-line">
-                        <tr>
-                            <th class="px-3 py-2.5 text-left">No Dokumen</th>
-                            <th class="px-3 py-2.5 text-left">Customer &amp; Motor</th>
-                            <th class="px-3 py-2.5 text-left">Montir</th>
-                            <th class="px-3 py-2.5 text-right">Estimasi Biaya</th>
-                            <th class="px-3 py-2.5 text-center">Status</th>
-                            <th class="px-3 py-2.5 text-right">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-line">
-                        <template x-for="s in antreanServiceList" :key="s.id">
-                            <tr class="hover:bg-canvas transition font-medium">
-                                <td class="px-3 py-2.5 font-mono font-bold text-rajawali" x-text="s.nomor_dokumen"></td>
-                                <td class="px-3 py-2.5">
-                                    <div class="font-bold text-ink" x-text="s.customer_nama"></div>
-                                    <div class="text-[11px] text-steel font-mono">
-                                        <span x-text="s.plat_nomor" class="font-bold text-rajawali"></span> · <span x-text="s.merk_type"></span>
-                                    </div>
-                                </td>
-                                <td class="px-3 py-2.5 font-bold" x-text="s.montir_nama"></td>
-                                <td class="px-3 py-2.5 text-right font-mono font-bold text-ink" x-text="formatRp(s.total_biaya)"></td>
-                                <td class="px-3 py-2.5 text-center">
-                                    <span
-                                        :class="{
-                                            'bg-amber-100 text-amber-800 border-amber-300': s.status === 'masuk',
-                                            'bg-blue-100 text-blue-800 border-blue-300': s.status === 'dikerjakan',
-                                            'bg-emerald-100 text-emerald-800 border-emerald-300': s.status === 'selesai'
-                                        }"
-                                        class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border"
-                                        x-text="s.status"
-                                    ></span>
-                                </td>
-                                <td class="px-3 py-2.5 text-right">
-                                    <button
-                                        type="button"
-                                        x-on:click="muatServiceKeKasir(s.id); $dispatch('tutup-modal', { name: 'antrean-service' })"
-                                        class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 ml-auto cursor-pointer"
-                                    >
-                                        <x-icon name="arrow-down" class="w-3.5 h-3.5" />
-                                        <span>Muat ke Kasir</span>
-                                    </button>
-                                </td>
-                            </tr>
-                        </template>
-                        <template x-if="antreanServiceList.length === 0">
-                            <tr>
-                                <td colspan="6" class="p-8 text-center text-steel italic font-bold">
-                                    Tidak ada antrean servis yang aktif saat ini.
-                                </td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </x-modal>
 </div>
 
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -733,11 +638,6 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
         daftarBarang: daftarBarang,
         customerList: dataCustomer,
         montirs: dataMontir,
-        antreanServiceList: [],
-
-        // Active State
-        serviceIdAktif: null,
-        nomorSpkAktif: '',
 
         // Customer & Vehicle Form States (Semua Opsional)
         platNomor: '',
@@ -778,14 +678,11 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
         initApp() {
             this.$watch('customerId', () => this.dapatkanHargaTerakhir());
             this.$watch('barisAktif', () => this.dapatkanHargaTerakhir());
-            this.muatAntreanService();
         },
 
         resetTransaksi() {
             this.keranjang = [];
             this.diskonNotaValue = '';
-            this.serviceIdAktif = null;
-            this.nomorSpkAktif = '';
             this.platNomor = '';
             this.merkType = '';
             this.montirId = '';
@@ -854,58 +751,6 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
                     this.kameraAktif = false;
                     this.statusScanKamera = 'idle';
                 });
-            }
-        },
-
-        async muatAntreanService() {
-            try {
-                const res = await fetch('/admin/service/antrean-json');
-                const data = await res.json();
-                if (data.sukses) this.antreanServiceList = data.antrean;
-            } catch (e) {}
-        },
-
-        bukaModalAntreanService() {
-            this.muatAntreanService();
-            this.$dispatch('buka-modal', { name: 'antrean-service' });
-        },
-
-        async muatServiceKeKasir(serviceId) {
-            try {
-                const res = await fetch(`/admin/service/${serviceId}/detail-json`);
-                const data = await res.json();
-                if (data.sukses && data.service) {
-                    const s = data.service;
-                    this.serviceIdAktif = s.id;
-                    this.nomorSpkAktif = s.nomor_dokumen;
-                    if (s.customer_id) this.customerId = s.customer_id;
-                    this.platNomor = s.plat_nomor || '';
-                    this.merkType = s.merk_type || '';
-                    this.montirId = s.montir_id || '';
-                    this.keluhan = s.keluhan || '';
-
-                    // Muat item ke keranjang
-                    this.keranjang = [];
-                    s.items.forEach(it => {
-                        this.keranjang.push({
-                            uid: this.uidCounter++,
-                            kode: it.kode,
-                            nama: it.nama,
-                            is_jasa: it.is_jasa,
-                            qty: it.qty,
-                            harga: it.harga,
-                            hargaOriginal: it.harga,
-                            diskon: 0,
-                            diskonPersen: 0,
-                            hpp: 0,
-                            stok: 999,
-                            labelTier: null
-                        });
-                    });
-                    if (window.toastSukses) window.toastSukses(`Antrean ${s.nomor_dokumen} (${s.customer_nama}) berhasil dimuat.`);
-                }
-            } catch (err) {
-                if (window.toastGagal) window.toastGagal('Gagal memuat detail servis: ' + err.message);
             }
         },
 
@@ -1195,8 +1040,6 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
             if (confirm('Kosongkan semua barang di keranjang kasir?')) {
                 this.keranjang = [];
                 this.diskonNotaValue = '';
-                this.serviceIdAktif = null;
-                this.nomorSpkAktif = '';
                 this.$refs.barcode?.focus();
             }
         },
@@ -1207,59 +1050,6 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
             if (this.diskonNotaMode === 'persen' && this.batasDiskonPersen > 0 && val > this.batasDiskonPersen) {
                 if (window.toastGagal) window.toastGagal(`Batas diskon kasir adalah ${this.batasDiskonPersen}%.`);
                 this.diskonNotaValue = this.batasDiskonPersen;
-            }
-        },
-
-        async simpanSpkService() {
-            if (this.sedangMenyimpan) return;
-            if (this.keranjang.length === 0) {
-                if (window.toastGagal) window.toastGagal('Belum ada jasa atau sparepart yang diinput.');
-                return;
-            }
-
-            this.sedangMenyimpan = true;
-
-            try {
-                const payload = {
-                    tipe_transaksi: 'service_spk',
-                    customer_id: this.customerId,
-                    plat_nomor: this.platNomor,
-                    merk_type: this.merkType,
-                    montir_id: this.montirId || null,
-                    keluhan: this.keluhan,
-                    items: this.keranjang.map(i => ({
-                        kode: i.kode,
-                        nama: i.nama,
-                        qty: i.qty,
-                        harga: i.harga,
-                        diskon: i.diskon || 0
-                    })),
-                    metode_pembayaran: 'tunai',
-                };
-
-                const res = await fetch('/admin/kasir', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                const data = await res.json();
-                this.sedangMenyimpan = false;
-
-                if (data.sukses) {
-                    if (window.toastSukses) window.toastSukses(data.pesan);
-                    window.open(data.cetak_url, '_blank');
-                    this.resetTransaksi();
-                } else {
-                    if (window.toastGagal) window.toastGagal(data.pesan || 'Gagal membuat SPK servis.');
-                }
-            } catch (err) {
-                this.sedangMenyimpan = false;
-                if (window.toastGagal) window.toastGagal('Error: ' + err.message);
             }
         },
 
@@ -1274,13 +1064,12 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
 
             const bayarFinal = this.jenisBayar === 'tunai' ? this.grandTotal : (this.uangMuka || 0);
 
-            // Jika ada serviceIdAktif gunakan service_pelunasan, jika ada jasa/montir gunakan service_langsung, jika tidak penjualan
+            // Jika ada jasa/montir/plat gunakan service_langsung, jika tidak penjualan
             const adaJasaAtauMontir = this.keranjang.some(i => i.is_jasa) || this.platNomor || this.montirId;
-            const tipe = this.serviceIdAktif ? 'service_pelunasan' : (adaJasaAtauMontir ? 'service_langsung' : 'penjualan');
+            const tipe = adaJasaAtauMontir ? 'service_langsung' : 'penjualan';
 
             const payload = {
                 tipe_transaksi: tipe,
-                service_id: this.serviceIdAktif,
                 customer_id: this.customerId,
                 plat_nomor: this.platNomor,
                 merk_type: this.merkType,
@@ -1402,9 +1191,6 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
             } else if (e.key === 'F6') {
                 e.preventDefault();
                 this.$dispatch('buka-modal', { name: 'diskon-nota' });
-            } else if (e.key === 'F10') {
-                e.preventDefault();
-                this.simpanSpkService();
             } else if (e.key === 'F12') {
                 e.preventDefault();
                 this.simpanNota();
