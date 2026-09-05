@@ -96,10 +96,7 @@
 
             @if(in_array($peranSaya, ['owner', 'admin']))
                 <x-nav-group label="Stok">
-                    <x-nav-item href="{{ route('stok.kartu') }}" icon="notebook-text" :active="request()->routeIs('stok.kartu')">Kartu Stok</x-nav-item>
-                    <x-nav-item href="{{ route('stok.rekap') }}" icon="layers" :active="request()->routeIs('stok.rekap')">Rekap Stok</x-nav-item>
-                    <x-nav-item href="{{ route('stok.opname') }}" icon="clipboard-check" :active="request()->routeIs('stok.opname')">Stok Opname</x-nav-item>
-                    <x-nav-item href="{{ route('stok.menipis') }}" icon="triangle-alert" :active="request()->routeIs('stok.menipis')" :badge="$sidebarStokMenipisCount ?? 0" badgeColor="bg-amber-500 text-white">Stok Menipis</x-nav-item>
+                    <x-nav-item href="{{ route('stok.index') }}" icon="layers" :active="request()->routeIs('stok.*')" :badge="$sidebarStokMenipisCount ?? 0" badgeColor="bg-amber-500 text-white">Pusat Stok</x-nav-item>
                 </x-nav-group>
             @endif
 
@@ -107,9 +104,8 @@
                 <x-nav-group label="Keuangan">
                     <x-nav-item href="{{ route('keuangan.piutang') }}" icon="hand-coins" :active="request()->routeIs('keuangan.piutang')">Piutang Customer</x-nav-item>
                     <x-nav-item href="{{ route('keuangan.hutang') }}" icon="landmark" :active="request()->routeIs('keuangan.hutang')">Hutang Supplier</x-nav-item>
-                    <x-nav-item href="{{ route('keuangan.kas') }}" icon="wallet" :active="request()->routeIs('keuangan.kas')">Kas Toko</x-nav-item>
                     @if($peranSaya === 'owner')
-                        <x-nav-item href="{{ route('keuangan.kas-besar') }}" icon="vault" :active="request()->routeIs('keuangan.kas-besar')">Kas Besar (Owner)</x-nav-item>
+                        <x-nav-item href="{{ route('keuangan.kas') }}" icon="wallet" :active="request()->routeIs('keuangan.kas')">Buku Kas Utama</x-nav-item>
                     @endif
                 </x-nav-group>
 
@@ -188,15 +184,16 @@
                         { judul: 'Master Sales', ket: 'Data Petugas / Tim Sales Penjualan', path: '{{ route('sales.index') }}', url: '/admin/sales', icon: 'user-check' },
                     @endif
                     @if(in_array($peranSaya, ['owner', 'admin', 'gudang']))
-                        { judul: 'Kartu Stok & Riwayat Mutasi', ket: 'Riwayat Mutasi Masuk & Keluar Barang', path: '{{ route('stok.kartu') }}', url: '/admin/stok/kartu', icon: 'notebook-text' },
-                        { judul: 'Rekap Stok Barang', ket: 'Ringkasan Total Saldo Stok Barang', path: '{{ route('stok.rekap') }}', url: '/admin/stok/rekap', icon: 'layers' },
-                        { judul: 'Stok Opname', ket: 'Pemeriksaan & Penyesuaian Stok Fisik', path: '{{ route('stok.opname') }}', url: '/admin/stok/opname', icon: 'clipboard-check' },
-                        { judul: 'Stok Menipis & Peringatan', ket: 'Peringatan Barang Di Bawah Stok Minimum', path: '{{ route('stok.menipis') }}', url: '/admin/stok/menipis', icon: 'triangle-alert' },
+                        { judul: 'Pusat Stok Terpadu', ket: 'Rekap Nilai Stok, Peringatan Menipis, Kartu Mutasi & Opname', path: '{{ route('stok.index') }}', url: '/admin/stok', icon: 'layers' },
                     @endif
                     @if(in_array($peranSaya, ['owner', 'admin']))
                         { judul: 'Piutang Customer', ket: 'Daftar Piutang & Tagihan Pelanggan', path: '{{ route('keuangan.piutang') }}', url: '/admin/keuangan/piutang', icon: 'hand-coins' },
                         { judul: 'Hutang Supplier', ket: 'Daftar Hutang ke Vendor / Supplier', path: '{{ route('keuangan.hutang') }}', url: '/admin/keuangan/hutang', icon: 'landmark' },
-                        { judul: 'Kas Toko', ket: 'Buku Kas & Arus Keluar Masuk Uang Tunai', path: '{{ route('keuangan.kas') }}', url: '/admin/keuangan/kas', icon: 'wallet' },
+                    @endif
+                    @if($peranSaya === 'owner')
+                        { judul: 'Buku Kas Utama (Owner)', ket: 'Buku Kas Terpadu & Arus Kas/Bank Real-time', path: '{{ route('keuangan.kas') }}', url: '/admin/keuangan/kas', icon: 'wallet' },
+                    @endif
+                    @if(in_array($peranSaya, ['owner', 'admin']))
                         { judul: 'Bank', ket: 'Rekening Bank & Transaksi Non-Tunai', path: '{{ route('keuangan.bank') }}', url: '/admin/keuangan/bank', icon: 'building-2' },
                         { judul: 'Semua Laporan System', ket: 'Pusat Laporan Penjualan, Pembelian, & Keuangan', path: '{{ route('laporan.index') }}', url: '/admin/laporan', icon: 'chart-column' },
                         { judul: 'Laporan Penjualan Harian', ket: 'Rincian Transaksi Penjualan Per Hari', path: '{{ route('laporan.index') }}?kategori=penjualan_harian', url: '/admin/laporan/penjualan-harian', icon: 'receipt' },

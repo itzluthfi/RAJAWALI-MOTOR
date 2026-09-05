@@ -1,4 +1,4 @@
-<x-app-layout title="Buku Harian Kas">
+<x-app-layout title="Buku Kas Utama (Owner)">
 <div x-data="{ jenis: 'masuk' }" class="-m-3 p-3 space-y-4">
     @if(session('sukses'))
         <div class="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold flex items-center gap-2">
@@ -12,18 +12,21 @@
         </div>
     @endif
 
-    {{-- KARTU RINGKASAN SALDO & ARUS KAS --}}
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    {{-- KARTU RINGKASAN SALDO & ARUS KAS UTAMA (OWNER) --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <x-card class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-5 rounded-2xl shadow-xl border border-slate-700">
             <div class="flex items-center justify-between">
                 <div>
-                    <span class="text-[11px] font-bold text-slate-300 uppercase tracking-wider block">Saldo Kas Berjalan</span>
+                    <span class="text-[11px] font-bold text-slate-300 uppercase tracking-wider block">Total Saldo Kas Utama</span>
                     <span class="font-mono font-black text-2xl mt-1 block {{ $saldoKas >= 0 ? 'text-emerald-400' : 'text-rose-400' }}">
                         Rp {{ number_format($saldoKas, 0, ',', '.') }}
                     </span>
-                    <span class="text-[10px] text-slate-400 mt-1 block">Total uang fisik kasir/laci saat ini</span>
+                    <div class="text-[10px] text-slate-400 mt-1.5 space-y-0.5">
+                        <p>Laci Kasir: <strong class="text-slate-200 font-mono">Rp {{ number_format($saldoKasTunai ?? 0, 0, ',', '.') }}</strong></p>
+                        <p>Bank / Transfer: <strong class="text-slate-200 font-mono">Rp {{ number_format($saldoBank ?? 0, 0, ',', '.') }}</strong></p>
+                    </div>
                 </div>
-                <div class="p-3 bg-slate-800/80 rounded-xl border border-slate-700 text-emerald-400">
+                <div class="p-3 bg-slate-800/80 rounded-xl border border-slate-700 text-emerald-400 shrink-0">
                     <x-icon name="wallet" class="w-6 h-6" />
                 </div>
             </div>
@@ -32,13 +35,13 @@
         <x-card class="bg-surface p-5 rounded-2xl shadow-md border border-slate-200/80">
             <div class="flex items-center justify-between">
                 <div>
-                    <span class="text-[11px] font-bold text-steel uppercase tracking-wider block">Pemasukan Periode Ini</span>
+                    <span class="text-[11px] font-bold text-steel uppercase tracking-wider block">Pemasukan Periode</span>
                     <span class="font-mono font-black text-xl text-emerald-600 mt-1 block">
                         +Rp {{ number_format($totalMasukPeriode, 0, ',', '.') }}
                     </span>
-                    <span class="text-[10px] text-steel mt-1 block">Sesuai filter tanggal/kategori</span>
+                    <span class="text-[10px] text-steel mt-1 block">Total dana masuk periode filter</span>
                 </div>
-                <div class="p-3 bg-emerald-50 rounded-xl text-emerald-600">
+                <div class="p-3 bg-emerald-50 rounded-xl text-emerald-600 shrink-0">
                     <x-icon name="arrow-down-left" class="w-6 h-6" />
                 </div>
             </div>
@@ -47,14 +50,29 @@
         <x-card class="bg-surface p-5 rounded-2xl shadow-md border border-slate-200/80">
             <div class="flex items-center justify-between">
                 <div>
-                    <span class="text-[11px] font-bold text-steel uppercase tracking-wider block">Pengeluaran Periode Ini</span>
+                    <span class="text-[11px] font-bold text-steel uppercase tracking-wider block">Pengeluaran Periode</span>
                     <span class="font-mono font-black text-xl text-rose-600 mt-1 block">
                         -Rp {{ number_format($totalKeluarPeriode, 0, ',', '.') }}
                     </span>
-                    <span class="text-[10px] text-steel mt-1 block">Sesuai filter tanggal/kategori</span>
+                    <span class="text-[10px] text-steel mt-1 block">Total dana keluar periode filter</span>
                 </div>
-                <div class="p-3 bg-rose-50 rounded-xl text-rose-600">
+                <div class="p-3 bg-rose-50 rounded-xl text-rose-600 shrink-0">
                     <x-icon name="arrow-up-right" class="w-6 h-6" />
+                </div>
+            </div>
+        </x-card>
+
+        <x-card class="bg-surface p-5 rounded-2xl shadow-md border border-slate-200/80">
+            <div class="flex items-center justify-between">
+                <div>
+                    <span class="text-[11px] font-bold text-steel uppercase tracking-wider block">Surplus / Arus Bersih</span>
+                    <span class="font-mono font-black text-xl mt-1 block {{ ($surplusDefisit ?? 0) >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">
+                        {{ ($surplusDefisit ?? 0) >= 0 ? '+' : '' }}Rp {{ number_format($surplusDefisit ?? 0, 0, ',', '.') }}
+                    </span>
+                    <span class="text-[10px] text-steel mt-1 block">Pemasukan - Pengeluaran</span>
+                </div>
+                <div class="p-3 rounded-xl shrink-0 {{ ($surplusDefisit ?? 0) >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600' }}">
+                    <x-icon name="chart-column" class="w-6 h-6" />
                 </div>
             </div>
         </x-card>
@@ -65,6 +83,12 @@
         <x-input type="date" name="dari_tanggal" label="Dari Tanggal" value="{{ $filter['dari_tanggal'] }}" />
         <x-input type="date" name="sampai_tanggal" label="Sampai Tanggal" value="{{ $filter['sampai_tanggal'] }}" />
         
+        <x-select name="sumber" label="Sumber Dana">
+            <option value="semua" @selected(($filter['sumber'] ?? 'semua') === 'semua')>Semua Sumber (Laci + Bank)</option>
+            <option value="kas" @selected(($filter['sumber'] ?? '') === 'kas')>Kas Fisik / Laci Toko</option>
+            <option value="bank" @selected(($filter['sumber'] ?? '') === 'bank')>Rekening Bank / Transfer</option>
+        </x-select>
+
         <x-select name="kategori" label="Kategori Modul">
             <option value="semua" @selected($filter['kategori'] === 'semua')>Semua Kategori</option>
             <option value="penjualan" @selected($filter['kategori'] === 'penjualan')>Penjualan POS / Kasir</option>

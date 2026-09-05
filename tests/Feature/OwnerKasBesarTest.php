@@ -24,7 +24,7 @@ class OwnerKasBesarTest extends TestCase
         return User::factory()->create(['username' => 'kasir_' . Str::random(6), 'peran' => 'kasir']);
     }
 
-    public function test_owner_can_access_kas_besar(): void
+    public function test_owner_can_access_buku_kas_utama(): void
     {
         $this->actingAs($this->owner());
 
@@ -37,17 +37,25 @@ class OwnerKasBesarTest extends TestCase
             'keterangan' => 'Kas Masuk Penjualan',
         ]);
 
-        $response = $this->get('/admin/keuangan/kas-besar');
+        $response = $this->get('/admin/keuangan/kas');
         $response->assertOk();
-        $response->assertSee('Saldo Kas Besar');
+        $response->assertSee('Buku Kas Utama (Owner)');
         $response->assertSee('500.000');
     }
 
-    public function test_kasir_cannot_access_kas_besar(): void
+    public function test_kas_besar_redirects_to_kas_utama_for_owner(): void
+    {
+        $this->actingAs($this->owner());
+
+        $response = $this->get('/admin/keuangan/kas-besar');
+        $response->assertRedirect(route('keuangan.kas'));
+    }
+
+    public function test_kasir_cannot_access_buku_kas_utama_or_kas_besar(): void
     {
         $this->actingAs($this->kasir());
 
-        $response = $this->get('/admin/keuangan/kas-besar');
-        $response->assertStatus(403);
+        $this->get('/admin/keuangan/kas')->assertStatus(403);
+        $this->get('/admin/keuangan/kas-besar')->assertStatus(403);
     }
 }

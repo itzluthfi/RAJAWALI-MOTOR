@@ -185,6 +185,7 @@ Route::prefix('admin')->group(function () {
         });
 
         Route::prefix('stok')->name('stok.')->middleware('peran:owner,admin')->group(function () {
+            Route::get('/', [\App\Http\Controllers\StokController::class, 'index'])->name('index');
             Route::get('/kartu', [\App\Http\Controllers\StokController::class, 'kartu'])->name('kartu');
             Route::get('/rekap', [\App\Http\Controllers\StokController::class, 'rekap'])->name('rekap');
             Route::get('/opname', [\App\Http\Controllers\StokController::class, 'opname'])->name('opname');
@@ -197,7 +198,7 @@ Route::prefix('admin')->group(function () {
             Route::post('/piutang/{penjualan}/pelunasan', [\App\Http\Controllers\KeuanganController::class, 'bayarPiutang'])->name('piutang.bayar');
             Route::get('/hutang', [\App\Http\Controllers\KeuanganController::class, 'hutang'])->name('hutang');
             Route::post('/hutang/{service}/pelunasan', [\App\Http\Controllers\KeuanganController::class, 'bayarHutang'])->name('hutang.bayar');
-            Route::get('/kas', [\App\Http\Controllers\KeuanganController::class, 'kas'])->name('kas');
+            Route::get('/kas', [\App\Http\Controllers\KeuanganController::class, 'kas'])->middleware('peran:owner')->name('kas');
             Route::get('/kas-besar', [\App\Http\Controllers\KeuanganController::class, 'kasBesar'])->middleware('peran:owner')->name('kas-besar');
             Route::get('/bank', [\App\Http\Controllers\KeuanganController::class, 'bank'])->name('bank');
             Route::post('/transaksi', [\App\Http\Controllers\KeuanganController::class, 'storeKasFlow'])->name('transaksi.store');

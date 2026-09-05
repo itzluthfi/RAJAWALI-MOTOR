@@ -19,8 +19,17 @@ class KeuanganController extends Controller
 {
     public function kas(Request $request): View
     {
-        $query = KasFlow::query()->where('sumber', 'kas');
+        if ($request->user()->peran !== 'owner') {
+            abort(403, 'Akses Buku Kas Utama terbatas khusus Owner.');
+        }
 
+        $query = KasFlow::query();
+
+        if ($sumber = $request->input('sumber')) {
+            if ($sumber !== 'semua') {
+                $query->where('sumber', $sumber);
+            }
+        }
         if ($dari = $request->input('dari_tanggal')) {
             $query->where('tanggal', '>=', $dari);
         }
@@ -47,22 +56,34 @@ class KeuanganController extends Controller
         // Hitung total masuk & keluar periode filter
         $totalMasukPeriode = (float) (clone $query)->where('tipe', 'masuk')->sum('nominal');
         $totalKeluarPeriode = (float) (clone $query)->where('tipe', 'keluar')->sum('nominal');
+        $surplusDefisit = $totalMasukPeriode - $totalKeluarPeriode;
 
         // Data terbaru paling atas (descending)
         $perPage = max(5, min(100, (int) $request->input('per_page', 25)));
         $mutasi = $query->orderBy('tanggal', 'desc')->orderBy('id', 'desc')->paginate($perPage)->withQueryString();
 
-        // Saldo total kas berjalan toko
-        $saldoKas = (float) KasFlow::where('sumber', 'kas')
+        // Saldo kas tunai (laci)
+        $saldoKasTunai = (float) KasFlow::where('sumber', 'kas')
             ->selectRaw('COALESCE(SUM(CASE WHEN tipe = "masuk" THEN nominal ELSE -nominal END), 0) as saldo')
             ->value('saldo');
 
+        // Saldo bank/rekening
+        $saldoBank = (float) KasFlow::where('sumber', 'bank')
+            ->selectRaw('COALESCE(SUM(CASE WHEN tipe = "masuk" THEN nominal ELSE -nominal END), 0) as saldo')
+            ->value('saldo');
+
+        $saldoTotalSemua = $saldoKasTunai + $saldoBank;
+
         return view('keuangan.kas', [
             'mutasi' => $mutasi,
-            'saldoKas' => $saldoKas,
+            'saldoKas' => $saldoTotalSemua,
+            'saldoKasTunai' => $saldoKasTunai,
+            'saldoBank' => $saldoBank,
             'totalMasukPeriode' => $totalMasukPeriode,
             'totalKeluarPeriode' => $totalKeluarPeriode,
+            'surplusDefisit' => $surplusDefisit,
             'filter' => [
+                'sumber' => $request->input('sumber', 'semua'),
                 'dari_tanggal' => $request->input('dari_tanggal', ''),
                 'sampai_tanggal' => $request->input('sampai_tanggal', ''),
                 'tipe' => $request->input('tipe', 'semua'),
@@ -114,38 +135,9 @@ class KeuanganController extends Controller
         ]);
     }
 
-    public function kasBesar(Request $request): View
+    public function kasBesar(Request $request): RedirectResponse
     {
-        if ($request->user()->peran !== 'owner') {
-            abort(403, 'Akses terbatas khusus Owner.');
-        }
-
-        $query = KasFlow::query();
-
-        if ($dari = $request->input('dari_tanggal')) {
-            $query->where('tanggal', '>=', $dari);
-        }
-        if ($sampai = $request->input('sampai_tanggal')) {
-            $query->where('tanggal', '<=', $sampai);
-        }
-
-        $perPage = max(5, min(100, (int) $request->input('per_page', 25)));
-        $mutasi = $query->orderBy('tanggal', 'desc')->orderBy('id', 'desc')->paginate($perPage)->withQueryString();
-
-        $totalMasuk = (float) KasFlow::where('tipe', 'masuk')->sum('nominal');
-        $totalKeluar = (float) KasFlow::where('tipe', 'keluar')->sum('nominal');
-        $saldoKasBesar = $totalMasuk - $totalKeluar;
-
-        return view('keuangan.kas-besar', [
-            'mutasi' => $mutasi,
-            'totalMasuk' => $totalMasuk,
-            'totalKeluar' => $totalKeluar,
-            'saldoKasBesar' => $saldoKasBesar,
-            'filter' => [
-                'dari_tanggal' => $request->input('dari_tanggal', ''),
-                'sampai_tanggal' => $request->input('sampai_tanggal', ''),
-            ]
-        ]);
+        return redirect()->route('keuangan.kas');
     }
 
     public function piutang(Request $request): View
