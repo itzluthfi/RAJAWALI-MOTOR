@@ -150,36 +150,36 @@
         <!-- Header Toko -->
         <div class="text-center space-y-1 mb-2">
             @if($pengaturan->logo_url)
-                <img alt="{{ $pengaturan->nama_toko }} Logo" class="h-10 w-auto mx-auto object-contain mb-1.5" src="{{ $pengaturan->logo_url }}"/>
+                <img alt="{{ $pengaturan->nama_toko }} Logo" class="h-10 w-auto mx-auto object-contain mb-1.5 grayscale" src="{{ $pengaturan->logo_url }}"/>
             @endif
-            <h1 class="font-black text-sm tracking-wider text-slate-900 leading-tight uppercase">{{ $pengaturan->nama_toko }}</h1>
+            <h1 class="font-black text-sm tracking-wider text-black leading-tight uppercase">{{ $pengaturan->nama_toko }}</h1>
             @if($pengaturan->slogan)
-                <p class="text-[10px] text-slate-600 italic leading-tight">{{ $pengaturan->slogan }}</p>
+                <p class="text-[10px] text-black/80 italic leading-tight">{{ $pengaturan->slogan }}</p>
             @endif
-            <p class="text-[10.5px] text-slate-700 leading-tight">{{ $pengaturan->alamat }}</p>
+            <p class="text-[10.5px] text-black leading-tight">{{ $pengaturan->alamat }}</p>
             @if($pengaturan->telepon)
-                <p class="text-[10.5px] text-slate-700 leading-tight font-medium">Telp/WA: {{ $pengaturan->telepon }}</p>
+                <p class="text-[10.5px] text-black leading-tight font-medium">Telp/WA: {{ $pengaturan->telepon }}</p>
             @endif
         </div>
 
         <div class="dashed-line"></div>
 
         <!-- Meta Nota -->
-        <div class="space-y-0.5 text-[11px]">
+        <div class="space-y-0.5 text-[11px] text-black">
             <div class="flex justify-between items-center">
-                <span class="text-slate-600">No. Nota:</span>
-                <span class="font-bold text-slate-900">{{ $penjualan->nomor_nota }}</span>
+                <span>No. Nota:</span>
+                <span class="font-bold font-mono">{{ $penjualan->nomor_nota }}</span>
             </div>
             <div class="flex justify-between items-center">
-                <span class="text-slate-600">Tanggal:</span>
+                <span>Tanggal:</span>
                 <span>{{ $penjualan->created_at->setTimezone('Asia/Jakarta')->format('d/m/Y H:i') }}</span>
             </div>
             <div class="flex justify-between items-center">
-                <span class="text-slate-600">Customer:</span>
-                <span class="font-bold text-slate-900">{{ $penjualan->customer->nama ?? 'Umum' }}</span>
+                <span>Customer:</span>
+                <span class="font-bold">{{ $penjualan->customer->nama ?? 'Umum' }}</span>
             </div>
             <div class="flex justify-between items-center">
-                <span class="text-slate-600">Kasir:</span>
+                <span>Kasir:</span>
                 <span>{{ $penjualan->user->name ?? 'Staff' }}</span>
             </div>
         </div>
@@ -190,7 +190,7 @@
         @php
             $totalHematSemua = 0;
         @endphp
-        <div class="space-y-2 my-1">
+        <div class="space-y-2 my-1 text-black">
             @foreach($penjualan->details as $d)
                 @php
                     $hargaNormal = $d->barang ? (float) $d->barang->harga_eceran : (float) $d->harga_satuan;
@@ -206,22 +206,22 @@
                     }
                 @endphp
                 <div>
-                    <div class="font-bold text-slate-900 leading-tight break-words">{{ $d->barang->nama }}</div>
+                    <div class="font-bold text-black leading-tight break-words">{{ $d->barang->nama }}</div>
                     @if($adaTierHemat)
-                        <div class="text-[10px] text-emerald-700 font-semibold flex items-center gap-1 mt-0.5">
-                            <span>* Harga Khusus (Normal: {{ number_format($hargaNormal, 0, ',', '.') }})</span>
-                            <span class="text-emerald-800">[Hemat {{ number_format($hematPerPcs, 0, ',', '.') }}/pcs]</span>
+                        <div class="text-[10px] text-black font-semibold flex items-center gap-1 mt-0.5">
+                            <span>* Khusus (Normal: {{ number_format($hargaNormal, 0, ',', '.') }})</span>
+                            <span>[Hemat {{ number_format($hematPerPcs, 0, ',', '.') }}/pcs]</span>
                         </div>
                     @endif
-                    <div class="flex justify-between items-center text-slate-700 text-[11px] mt-0.5">
+                    <div class="flex justify-between items-center text-black text-[11px] mt-0.5">
                         <span>
                             {{ rtrim(rtrim(number_format((float) $d->qty, 3, ',', ''), '0'), ',') }} x 
                             {{ number_format($d->harga_satuan, 0, ',', '.') }}
                             @if($adaDiskonItem)
-                                <span class="text-red-600 font-semibold">(-{{ number_format($d->diskon, 0, ',', '.') }})</span>
+                                <span class="font-semibold">(-{{ number_format($d->diskon, 0, ',', '.') }})</span>
                             @endif
                         </span>
-                        <span class="font-bold text-slate-900">Rp {{ number_format($d->subtotal, 0, ',', '.') }}</span>
+                        <span class="font-bold text-black font-mono">Rp {{ number_format($d->subtotal, 0, ',', '.') }}</span>
                     </div>
                 </div>
             @endforeach
@@ -234,31 +234,31 @@
         <div class="solid-line"></div>
 
         <!-- Rincian Total -->
-        <div class="space-y-1 text-[11.5px]">
-            <div class="flex justify-between items-center font-bold text-slate-800">
+        <div class="space-y-1 text-[11.5px] text-black">
+            <div class="flex justify-between items-center font-bold">
                 <span>SUBTOTAL</span>
-                <span>Rp {{ number_format($penjualan->subtotal, 0, ',', '.') }}</span>
+                <span class="font-mono">Rp {{ number_format($penjualan->subtotal, 0, ',', '.') }}</span>
             </div>
             @if($penjualan->diskon > 0)
-                <div class="flex justify-between items-center text-red-600 font-medium">
+                <div class="flex justify-between items-center font-medium">
                     <span>Diskon Nota</span>
-                    <span>-Rp {{ number_format($penjualan->diskon, 0, ',', '.') }}</span>
+                    <span class="font-mono">-Rp {{ number_format($penjualan->diskon, 0, ',', '.') }}</span>
                 </div>
             @endif
             @if($penjualan->pajak > 0)
-                <div class="flex justify-between items-center text-slate-700">
+                <div class="flex justify-between items-center">
                     <span>Pajak</span>
-                    <span>Rp {{ number_format($penjualan->pajak, 0, ',', '.') }}</span>
+                    <span class="font-mono">Rp {{ number_format($penjualan->pajak, 0, ',', '.') }}</span>
                 </div>
             @endif
-            <div class="flex justify-between items-center font-black text-sm text-[#B0181C] pt-1 border-t border-slate-300">
+            <div class="flex justify-between items-center font-black text-sm text-black pt-1 border-t-2 border-black">
                 <span>GRAND TOTAL</span>
-                <span>Rp {{ number_format($penjualan->total_akhir, 0, ',', '.') }}</span>
+                <span class="font-mono font-black">Rp {{ number_format($penjualan->total_akhir, 0, ',', '.') }}</span>
             </div>
             @if($totalHematSemua > 0)
-                <div class="flex justify-between items-center text-emerald-800 font-bold text-[11px] bg-emerald-50 px-2 py-1 rounded border border-emerald-200 mt-1.5">
-                    <span>Total Hemat (Diskon):</span>
-                    <span class="font-mono font-black text-emerald-700">Rp {{ number_format($totalHematSemua, 0, ',', '.') }}</span>
+                <div class="flex justify-between items-center text-black font-bold text-[11px] border border-dashed border-black px-2 py-1 mt-1.5">
+                    <span>TOTAL HEMAT (DISKON):</span>
+                    <span class="font-mono font-black">Rp {{ number_format($totalHematSemua, 0, ',', '.') }}</span>
                 </div>
             @endif
         </div>
@@ -267,27 +267,27 @@
 
         <!-- Status Pembayaran -->
         @if($penjualan->status_bayar === 'lunas')
-            <div class="flex justify-between items-center font-bold text-xs py-0.5">
-                <span class="text-slate-700">Status:</span>
-                <span class="text-emerald-700 font-extrabold uppercase">LUNAS ({{ strtoupper($penjualan->metode_pembayaran) }})</span>
+            <div class="flex justify-between items-center font-bold text-xs py-0.5 text-black">
+                <span>Status:</span>
+                <span class="font-black uppercase">[ LUNAS ({{ strtoupper($penjualan->metode_pembayaran) }}) ]</span>
             </div>
         @else
-            <div class="flex justify-between items-center font-bold text-xs py-0.5">
-                <span class="text-slate-700">Status:</span>
-                <span class="text-[#B0181C] font-extrabold uppercase">TEMPO / PIUTANG</span>
+            <div class="flex justify-between items-center font-bold text-xs py-0.5 text-black">
+                <span>Status:</span>
+                <span class="font-black uppercase">[ TEMPO / PIUTANG ]</span>
             </div>
             @if($penjualan->uang_muka > 0)
-                <div class="flex justify-between items-center text-[10.5px] text-slate-700">
+                <div class="flex justify-between items-center text-[10.5px] text-black">
                     <span>Uang Muka (DP):</span>
-                    <span>Rp {{ number_format($penjualan->uang_muka, 0, ',', '.') }}</span>
+                    <span class="font-mono">Rp {{ number_format($penjualan->uang_muka, 0, ',', '.') }}</span>
                 </div>
             @endif
-            <div class="flex justify-between items-center font-bold text-[11px] text-[#B0181C]">
+            <div class="flex justify-between items-center font-bold text-[11px] text-black">
                 <span>Sisa Piutang:</span>
-                <span>Rp {{ number_format(max(0, $penjualan->total_akhir - $penjualan->uang_muka), 0, ',', '.') }}</span>
+                <span class="font-mono font-black">Rp {{ number_format(max(0, $penjualan->total_akhir - $penjualan->uang_muka), 0, ',', '.') }}</span>
             </div>
             @if($penjualan->jatuh_tempo)
-                <div class="flex justify-between items-center text-[10.5px] text-slate-600">
+                <div class="flex justify-between items-center text-[10.5px] text-black">
                     <span>Jatuh Tempo:</span>
                     <span>{{ $penjualan->jatuh_tempo->format('d/m/Y') }}</span>
                 </div>
@@ -297,9 +297,9 @@
         <div class="dashed-line"></div>
 
         <!-- Footer Nota -->
-        <div class="text-center space-y-1 text-[10.5px] pt-1 text-slate-600">
-            <p class="font-bold text-slate-800">Terima kasih atas kunjungan Anda!</p>
-            <p class="leading-snug text-slate-500">{{ $pengaturan->footer_struk ?? 'Barang yang sudah dibeli tidak dapat ditukar/dikembalikan tanpa perjanjian resmi.' }}</p>
+        <div class="text-center space-y-1 text-[10.5px] pt-1 text-black">
+            <p class="font-bold">Terima kasih atas kunjungan Anda!</p>
+            <p class="leading-snug text-black/80">{{ $pengaturan->footer_struk ?? 'Barang yang sudah dibeli tidak dapat ditukar/dikembalikan tanpa perjanjian resmi.' }}</p>
         </div>
     </div>
     @else

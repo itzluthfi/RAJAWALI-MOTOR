@@ -18,7 +18,7 @@
         }
         .header {
             width: 100%;
-            border-bottom: 2px solid #b0181c;
+            border-bottom: 2px solid #000000;
             padding-bottom: 6px;
             margin-bottom: 8px;
         }
@@ -28,13 +28,13 @@
         .title {
             font-size: 16px;
             font-weight: bold;
-            color: #b0181c;
+            color: #000000;
             margin: 0;
         }
         .faktur-no {
             font-size: 13px;
             font-weight: bold;
-            color: #b0181c;
+            color: #000000;
             text-align: right;
         }
         .info-box {
@@ -73,9 +73,9 @@
         .text-right { text-align: right; }
         .text-center { text-align: center; }
         .font-bold { font-weight: bold; }
-        .text-red { color: #b0181c; }
-        .text-green { color: #059669; }
-        .text-slate { color: #64748b; }
+        .text-red { color: #000000; }
+        .text-green { color: #000000; }
+        .text-slate { color: #475569; }
         .signatures {
             width: 100%;
             margin-top: 16px;
@@ -172,8 +172,8 @@
                         </tr>
                     @endif
                     <tr>
-                        <td style="font-size: 12px; font-weight: bold; color: #b0181c; border-top: 1px solid #cbd5e1; padding-top: 3px;">TOTAL AKHIR:</td>
-                        <td style="font-size: 12px; font-weight: bold; color: #b0181c; border-top: 1px solid #cbd5e1; padding-top: 3px;" class="text-right">Rp {{ number_format($penjualan->total_akhir, 0, ',', '.') }}</td>
+                        <td style="font-size: 12px; font-weight: bold; color: #000000; border-top: 2px solid #000000; padding-top: 4px;">TOTAL AKHIR:</td>
+                        <td style="font-size: 12px; font-weight: bold; color: #000000; border-top: 2px solid #000000; padding-top: 4px;" class="text-right">Rp {{ number_format($penjualan->total_akhir, 0, ',', '.') }}</td>
                     </tr>
                     @if($penjualan->metode_pembayaran === 'tempo')
                         <tr>

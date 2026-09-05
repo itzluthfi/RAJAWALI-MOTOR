@@ -68,7 +68,7 @@
 
             @if(in_array($peranSaya, ['owner', 'admin', 'kasir']))
                 <x-nav-group label="Transaksi">
-                    <x-nav-item href="{{ route('kasir') }}" icon="scan-barcode" :active="request()->routeIs('kasir')">Kasir POS &amp; Servis</x-nav-item>
+                    <x-nav-item href="{{ route('kasir') }}" icon="plus-circle" :active="request()->routeIs('kasir')">Tambah Transaksi</x-nav-item>
                     <x-nav-item href="{{ route('pembelian.index') }}" icon="truck" :active="request()->routeIs('pembelian.*')">Pembelian Stok</x-nav-item>
                     <x-nav-item href="{{ route('penjualan.index') }}" icon="receipt" :active="request()->routeIs('penjualan.*') || request()->routeIs('service.*') || request()->routeIs('retur.*')" :badge="$sidebarNotaHariIniCount ?? 0" badgeColor="bg-emerald-600 text-white">Riwayat Transaksi</x-nav-item>
                 </x-nav-group>
@@ -159,7 +159,7 @@
                         { judul: 'Dashboard Utama', ket: 'Ringkasan Penjualan, Stok, & Performa Toko', path: '{{ route('dashboard') }}', url: '/admin/dashboard', icon: 'layout-dashboard' },
                     @endif
                     @if(in_array($peranSaya, ['owner', 'admin', 'kasir']))
-                        { judul: 'Kasir POS (Penjualan Langsung)', ket: 'Transaksi Kasir & Cetak Struk', path: '{{ route('kasir') }}', url: '/admin/kasir', icon: 'scan-barcode' },
+                        { judul: 'Tambah Transaksi (Kasir POS)', ket: 'Input Transaksi Kasir Baru & Cetak Struk', path: '{{ route('kasir') }}', url: '/admin/kasir', icon: 'plus-circle' },
                         { judul: 'Nota Penjualan', ket: 'Daftar Riwayat Nota & Invoice Penjualan', path: '{{ route('penjualan.index') }}', url: '/admin/penjualan', icon: 'receipt' },
                     @endif
                     @if(in_array($peranSaya, ['owner', 'admin', 'gudang']))
@@ -261,7 +261,7 @@
 
                 @if(in_array($peranSaya, ['owner', 'admin', 'kasir']))
                     <x-button as="a" href="{{ route('kasir') }}" variant="primary" class="text-xs px-3 py-1.5 font-bold">
-                        <x-icon name="shopping-cart" class="w-3.5 h-3.5" /> <span class="hidden sm:inline">Kasir POS</span>
+                        <x-icon name="plus-circle" class="w-3.5 h-3.5" /> <span class="hidden sm:inline">Tambah Transaksi</span>
                     </x-button>
                 @endif
 

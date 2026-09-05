@@ -44,7 +44,7 @@
                 <img alt="{{ $pengaturan->nama_toko }} Logo" class="h-10 w-auto object-contain shrink-0" src="{{ $pengaturan->logo_url }}"/>
             @endif
             <div>
-                <h1 class="font-black text-lg text-[#B0181C] leading-tight">{{ strtoupper($pengaturan->nama_toko) }}</h1>
+                <h1 class="font-black text-lg text-black leading-tight">{{ strtoupper($pengaturan->nama_toko) }}</h1>
                 <p class="text-[11px] text-slate-600 font-medium">{{ $pengaturan->alamat }} | WA: {{ $pengaturan->telepon }}</p>
                 @if($pengaturan->slogan)
                     <p class="text-[10px] text-slate-500">{{ $pengaturan->slogan }}</p>
@@ -52,8 +52,8 @@
             </div>
         </div>
         <div class="text-right">
-            <h2 class="font-black text-base text-slate-800 tracking-wider">FAKTUR PENJUALAN</h2>
-            <p class="font-mono text-xs font-bold text-[#B0181C] mt-0.5">{{ $penjualan->nomor_nota }}</p>
+            <h2 class="font-black text-base text-slate-900 tracking-wider">FAKTUR PENJUALAN</h2>
+            <p class="font-mono text-xs font-bold text-black mt-0.5">{{ $penjualan->nomor_nota }}</p>
             <p class="text-[11px] text-slate-500">Tanggal: {{ $penjualan->created_at->translatedFormat('d F Y H:i') }}</p>
         </div>
     </div>
@@ -66,7 +66,7 @@
             <p class="text-[11px] text-slate-600 font-medium">{{ $penjualan->customer->alamat ?? 'Sidoarjo / Surabaya' }}</p>
         </div>
         <div class="text-right space-y-0.5 text-[11px]">
-            <p><span class="text-slate-500">Status Pembayaran:</span> <span class="font-bold {{ $penjualan->status_bayar === 'lunas' ? 'text-emerald-600' : 'text-rajawali' }}">{{ $penjualan->status_bayar === 'lunas' ? 'LUNAS' : 'TEMPO / PIUTANG' }}</span></p>
+            <p><span class="text-slate-500">Status Pembayaran:</span> <span class="font-bold text-slate-900 border border-slate-400 px-1 py-0.5 rounded">{{ $penjualan->status_bayar === 'lunas' ? 'LUNAS' : 'TEMPO / PIUTANG' }}</span></p>
             <p><span class="text-slate-500">Kasir / Staf:</span> <span class="font-bold text-slate-900">{{ $penjualan->user->name ?? 'Staff' }}</span></p>
         </div>
     </div>
@@ -93,9 +93,9 @@
                     <td class="py-1.5 px-2 text-center font-mono font-bold">{{ rtrim(rtrim(number_format((float) $item->qty, 3, ',', ''), '0'), ',') }}</td>
                     <td class="py-1.5 px-2 text-right font-mono">Rp {{ number_format($item->harga_satuan, 0, ',', '.') }}</td>
                     @if($penjualan->details->sum('diskon') > 0)
-                        <td class="py-1.5 px-2 text-right font-mono text-rajawali">-Rp {{ number_format($item->diskon, 0, ',', '.') }}</td>
+                        <td class="py-1.5 px-2 text-right font-mono text-slate-700">-Rp {{ number_format($item->diskon, 0, ',', '.') }}</td>
                     @endif
-                    <td class="py-1.5 px-2 text-right font-mono font-bold">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                    <td class="py-1.5 px-2 text-right font-mono font-bold text-black">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
                 </tr>
             @endforeach
         </tbody>
@@ -114,7 +114,7 @@
                 <span class="font-mono">Rp {{ number_format($penjualan->subtotal, 0, ',', '.') }}</span>
             </div>
             @if($penjualan->diskon > 0)
-                <div class="flex justify-between text-rajawali">
+                <div class="flex justify-between text-slate-700">
                     <span>DISKON NOTA:</span>
                     <span class="font-mono">-Rp {{ number_format($penjualan->diskon, 0, ',', '.') }}</span>
                 </div>
@@ -125,7 +125,7 @@
                     <span class="font-mono">Rp {{ number_format($penjualan->pajak, 0, ',', '.') }}</span>
                 </div>
             @endif
-            <div class="flex justify-between text-[#B0181C] text-sm pt-1 border-t border-slate-300">
+            <div class="flex justify-between text-black text-sm pt-1 border-t-2 border-black font-black">
                 <span>TOTAL AKHIR:</span>
                 <span class="font-mono">Rp {{ number_format($penjualan->total_akhir, 0, ',', '.') }}</span>
             </div>
@@ -134,7 +134,7 @@
                     <span>UANG MUKA (DP):</span>
                     <span class="font-mono">Rp {{ number_format($penjualan->uang_muka, 0, ',', '.') }}</span>
                 </div>
-                <div class="flex justify-between text-rajawali text-[11px]">
+                <div class="flex justify-between text-slate-900 text-[11px]">
                     <span>SISA PIUTANG:</span>
                     <span class="font-mono">Rp {{ number_format(max(0, $penjualan->total_akhir - $penjualan->uang_muka), 0, ',', '.') }}</span>
                 </div>

@@ -1,36 +1,31 @@
 <x-app-layout title="Riwayat Transaksi - Nota Penjualan">
 
-    {{-- SUB-NAV TABS ARSIP RIWAYAT TRANSAKSI --}}
-    <div class="flex items-center gap-2 mb-3 bg-surface p-1.5 rounded-xl border border-line no-print">
-        <a href="{{ route('penjualan.index') }}" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 bg-rajawali text-white shadow-xs">
-            <x-icon name="receipt" class="w-4 h-4" />
-            <span>Nota Penjualan</span>
-        </a>
-        <a href="{{ route('service.index') }}" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 text-steel hover:text-ink hover:bg-canvas">
-            <x-icon name="wrench" class="w-4 h-4" />
-            <span>Antrean &amp; Servis Bengkel</span>
-        </a>
-        <a href="{{ route('retur.index') }}" class="px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5 text-steel hover:text-ink hover:bg-canvas">
-            <x-icon name="undo-2" class="w-4 h-4" />
-            <span>Retur Barang</span>
-        </a>
-    </div>
-
     <x-filter-bar class="no-print" action="{{ route('penjualan.index') }}" method="GET">
-        <x-input label="Cari No Nota / Customer" name="search" value="{{ request('search') }}" placeholder="PJ2026... atau nama customer" class="w-full sm:min-w-64" />
-        <x-select label="Status" name="status">
+        <x-input label="Cari No Nota / Customer" name="search" value="{{ request('search') }}" placeholder="PJ2026... atau nama customer" class="w-full sm:min-w-60" />
+        
+        <x-select label="Jenis Item" name="tipe">
+            <option value="semua" @selected(request('tipe') === 'semua' || !request('tipe'))>Semua (Barang &amp; Jasa)</option>
+            <option value="barang" @selected(request('tipe') === 'barang')>Barang / Sparepart Saja</option>
+            <option value="jasa" @selected(request('tipe') === 'jasa')>Jasa Servis Saja</option>
+        </x-select>
+
+        <x-select label="Status Bayar" name="status">
             <option value="semua" @selected(request('status') === 'semua')>Semua Status</option>
             <option value="lunas" @selected(request('status') === 'lunas')>Lunas</option>
             <option value="piutang" @selected(request('status') === 'piutang')>Piutang / Tempo</option>
             <option value="batal" @selected(request('status') === 'batal')>Batal</option>
         </x-select>
-        <x-button type="submit" variant="primary" class="w-full sm:w-auto"><x-icon name="search" class="w-4 h-4" /> Cari Nota</x-button>
+
+        <x-button type="submit" variant="primary" class="w-full sm:w-auto">
+            <x-icon name="search" class="w-4 h-4" /> Cari
+        </x-button>
+
         <div class="ml-auto flex gap-2">
             <x-button type="button" variant="secondary" onclick="exportTableToExcel('tabel-penjualan', 'Laporan_Nota_Penjualan', 'Daftar Transaksi Nota Penjualan')">
                 <x-icon name="file-spreadsheet" class="w-4 h-4 text-emerald-600" /> Export Excel
             </x-button>
-            <x-button type="button" variant="secondary" onclick="cetakLaporanPdf()">
-                <x-icon name="printer" class="w-4 h-4 text-rajawali" /> Cetak PDF
+            <x-button as="a" href="{{ route('penjualan.pdf', request()->query()) }}" variant="secondary" target="_blank">
+                <x-icon name="file-down" class="w-4 h-4 text-rajawali" /> Cetak PDF
             </x-button>
         </div>
     </x-filter-bar>
@@ -68,6 +63,9 @@
                     </a>
                     <a href="{{ route('cetak.nota', $p->nomor_nota) }}" target="_blank" class="px-2.5 py-1.5 rounded-lg border border-red-200 text-xs font-semibold text-rajawali hover:bg-red-50 flex items-center gap-1">
                         <x-icon name="printer" class="w-3.5 h-3.5" /> Struk
+                    </a>
+                    <a href="{{ route('cetak.nota.pdf', $p->nomor_nota) }}" target="_blank" class="px-2.5 py-1.5 rounded-lg border border-emerald-300 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 flex items-center gap-1">
+                        <x-icon name="file-down" class="w-3.5 h-3.5" /> PDF
                     </a>
                     <a href="{{ route('cetak.faktur', $p->nomor_nota) }}" target="_blank" class="px-2.5 py-1.5 rounded-lg border border-blue-200 text-xs font-semibold text-blue-600 hover:bg-blue-50 flex items-center gap-1">
                         <x-icon name="file-text" class="w-3.5 h-3.5" /> Faktur A5
@@ -139,6 +137,9 @@
                                     </a>
                                     <a href="{{ route('cetak.nota', $p->nomor_nota) }}" target="_blank" class="p-1.5 rounded-lg text-steel hover:text-rajawali hover:bg-red-50 transition" data-tooltip="Cetak Struk Thermal (58/80mm)">
                                         <x-icon name="printer" class="w-4 h-4" />
+                                    </a>
+                                    <a href="{{ route('cetak.nota.pdf', $p->nomor_nota) }}" target="_blank" class="p-1.5 rounded-lg text-steel hover:text-emerald-700 hover:bg-emerald-50 transition" data-tooltip="Unduh Struk PDF (Dompdf)">
+                                        <x-icon name="file-down" class="w-4 h-4" />
                                     </a>
                                     <a href="{{ route('cetak.faktur', $p->nomor_nota) }}" target="_blank" class="p-1.5 rounded-lg text-steel hover:text-blue-600 hover:bg-blue-50 transition" data-tooltip="Cetak Faktur A5 (NCR)">
                                         <x-icon name="file-text" class="w-4 h-4" />

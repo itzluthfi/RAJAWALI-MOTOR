@@ -89,7 +89,7 @@ Route::prefix('admin')->group(function () {
 
         Route::prefix('penjualan')->name('penjualan.')->middleware('peran:owner,admin,kasir')->group(function () {
             Route::get('/', function (\Illuminate\Http\Request $request) {
-                $query = \App\Models\Penjualan::query()->with(['customer', 'user'])->latest();
+                $query = \App\Models\Penjualan::query()->with(['customer', 'user', 'details.barang.group'])->latest();
 
                 if ($request->filled('search')) {
                     $search = $request->search;
@@ -103,11 +103,72 @@ Route::prefix('admin')->group(function () {
                     $query->where('status_bayar', $request->status);
                 }
 
+                if ($request->filled('tipe') && $request->tipe !== 'semua') {
+                    if ($request->tipe === 'jasa') {
+                        $query->whereHas('details.barang', function ($q) {
+                            $q->where('kode', 'JASA')
+                              ->orWhere('kode', 'LIKE', 'JSA-%')
+                              ->orWhereHas('group', fn ($g) => $g->where('nama', 'LIKE', '%jasa%'));
+                        });
+                    } elseif ($request->tipe === 'barang') {
+                        $query->whereHas('details.barang', function ($q) {
+                            $q->where('kode', '!=', 'JASA')
+                              ->where('kode', 'NOT LIKE', 'JSA-%')
+                              ->whereHas('group', fn ($g) => $g->where('nama', 'NOT LIKE', '%jasa%'));
+                        });
+                    }
+                }
+
                 $perPage = max(5, min(100, (int) $request->input('per_page', 15)));
                 $penjualans = $query->paginate($perPage)->withQueryString();
 
                 return view('penjualan.index', compact('penjualans'));
             })->name('index');
+
+            Route::get('/export/pdf', function (\Illuminate\Http\Request $request) {
+                $query = \App\Models\Penjualan::query()->with(['customer', 'user', 'details.barang.group'])->latest();
+
+                if ($request->filled('search')) {
+                    $search = $request->search;
+                    $query->where(function ($q) use ($search) {
+                        $q->where('nomor_nota', 'LIKE', "%{$search}%")
+                          ->orWhereHas('customer', fn ($c) => $c->where('nama', 'LIKE', "%{$search}%"));
+                    });
+                }
+
+                if ($request->filled('status') && $request->status !== 'semua') {
+                    $query->where('status_bayar', $request->status);
+                }
+
+                if ($request->filled('tipe') && $request->tipe !== 'semua') {
+                    if ($request->tipe === 'jasa') {
+                        $query->whereHas('details.barang', function ($q) {
+                            $q->where('kode', 'JASA')
+                              ->orWhere('kode', 'LIKE', 'JSA-%')
+                              ->orWhereHas('group', fn ($g) => $g->where('nama', 'LIKE', '%jasa%'));
+                        });
+                    } elseif ($request->tipe === 'barang') {
+                        $query->whereHas('details.barang', function ($q) {
+                            $q->where('kode', '!=', 'JASA')
+                              ->where('kode', 'NOT LIKE', 'JSA-%')
+                              ->whereHas('group', fn ($g) => $g->where('nama', 'NOT LIKE', '%jasa%'));
+                        });
+                    }
+                }
+
+                $penjualans = $query->get();
+                $pengaturan = \App\Models\PengaturanToko::current();
+
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('print.pdf.penjualan-list', [
+                    'penjualans' => $penjualans,
+                    'pengaturan' => $pengaturan,
+                    'search' => $request->search,
+                    'status' => $request->status ?? 'semua',
+                    'tipe' => $request->tipe ?? 'semua',
+                ])->setPaper('a4', 'landscape');
+
+                return $pdf->download('Daftar_Nota_Penjualan_' . date('Ymd_His') . '.pdf');
+            })->name('pdf');
 
             Route::get('/{id}', function ($id) {
                 $realId = \App\Services\IdHasher::decode($id);
