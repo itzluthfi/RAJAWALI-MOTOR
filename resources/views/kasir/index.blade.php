@@ -1225,7 +1225,7 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
             }
 
             try {
-                const res = await fetch('/admin/customer/cepat', {
+                const res = await fetch('{{ route('kasir.customer-cepat') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

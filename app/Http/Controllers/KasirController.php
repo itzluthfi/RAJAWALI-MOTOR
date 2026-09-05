@@ -565,8 +565,13 @@ class KasirController extends Controller
         $customerId = $request->input('customer_id');
         $barangId = $request->input('barang_id');
 
+        if (!$barangId && $request->filled('kode_barang')) {
+            $b = Barang::where('kode', $request->input('kode_barang'))->first();
+            $barangId = $b?->id;
+        }
+
         if (!$customerId || !$barangId) {
-            return response()->json(['harga' => null]);
+            return response()->json(['sukses' => true, 'ditemukan' => false, 'harga' => null]);
         }
 
         $lastDetail = PenjualanDetail::query()
@@ -578,6 +583,8 @@ class KasirController extends Controller
             ->first();
 
         return response()->json([
+            'sukses' => true,
+            'ditemukan' => (bool) $lastDetail,
             'harga' => $lastDetail ? (float) $lastDetail->harga_satuan : null,
             'tanggal' => $lastDetail ? $lastDetail->created_at->format('d M Y') : null,
             'nota' => $lastDetail ? $lastDetail->penjualan->nomor_nota : null,
