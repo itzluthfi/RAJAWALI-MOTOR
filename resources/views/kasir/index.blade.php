@@ -638,6 +638,10 @@
                     <input type="text" x-model="formCustomer.jenis_kendaraan" placeholder="Vario 125" class="w-full text-sm font-bold rounded-xl border-2 border-slate-300 px-3.5 py-2.5 focus:ring-2 focus:ring-rajawali focus:outline-none">
                 </div>
             </div>
+            <div>
+                <label class="block text-xs font-black text-slate-800 uppercase mb-1">Alamat (Opsional)</label>
+                <input type="text" x-model="formCustomer.alamat" placeholder="Contoh: Jl. Diponegoro No. 10, Sidoarjo" class="w-full text-sm font-medium rounded-xl border-2 border-slate-300 px-3.5 py-2.5 focus:ring-2 focus:ring-rajawali focus:outline-none">
+            </div>
 
             <div class="flex justify-end gap-2 pt-3 border-t border-line">
                 <x-button type="button" variant="secondary" x-on:click="$dispatch('tutup-modal', { name: 'tambah-customer-cepat' })">Batal</x-button>
@@ -692,6 +696,7 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
             telepon: '',
             plat_nomor: '',
             jenis_kendaraan: '',
+            alamat: '',
             kategori: 'umum',
         },
 
@@ -1213,6 +1218,7 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
                 telepon: this.teleponCustomer || '',
                 plat_nomor: this.platNomor || '',
                 jenis_kendaraan: this.merkType || '',
+                alamat: '',
                 kategori: 'umum',
             };
             this.$dispatch('buka-modal', { name: 'tambah-customer-cepat' });
@@ -1244,6 +1250,7 @@ function kasirPosApp(daftarBarang, dataCustomer, dataMontir) {
                         motor: data.customer.jenis_kendaraan,
                         kategori: data.customer.kategori,
                         telepon: data.customer.telepon || data.customer.no_wa || '',
+                        alamat: data.customer.alamat || '',
                         termin: data.customer.termin_hari || 30
                     });
                     this.pilihCustomer(data.customer);

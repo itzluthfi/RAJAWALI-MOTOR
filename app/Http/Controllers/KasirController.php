@@ -450,6 +450,7 @@ class KasirController extends Controller
             'plat_nomor' => ['nullable', 'string', 'max:20'],
             'jenis_kendaraan' => ['nullable', 'string', 'max:100'],
             'kategori' => ['nullable', 'in:umum,grosir,langganan,mitra,eceran'],
+            'alamat' => ['nullable', 'string', 'max:255'],
         ]);
 
         $telepon = !empty($validated['telepon']) ? trim($validated['telepon']) : null;
@@ -460,6 +461,7 @@ class KasirController extends Controller
             'no_wa' => $telepon,
             'plat_nomor' => !empty($validated['plat_nomor']) ? strtoupper(trim($validated['plat_nomor'])) : null,
             'jenis_kendaraan' => !empty($validated['jenis_kendaraan']) ? trim($validated['jenis_kendaraan']) : null,
+            'alamat' => !empty($validated['alamat']) ? trim($validated['alamat']) : null,
             'kategori' => $validated['kategori'] ?? 'umum',
             'aktif' => true,
         ]);
@@ -476,6 +478,7 @@ class KasirController extends Controller
                 'motor' => $customer->jenis_kendaraan,
                 'kategori' => $customer->kategori ?? 'umum',
                 'telepon' => $customer->telepon ?? '',
+                'alamat' => $customer->alamat ?? '',
                 'termin' => 30,
             ],
         ]);
